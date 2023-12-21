@@ -2,7 +2,7 @@
 
 Following NIP-53 using `kind: 30312`
 
-`service` tag is added to point clients to the API which controls the room
+`service` tag is added to point clients to the API which controls the room access
 
 ```json
 {
@@ -31,6 +31,15 @@ Following NIP-53 using `kind: 30312`
   ...
 }
 ```
+
+In order to make it more obvious the type of streaming backend being used the url should be one of the following:
+- `wss+livekit://example.com` - LiveKit websocket.
+- `https://example.com/live.m3u8` - HLS playlist.
+
+If the room is a LiveKit room clients should auth with the `service` tag using NIP-98 auth at `<service-url>/auth` 
+to obtain an access token.
+
+Other systems can be supported in the future by defining different streaming url formats.
 
 ## Room Chat
 
