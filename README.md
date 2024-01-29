@@ -76,3 +76,17 @@ An `expiration` tag SHOULD be used to allow the natural cleanup of these events.
 ## ZapSplits
 
 Zap splits should be set on the room `kind: 30312` as NIP-57.G `zap` tags
+
+## Testing
+Start by bringing up the dev env:
+`docker compose up -d`
+
+Generate an access token using `nak`:
+```bash
+curl http://localhost:5544/api/v1/nests/auth -H "Authorization: Nostr $(nak event -k 27235 -t method=GET -t u=http://localhost:5544/api/v1/nests/auth | base64)"
+```
+
+Connect to the livekit room: 
+```
+https://meet.livekit.io/custom?liveKitUrl=ws://localhost:7880&token=<token>
+```

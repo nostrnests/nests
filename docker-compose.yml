@@ -1,0 +1,24 @@
+services:
+  backend:
+    build: 
+      context: .
+      dockerfile: ./NestsBackend/Dockerfile
+    ports:
+      - "5544:80"
+  livekit:
+    image: livekit/livekit-server:latest
+    command: --config /etc/livekit.yaml
+    volumes:
+      - ./compose-config/livekit.yaml:/etc/livekit.yaml
+    ports:
+      - "7880:7880"
+      - "7881:7881"
+  redis:
+    image: redis:latest
+  postgres:
+    image: "postgres:15"
+    ports:
+      - "25333:5432"
+    environment:
+      - "POSTGRES_DB=nests"
+      - "POSTGRES_HOST_AUTH_METHOD=trust"

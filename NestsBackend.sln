@@ -2,6 +2,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NestsBackend", "NestsBackend\NestsBackend.csproj", "{FE5DFC53-7EE5-4D5A-BDC1-F7AB17869031}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nests.Database", "Nests.Database\Nests.Database.csproj", "{E36E299D-D30A-49C8-B58B-7953F4112B07}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +14,9 @@ Global
 		{FE5DFC53-7EE5-4D5A-BDC1-F7AB17869031}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FE5DFC53-7EE5-4D5A-BDC1-F7AB17869031}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FE5DFC53-7EE5-4D5A-BDC1-F7AB17869031}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E36E299D-D30A-49C8-B58B-7953F4112B07}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E36E299D-D30A-49C8-B58B-7953F4112B07}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E36E299D-D30A-49C8-B58B-7953F4112B07}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E36E299D-D30A-49C8-B58B-7953F4112B07}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
