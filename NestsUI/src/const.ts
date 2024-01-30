@@ -1,0 +1,1 @@
+export const ApiHost = "http://localhost:5070";

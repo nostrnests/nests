@@ -8,19 +8,19 @@ using Newtonsoft.Json;
 
 namespace NestsBackend.Controllers;
 
-[Route("/api/v1/nests/auth")]
-public class AuthController : Controller
+[Route("/api/v1/nests")]
+public class NestsController : Controller
 {
     private readonly Config _config;
 
-    public AuthController(Config config)
+    public NestsController(Config config)
     {
         _config = config;
     }
 
-    [HttpGet]
+    [HttpPut]
     [Authorize(AuthenticationSchemes = NostrAuth.Scheme)]
-    public IActionResult GetAuthToken()
+    public IActionResult CreateRoom([FromQuery] string room)
     {
         var pubkey = HttpContext.GetPubKey();
         if (string.IsNullOrEmpty(pubkey)) return Unauthorized();
@@ -33,7 +33,7 @@ public class AuthController : Controller
             nbf = DateTime.UtcNow.ToUnixTimestamp(),
             video = new
             {
-                room = "test",
+                room,
                 roomCreate = true,
                 roomJoin = true,
                 canPublish = true,
