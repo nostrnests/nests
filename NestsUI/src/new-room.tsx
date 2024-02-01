@@ -46,7 +46,7 @@ export default function NewRoom() {
         const room = await api.createRoom();
 
         const eb = new EventBuilder();
-        eb.kind(EventKind.LiveEvent)
+        eb.kind(30_312 as EventKind)
             .tag(["d", room.roomId])
             .tag(["service", ApiUrl])
             .tag(["title", name])

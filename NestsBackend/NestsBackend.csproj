@@ -5,37 +5,34 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+        <Protobuf>true</Protobuf>
     </PropertyGroup>
 
     <ItemGroup>
-      <Content Include="..\.dockerignore">
-        <Link>.dockerignore</Link>
-      </Content>
-      <Content Include="..\README.md">
-        <Link>README.md</Link>
-      </Content>
+        <Content Include="..\.dockerignore">
+            <Link>.dockerignore</Link>
+        </Content>
+        <Content Include="..\README.md">
+            <Link>README.md</Link>
+        </Content>
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Google.Protobuf" Version="3.25.2" />
-      <PackageReference Include="Grpc.Tools" Version="2.60.0">
-        <PrivateAssets>all</PrivateAssets>
-        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      </PackageReference>
-      <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.1" />
-      <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="7.2.0" />
-      <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-      <PackageReference Include="Nostr.Client" Version="2.0.0" />
-      <PackageReference Include="prometheus-net.AspNetCore" Version="8.2.1" />
-      <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="6.5.0" />
-      <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="6.5.0" />
+        <PackageReference Include="Google.Protobuf" Version="3.25.2"/>
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.1"/>
+        <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="7.2.0"/>
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
+        <PackageReference Include="Nostr.Client" Version="2.0.0"/>
+        <PackageReference Include="prometheus-net.AspNetCore" Version="8.2.1"/>
+        <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="6.5.0"/>
+        <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="6.5.0"/>
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Nests.Database\Nests.Database.csproj" />
+        <ProjectReference Include="..\Nests.Database\Nests.Database.csproj"/>
     </ItemGroup>
 
-    <ItemGroup>
-        <Protobuf Include="proto/*.proto" ProtoRoot="proto" GrpcServices="None" />
-    </ItemGroup>
+    <Target BeforeTargets="BeforeCompile" Name="Protobuf" Condition="'$(Configuration)' != 'Release'">
+        <Exec Command="protoc -Iproto --csharp_out=proto proto/livekit_models.proto proto/livekit_egress.proto proto/livekit_room.proto"/>
+    </Target>
 </Project>

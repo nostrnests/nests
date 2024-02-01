@@ -9,7 +9,7 @@ export default function RoomList() {
     const sub = useMemo(() => {
         const rb = new RequestBuilder("rooms");
         rb.withFilter()
-            .kinds([EventKind.LiveEvent])
+            .kinds([30_312 as EventKind])
 
         return rb;
     }, []);
