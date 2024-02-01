@@ -1,4 +1,4 @@
-import { EventKind, NostrLink } from "@snort/system";
+import { EventBuilder, EventKind, NostrLink } from "@snort/system";
 import Button from "./button";
 import { useState } from "react";
 import useEventBuilder from "../hooks/useEventBuilder";
@@ -9,9 +9,10 @@ export default function WriteMessage({ link }: { link: NostrLink }) {
     const room = useRoomContext();
     const localParticipant = useLocalParticipant();
     const [msg, setMsg] = useState("");
-    const { system, signer, builder } = useEventBuilder();
+    const { system, signer } = useEventBuilder();
 
     async function sendMessage() {
+        const builder = new EventBuilder();
         builder.content(msg)
             .kind(1311 as EventKind)
             .tag(link.toEventTag()!);

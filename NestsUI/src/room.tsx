@@ -10,6 +10,7 @@ import Button from "./element/button";
 import Icon from "./icon";
 import ChatMessages from "./element/chat-messages";
 import WriteMessage from "./element/write-message";
+import RoomPresence from "./element/presence";
 
 export default function Room() {
   const location = useLocation();
@@ -24,6 +25,7 @@ export default function Room() {
   return <div>
     <LiveKitRoom serverUrl={(livekitUrl ?? "").replace("+livekit", "")} token={room.token} connect={true} audio={true}>
       <RoomAudioRenderer />
+      <RoomPresence link={link} />
       <div className="w-screen flex">
         <div className="w-2/3">
           <div className="px-4 py-6 flex gap-2 items-center text-[var(--highlight)]">
