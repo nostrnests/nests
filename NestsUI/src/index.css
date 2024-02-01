@@ -2,7 +2,56 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --background: #1b1f29;
+  --foreground: #272c39;
+  --foreground-2: #3e4556;
+  --highlight: #805ce9;
+
+  --primary-1: #8f69ff;
+  --primary-2: #5d6dff;
+  --primary-3: #f158c0;
+  --primary-4: #eba900;
+  --primary-5: #2cba50;
+  --primary-6: #c03aff;
+  --primary-6: #ff2b2f;
+  --primary-7: #00c1eb;
+  --primary-8: #ff6e1c;
+
+  --gradient-1: linear-gradient(90deg, #16a085 0%, #f4d03f 100%);
+  --gradient-2: linear-gradient(90deg, #e65c00 0%, #f9d423 100%);
+  --gradient-3: linear-gradient(90deg, #3a1c71 0%, #d76d77 50%, #ffaf7b 100%);
+  --gradient-4: linear-gradient(90deg, #8584b4 0%, #6969aa 50%, #62629b 100%);
+  --gradient-5: linear-gradient(90deg, #00c6fb 0%, #005bea 100%);
+  --gradient-6: linear-gradient(90deg, #d558c8 0%, #24d292 100%);
+  --gradient-7: linear-gradient(90deg, #d31027 0%, #ea384d 100%);
+  --gradient-8: linear-gradient(90deg, #ff512f 0%, #dd2476 100%);
+  --gradient-9: linear-gradient(90deg, #6a3093 0%, #a044ff 100%);
+  --gradient-10: linear-gradient(90deg, #00b09b 0%, #96c93d 100%);
+  --gradient-11: linear-gradient(90deg, #f78ca0 0%, #f9748f 19%, #fd868c 60%);
+}
+
 body {
-    background-color: #111;
-    color: #fff;
+  font-family: "Inter", sans-serif;
+  background-color: var(--background);
+  color: #fff;
+  --primary: var(--primary-1);
+}
+
+input {
+  color: #000;
+}
+
+.stack {
+  display: flex;
+}
+.stack > img {
+  margin-right: -0.5rem;
+}
+.stack > img:last-of-type {
+  margin-right: 0;
+}
+
+:focus-visible {
+  outline: unset;
 }

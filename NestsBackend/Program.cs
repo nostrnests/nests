@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Nests.Database;
+using NestsBackend.Services;
 using Newtonsoft.Json;
 using Nostr.Client.Json;
 using Prometheus;
@@ -22,7 +23,10 @@ internal static class Program
         }
 
         builder.Services.AddSingleton(config);
-
+        builder.Services.AddTransient<LiveKitApi>();
+        builder.Services.AddTransient<LiveKitJwt>();
+        
+        
         JsonConvert.DefaultSettings = () => NostrSerializer.Settings;
         builder.Services.AddControllers().AddNewtonsoftJson(o => { o.SerializerSettings.NullValueHandling = NullValueHandling.Ignore; });
 

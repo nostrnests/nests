@@ -1,11 +1,13 @@
+import classNames from "classnames";
 import { HTMLProps, useState } from "react";
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export default function Button({ children, type, onClick, ...props }: Omit<HTMLProps<HTMLButtonElement>, "onClick"> & {
+export type ButtonProps = Omit<HTMLProps<HTMLButtonElement>, "onClick"> & {
     onClick?: (e: React.MouseEvent) => Promise<void>
-}) {
+};
+
+export default function Button({ children, onClick, className, ...props }: ButtonProps) {
     const [loading, setLoading] = useState(false);
-    return <button {...props} type="button" className="py-2 px-3 rounded-xl bg-slate-700 border border-slate-500 hover:bg-slate-600 hover:bg-slate-400 animate min-w-20 relative" onClick={async e => {
+    return <button {...props} type="button" className={classNames("py-2 px-3 rounded-full bg-[var(--highlight)] hover:opacity-80 relative font-semibold text-sm", className)} onClick={async e => {
         try {
             setLoading(true);
             await onClick?.(e);

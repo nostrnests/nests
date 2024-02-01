@@ -1,25 +1,54 @@
 import { base64 } from "@scure/base";
-import { EventBuilder, EventKind, Nip7Signer } from "@snort/system";
-import { ApiHost } from "./const";
+import { EventBuilder, EventKind, EventSigner } from "@snort/system";
 
-export async function getToken(room: string) {
-  const url = `${ApiHost}/api/v1/nests/auth?room=${room}`;
-  const signer = new Nip7Signer();
-  await signer.init();
+export class NestsApi {
+  constructor(readonly url: string, readonly signer: EventSigner) {}
 
-  const builder = new EventBuilder();
-  builder.tag(["u", url]);
-  builder.tag(["method", "GET"]);
-  builder.kind(EventKind.HttpAuthentication);
-
-  const ev = JSON.stringify(await builder.buildAndSign(signer));
-  const rsp = await fetch(url, {
-    headers: {
-      authorization: `Nostr ${base64.encode(new TextEncoder().encode(ev))}`,
-      accept: "application/json",
-    },
-  });
-  if (rsp.ok) {
-    return (await rsp.json()) as { token: string };
+  async createRoom(): Promise<CreateRoomResponse> {
+    return await this.#fetch<CreateRoomResponse>("GET", "/api/v1/nests");
   }
+
+  async joinRoom(room: string) {
+    return await this.#fetch<JoinRoomResponse>(
+      "GET",
+      `/api/v1/nests/join/${room}`
+    );
+  }
+
+  async #fetch<R>(
+    method: "GET" | "PUT" | "POST",
+    path: string,
+    body?: BodyInit
+  ) {
+    const url = `${this.url}${path}`;
+    const builder = new EventBuilder();
+    builder.tag(["u", url]);
+    builder.tag(["method", method]);
+    builder.kind(EventKind.HttpAuthentication);
+
+    const ev = JSON.stringify(await builder.buildAndSign(this.signer));
+    const rsp = await fetch(url, {
+      method: method,
+      body,
+      headers: {
+        authorization: `Nostr ${base64.encode(new TextEncoder().encode(ev))}`,
+        accept: "application/json",
+      },
+    });
+    if (rsp.ok) {
+      return (await rsp.json()) as R;
+    }
+
+    throw new Error();
+  }
+}
+
+export interface CreateRoomResponse {
+  roomId: string;
+  endpoints: Array<string>;
+  token: string;
+}
+
+export interface JoinRoomResponse {
+  token: string;
 }

@@ -1,24 +1,75 @@
+volumes:
+  minio:
+  postgres:
+  strfry:
+  redis:
 services:
-  backend:
-    build: 
-      context: .
-      dockerfile: ./NestsBackend/Dockerfile
-    ports:
-      - "5544:80"
   livekit:
     image: livekit/livekit-server:latest
     command: --config /etc/livekit.yaml
+    restart: unless-stopped
     volumes:
       - ./compose-config/livekit.yaml:/etc/livekit.yaml
-    ports:
-      - "7880:7880"
-      - "7881:7881"
+    depends_on: 
+      - redis
+      - minio
+    network_mode: host
+    cap_add:
+      - ALL
+  livekit-egress:
+    image: livekit/egress:latest
+    restart: unless-stopped
+    cap_add:
+      - "SYS_ADMIN"
+    environment:
+      - "EGRESS_CONFIG_FILE=/etc/egress.yaml"
+    volumes:
+      - ./compose-config/egress.yaml:/etc/egress.yaml
+    depends_on:
+      - livekit
+      - redis
+      - minio
   redis:
     image: redis:latest
+    restart: unless-stopped
+    ports:
+      - "6679:6379"
+    volumes:
+      - redis:/data
   postgres:
     image: "postgres:15"
+    restart: unless-stopped
     ports:
       - "25333:5432"
+    volumes:
+      - "postgres:/var/lib/postgresql/data"
     environment:
       - "POSTGRES_DB=nests"
       - "POSTGRES_HOST_AUTH_METHOD=trust"
+  minio:
+    image: quay.io/minio/minio
+    restart: unless-stopped
+    command:
+      - "server"
+      - "/data"
+      - "--console-address"
+      - ":9011"
+      - "--address"
+      - ":9010"
+    environment:
+      - "MINIO_SERVER_URL=http://minio:9010"
+      - "MINIO_ROOT_USER=admin"
+      - "MINIO_ROOT_PASSWORD=adminadmin"
+    ports:
+      - "9010:9010"
+      - "9011:9011"
+    volumes:
+      - "minio:/data"
+  strfry:
+    image: dockurr/strfry
+    restart: unless-stopped
+    ports:
+      - "7777:7777"
+    volumes:
+      - strfry:/app/strfry-db
+      - ./compose-config/strfry.conf:/etc/strfry.conf

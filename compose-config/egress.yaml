@@ -1,0 +1,25 @@
+# required fields
+log_level: debug
+api_key: APIA2zJFaMRctfZ
+api_secret: jWXlEyKmu5eazIGViKFfO0TgT6el8EyjvMR0Tei3HFrB
+ws_url: ws://livekit:7880
+redis:
+  address: redis:6379
+  username: ""
+  password: ""
+  db: 0
+
+# optional fields
+#health_port: if used, will open an http port for health checks
+#template_port: port used to host default templates (default 7980)
+#prometheus_port: port used to collect prometheus metrics. Used for autoscaling
+#log_level: debug, info, warn, or error (default info)
+#template_base: can be used to host custom templates (default http://localhost:<template_port>/)
+#enable_chrome_sandbox: if true, egress will run Chrome with sandboxing enabled. This requires a specific Docker setup, see below.
+insecure: true
+
+s3:
+  access_key: APIA2zJFaMRctfZ
+  secret: jWXlEyKmu5eazIGViKFfO0TgT6el8EyjvMR0Tei3HFrB
+  endpoint: http://minio:9010
+  bucket: nests
