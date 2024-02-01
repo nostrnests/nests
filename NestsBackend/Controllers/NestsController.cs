@@ -135,7 +135,7 @@ public class NestsController : Controller
                 Pubkey = pubkey,
                 RoomId = room.Id,
                 IsAdmin = false,
-                IsSpeaker = false
+                IsSpeaker = true
             };
 
             _db.Participants.Add(participant);
