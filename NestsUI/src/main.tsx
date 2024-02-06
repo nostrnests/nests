@@ -11,12 +11,14 @@ import Room from './room'
 import { setLogLevel } from 'livekit-client'
 import { DefaultRelays } from './const'
 import RoomList from './room-list'
-import { Login, loadSession } from './login';
+import NewRoom from './new-room';
+import { loadSession } from './login';
 
 const routes = [
   {
     element: <Layout />,
     loader: async () => {
+      loadSession();
       return null;
     },
     children: [
@@ -27,9 +29,13 @@ const routes = [
         </>
       },
       {
-        path: "/room/:id",
+        path: "/new",
+        element: <NewRoom />
+      },
+      {
+        path: "/:id",
         element: <Room />
-      }
+      },
     ]
   }
 
@@ -44,9 +50,7 @@ setLogLevel("debug");
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <SnortContext.Provider value={snortSystem} >
-      <Login.Provider value={loadSession() || {}}>
-        <RouterProvider router={router} />
-      </Login.Provider>
+      <RouterProvider router={router} />
     </SnortContext.Provider>
   </React.StrictMode>,
 )

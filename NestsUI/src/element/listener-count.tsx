@@ -7,7 +7,7 @@ export default function ListenerCount({ n }: { n: number }) {
     return <div className="px-2 py-1 flex gap-1 items-center bg-white rounded-full text-black">
         <Icon name="people" />
         <span>
-            {room?.numParticipants ?? n} Listening
+            {room?.numParticipants ?? n}
         </span>
     </div>
 }

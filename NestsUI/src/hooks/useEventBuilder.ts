@@ -1,10 +1,10 @@
-import { Nip7Signer } from "@snort/system";
 import { SnortContext } from "@snort/system-react";
 import { useContext } from "react";
+import { useLogin } from "../login";
 
 export default function useEventBuilder() {
   const system = useContext(SnortContext);
-  const signer = new Nip7Signer();
+  const login = useLogin();
 
-  return { system, signer };
+  return { system, signer: login.signer };
 }

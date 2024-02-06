@@ -1,11 +1,18 @@
-import { useContext, useState } from "react";
-import Button from "./element/button";
-import { useNavigate } from "react-router-dom";
+import { useCallback, useContext, useMemo, useState } from "react";
+import Button, { PrimaryButton } from "./element/button";
+import { Link, useNavigate } from "react-router-dom";
 import { NestsApi } from "./api";
-import { ApiUrl, DefaultRelays } from "./const";
-import { EventBuilder, EventKind, Nip7Signer, NostrLink } from "@snort/system";
+import { ApiUrl, ColorPalette, DefaultRelays } from "./const";
+import { EventBuilder, EventKind, NostrLink } from "@snort/system";
 import { unixNow } from "@snort/shared";
 import { SnortContext } from "@snort/system-react";
+import RoomCard from "./element/room-card";
+import { useLogin } from "./login";
+import Login from "./element/login";
+import { openFile } from "./upload";
+import nostrBuildUpload from "./upload/nostrbuild";
+import Spinner from "./element/spinner";
+
 
 /*
 {
@@ -35,32 +42,54 @@ import { SnortContext } from "@snort/system-react";
 }
 */
 
+type ColorType = typeof ColorPalette[number];
 export default function NewRoom() {
     const system = useContext(SnortContext);
+    const [bgType, setBgType] = useState<"color" | "image">("color");
     const [name, setName] = useState("");
+    const [desc, setDesc] = useState("");
+    const [time, setTime] = useState<string>();
+    const [image, setImage] = useState<string>();
+    const [imageProcessing, setImageProcessing] = useState(false);
+    const [color, setColor] = useState<ColorType>(ColorPalette[0]);
     const navigate = useNavigate();
-    const signer = new Nip7Signer();
-    const api = new NestsApi(ApiUrl, signer);
+    const login = useLogin();
 
-    async function createRoom() {
-        const room = await api.createRoom();
-
+    const buildEvent = useCallback((id: string) => {
         const eb = new EventBuilder();
-        eb.kind(30_312 as EventKind)
-            .tag(["d", room.roomId])
+        eb
+            .pubKey(login.pubkey ?? "00")
+            .kind(30_312 as EventKind)
+            .tag(["d", id])
             .tag(["service", ApiUrl])
             .tag(["title", name])
-            .tag(["status", "live"])
-            .tag(["starts", String(unixNow())])
+            .tag(["summary", desc])
+            .tag(["color", color])
+            .tag(["image", image ?? ""])
+            .tag(["status", time ? "planned" : "live"])
+            .tag(["starts", time ? String(Math.floor(new Date(time).getTime() / 1000)) : String(unixNow())])
             .tag(["relays", ...DefaultRelays]);
 
+        return eb;
+    }, [login.pubkey, name, desc, color, time, image])
+
+    const dmeoRoom = useMemo(() => {
+        return buildEvent("demo").build();
+    }, [buildEvent]);
+
+    async function createRoom() {
+        if (!login.signer) return;
+        const api = new NestsApi(ApiUrl, login.signer);
+        const room = await api.createRoom();
+
+        const eb = buildEvent(room.roomId);
         room.endpoints.forEach(e => eb.tag(["streaming", e]));
 
-        const ev = await eb.buildAndSign(signer);
-        await system.BroadcastEvent(ev);        
+        const ev = await eb.buildAndSign(login.signer);
+        await system.BroadcastEvent(ev);
 
         const link = NostrLink.fromEvent(ev);
-        navigate(`/room/${link.encode()}`, {
+        navigate(`/${link.encode()}`, {
             state: {
                 event: ev,
                 token: room.token
@@ -68,13 +97,81 @@ export default function NewRoom() {
         });
     }
 
-    return <div className="w-64 p-2 flex flex-col gap-4 items-center">
-        <div className="text-3xl">
-            Create Room
+    if (login.type === "none") {
+        return <div className="flex flex-col items-center justify-center w-screen h-screen">
+            <Login />
+        </div>;
+    }
+
+    return <div className="w-[35rem] mx-auto flex flex-col gap-4 mt-10">
+        <h1 className="text-center">
+            New Room
+        </h1>
+        <div>
+            <div className="font-medium mb-2">
+                Room name
+            </div>
+            <input type="text" placeholder="Insert cool name here" value={name} onChange={e => setName(e.target.value)} className="w-full" />
         </div>
-        <input type="text" placeholder="Name" value={name} onChange={e => setName(e.target.value)} />
-        <Button onClick={async () => await createRoom()}>
-            Join
-        </Button>
+        <div>
+            <div className="font-medium mb-2">
+                Scheduled Time (optional)
+            </div>
+            <input type="datetime-local" placeholder="Time" value={time} onChange={e => setTime(e.target.value)} className="w-full" />
+        </div>
+        <div>
+            <div className="font-medium mb-2">
+                Room Description (Optional 140 chars)
+            </div>
+            <input type="text" placeholder="Discussing macro and other boring stuff" value={desc} onChange={e => setDesc(e.target.value)} className="w-full" />
+        </div>
+        <div>
+            <div className="font-medium mb-2">
+                Banner Color or Image
+            </div>
+            <div className="flex gap-1 mb-2">
+                <div className={`${bgType === "color" ? "bg-primary " : ""}rounded-full px-3 py-1 cursor-pointer`} onClick={() => {
+                    setBgType("color");
+                    setImage(undefined);
+                }}>
+                    Color
+                </div>
+                <div className={`${bgType === "image" ? "bg-primary " : ""}rounded-full px-3 py-1 cursor-pointer`} onClick={() => setBgType("image")}>
+                    Image
+                </div>
+            </div>
+            {bgType === "color" && <div className="flex gap-4 flex-wrap">
+                {ColorPalette.map(a => <div className={`w-8 h-8 rounded-full cursor-pointer${a === color ? " outline outline-2" : ""} bg-${a}`} key={a} onClick={() => setColor(a as ColorType)}></div>)}
+            </div>}
+            {bgType === "image" && <div className="outline outline-1 outline-dashed cursor-pointer rounded-xl text-primary flex justify-center overflow-hidden" onClick={async () => {
+                setImageProcessing(true);
+                try {
+                    const f = await openFile();
+                    if (f) {
+                        const res = await nostrBuildUpload(f, login.signer);
+                        if (res.url) {
+                            setImage(res.url);
+                        }
+                    }
+                } finally {
+                    setImageProcessing(false);
+                }
+            }}>
+                {image && !imageProcessing && <img src={image} />}
+                {!image && !imageProcessing && <span className="leading-10">Select image</span>}
+                {imageProcessing && <Spinner size={30} />}
+            </div>}
+        </div>
+        <RoomCard event={dmeoRoom} />
+        <div className="flex gap-2 justify-center">
+            <Link to="/">
+                <Button className="rounded-full bg-foreground-2">
+                    Cancel
+                </Button>
+            </Link>
+            <PrimaryButton onClick={async () => await createRoom()}>
+                Create
+            </PrimaryButton>
+        </div>
     </div>
 }

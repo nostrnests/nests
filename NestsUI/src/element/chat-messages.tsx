@@ -18,7 +18,7 @@ export default function ChatMessages({ link }: { link: NostrLink }) {
 
     const messages = useRequestBuilder(sub);
 
-    return <div className="h-full w-full flex flex-col-reverse gap-3 px-5">
+    return <div className="flex flex-col-reverse gap-3 px-5">
         {messages.map(a => <ChatMessage event={a} key={a.id} />)}
     </div>
 }

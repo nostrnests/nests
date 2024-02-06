@@ -1,0 +1,39 @@
+.modal {
+  width: 100vw;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background-color: #00000099;
+  display: flex;
+  justify-content: center;
+  z-index: 42;
+  overflow-y: auto;
+}
+
+.modal-body {
+  background-color: var(--foreground);
+  padding: 36px 33px;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  margin-top: auto;
+  margin-bottom: auto;
+  max-width: 100%;
+}
+
+@media (min-width: 600px) {
+  .modal-body {
+    padding: 24px;
+    width: 500px;
+  }
+}
+@media (max-width: 600px) {
+  .modal-body {
+    min-width: 100%;
+  }
+}
+
+.modal-body input {
+  background-color: var(--foreground-2);
+}

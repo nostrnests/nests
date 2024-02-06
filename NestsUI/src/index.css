@@ -6,7 +6,9 @@
   --background: #1b1f29;
   --foreground: #272c39;
   --foreground-2: #3e4556;
+  --foreground-2-hover: #606981;
   --highlight: #805ce9;
+  --delete: #FF4A4E;
 
   --primary-1: #8f69ff;
   --primary-2: #5d6dff;
@@ -31,6 +33,21 @@
   --gradient-11: linear-gradient(90deg, #f78ca0 0%, #f9748f 19%, #fd868c 60%);
 }
 
+h1 {
+  @apply text-3xl font-semibold;
+}
+h2 {
+  @apply text-2xl font-semibold;
+}
+h3 {
+  @apply text-xl font-semibold;
+}
+h4 {
+  @apply text-lg font-semibold;
+}
+hr {
+  border-color: var(--foreground-2);
+}
 body {
   font-family: "Inter", sans-serif;
   background-color: var(--background);
@@ -54,4 +71,13 @@ input {
 
 :focus-visible {
   outline: unset;
+}
+
+input {
+  border-radius: 12px;
+  background-color: var(--foreground);
+  padding: 12px 16px;
+  line-height: 22px;
+  font-weight: 400;
+  color: #fff;
 }

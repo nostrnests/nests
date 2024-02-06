@@ -1,14 +1,10 @@
-import { EventBuilder, EventKind, NostrLink, RequestBuilder } from "@snort/system";
+import { EventKind, RequestBuilder } from "@snort/system";
 import { useRequestBuilder } from "@snort/system-react";
 import { useMemo } from "react";
 import RoomCard from "./element/room-card";
-import Button from "./element/button";
+import { PrimaryButton } from "./element/button";
 import Logo from "./element/logo";
-import { unixNow } from "@snort/shared";
-import { ApiUrl, DefaultRelays } from "./const";
-import { useNestsApi } from "./hooks/useNestsApi";
-import useEventBuilder from "./hooks/useEventBuilder";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 export default function RoomList() {
     const sub = useMemo(() => {
@@ -19,44 +15,25 @@ export default function RoomList() {
         return rb;
     }, []);
 
-    const navigate = useNavigate();
     const events = useRequestBuilder(sub);
-    const api = useNestsApi();
-    const { system, signer } = useEventBuilder();
 
-    async function createRoom() {
-        const room = await api.createRoom();
-
-        const builder = new EventBuilder();
-        builder.kind(30_312 as EventKind)
-            .tag(["d", room.roomId])
-            .tag(["service", ApiUrl])
-            .tag(["title", window.prompt("Enter room name") ?? "test"])
-            .tag(["status", "live"])
-            .tag(["starts", String(unixNow())])
-            .tag(["relays", ...DefaultRelays]);
-
-        room.endpoints.forEach(e => builder.tag(["streaming", e]));
-
-        const ev = await builder.buildAndSign(signer);
-        await system.BroadcastEvent(ev);
-
-        const link = NostrLink.fromEvent(ev);
-        navigate(`/room/${link.encode()}`, {
-            state: {
-                event: ev,
-                token: room.token
-            }
-        });
-    }
-
+    const liveRooms = events.filter(a => {
+        const status = a.tags.find(a => a[0] === "status")?.[1];
+        return status === "live";
+    });
+    const plannedRooms = events.filter(a => {
+        const status = a.tags.find(a => a[0] === "status")?.[1];
+        return status === "planned";
+    });
     return <>
         <div className="flex justify-between px-10 pt-8 pb-1 items-center">
             <Logo />
             <div>
-                <Button onClick={createRoom}>
-                    New Room
-                </Button>
+                <Link to="/new">
+                    <PrimaryButton>
+                        New Room
+                    </PrimaryButton>
+                </Link>
             </div>
         </div>
         <div className="mx-auto w-[35rem] flex flex-col gap-8">
@@ -64,7 +41,29 @@ export default function RoomList() {
                 Active Rooms
             </h1>
             <div className="flex flex-col gap-6">
-                {events.map(a => <RoomCard event={a} key={a.id} join={true} />)}
+                {liveRooms.map(a => <RoomCard event={a} key={a.id} join={true} />)}
+                {liveRooms.length === 0 && <div className="px-6 py-4 rounded-3xl flex flex-col gap-3 bg-foreground flex flex-col gap-2">
+                    There are no active rooms yet.
+                    <Link to="/new">
+                        <PrimaryButton>
+                            Start a new room
+                        </PrimaryButton>
+                    </Link>
+                </div>}
+            </div>
+            <h1 className="text-3xl font-semibold">
+                Scheduled
+            </h1>
+            <div className="flex flex-col gap-6">
+                {plannedRooms.map(a => <RoomCard event={a} key={a.id} join={true} />)}
+                {plannedRooms.length === 0 && <div className="px-6 py-4 rounded-3xl flex flex-col gap-3 bg-foreground flex flex-col gap-2">
+                    There are no scheduled rooms right now.
+                    <Link to="/new">
+                        <PrimaryButton>
+                            Schedule a room
+                        </PrimaryButton>
+                    </Link>
+                </div>}
             </div>
         </div>
     </>

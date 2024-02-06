@@ -17,10 +17,13 @@
     "@snort/system": "^1.2.1",
     "@snort/system-react": "^1.2.1",
     "classnames": "^2.5.1",
+    "dayjs": "^1.11.10",
     "livekit-client": "^1.15.10",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^6.21.3"
+    "react-router-dom": "^6.21.3",
+    "tslib": "^2.6.2",
+    "yarn": "^1.22.21"
   },
   "devDependencies": {
     "@types/react": "^18.2.48",

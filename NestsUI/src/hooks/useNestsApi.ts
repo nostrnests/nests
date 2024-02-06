@@ -1,7 +1,9 @@
-import { Nip7Signer } from "@snort/system";
 import { NestsApi } from "../api";
 import { ApiUrl } from "../const";
+import { useLogin } from "../login";
 
 export function useNestsApi() {
-  return new NestsApi(ApiUrl, new Nip7Signer());
+  const { signer } = useLogin();
+  if (!signer) return;
+  return new NestsApi(ApiUrl, signer);
 }
