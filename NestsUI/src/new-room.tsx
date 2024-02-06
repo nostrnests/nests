@@ -1,6 +1,6 @@
 import { useCallback, useContext, useMemo, useState } from "react";
 import Button, { PrimaryButton } from "./element/button";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { NestsApi } from "./api";
 import { ApiUrl, ColorPalette, DefaultRelays } from "./const";
 import { EventBuilder, EventKind, NostrLink } from "@snort/system";
@@ -8,7 +8,6 @@ import { unixNow } from "@snort/shared";
 import { SnortContext } from "@snort/system-react";
 import RoomCard from "./element/room-card";
 import { useLogin } from "./login";
-import Login from "./element/login";
 import { openFile } from "./upload";
 import nostrBuildUpload from "./upload/nostrbuild";
 import Spinner from "./element/spinner";
@@ -97,11 +96,8 @@ export default function NewRoom() {
         });
     }
 
-    if (login.type === "none") {
-        return <div className="flex flex-col items-center justify-center w-screen h-screen">
-            <Login />
-        </div>;
-    }
+    if (login.type === "none")
+        return <Navigate to={"/login"} />
 
     return <div className="w-[35rem] mx-auto flex flex-col gap-4 mt-10">
         <h1 className="text-center">

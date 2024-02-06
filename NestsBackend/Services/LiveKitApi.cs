@@ -20,24 +20,32 @@ public class LiveKitApi
         _jwt = jwt;
 
         _client.BaseAddress = _config.LiveKitApi;
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _jwt.CreateToken("backend",
-            new LiveKitJwt.Permissions()
-            {
-                RoomCreate = true,
-                IngressAdmin = true,
-                RoomList = true,
-                RoomAdmin = true,
-                Hidden = true,
-                RoomRecord = true
-            }, (int)TimeSpan.FromDays(365).TotalMinutes));
     }
 
     public async Task<Room> CreateRoom(CreateRoomRequest req)
     {
-        return await TwirpRpc<CreateRoomRequest, Room>("livekit.RoomService", "CreateRoom", req);
+        var token = _jwt.CreateToken("backend",
+            new LiveKitJwt.Permissions
+            {
+                RoomCreate = true,
+            });
+
+        return await TwirpRpc<CreateRoomRequest, Room>(token, "livekit.RoomService", "CreateRoom", req);
     }
 
-    private async Task<R> TwirpRpc<T, R>(string service, string method, T req) where T : IMessage where R : IMessage, new()
+    public async Task<Room> UpdateParticipant(UpdateParticipantRequest req)
+    {
+        var token = _jwt.CreateToken("backend",
+            new LiveKitJwt.Permissions
+            {
+                Room = req.Room,
+                RoomAdmin = true,
+            });
+
+        return await TwirpRpc<UpdateParticipantRequest, Room>(token, "livekit.RoomService", "UpdateParticipant", req);
+    }
+
+    private async Task<R> TwirpRpc<T, R>(string token, string service, string method, T req) where T : IMessage where R : IMessage, new()
     {
         var twirpReq = new HttpRequestMessage(HttpMethod.Post, $"/twirp/{service}/{method}");
         using var stream = new MemoryStream();
@@ -48,6 +56,8 @@ public class LiveKitApi
         {
             Headers = {ContentType = new MediaTypeHeaderValue("application/protobuf")}
         };
+
+        twirpReq.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
 
         var rsp = await _client.SendAsync(twirpReq);

@@ -108,7 +108,43 @@ public class NestsController : Controller
         });
     }
 
-    [HttpGet("join/{id:guid}")]
+    /// <summary>
+    /// Join room as guest (no nostr key)
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    [HttpGet("{id:guid}/guest")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GuestJoinRoom([FromRoute] Guid id)
+    {
+        var room = await _db.Rooms
+            .AsNoTracking()
+            .FirstOrDefaultAsync(a => a.Id == id);
+
+        if (room == default)
+        {
+            return NotFound();
+        }
+
+        var guid = $"guest-{Guid.NewGuid()}";
+        var token = _liveKitJwt.CreateToken(guid, new LiveKitJwt.Permissions()
+        {
+            Room = room.Id.ToString(),
+            Hidden = true,
+            RoomJoin = true,
+            CanSubscribe = true,
+            CanPublish = false
+        });
+
+        return Json(new {token});
+    }
+
+    /// <summary>
+    /// Join room as nostr user
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    [HttpGet("{id:guid}")]
     [Authorize(AuthenticationSchemes = NostrAuth.Scheme)]
     public async Task<IActionResult> JoinRoom([FromRoute] Guid id)
     {
@@ -135,7 +171,7 @@ public class NestsController : Controller
                 Pubkey = pubkey,
                 RoomId = room.Id,
                 IsAdmin = false,
-                IsSpeaker = true
+                IsSpeaker = false
             };
 
             _db.Participants.Add(participant);
@@ -153,5 +189,65 @@ public class NestsController : Controller
         });
 
         return Json(new {token});
+    }
+
+    /// <summary>
+    /// Edit a users permissions
+    /// </summary>
+    /// <param name="id"></param>
+    /// <param name="req"></param>
+    /// <returns></returns>
+    [HttpPost("{id:guid}/permissions")]
+    [Authorize(AuthenticationSchemes = NostrAuth.Scheme)]
+    public async Task<IActionResult> ChangePermissions([FromRoute] Guid id, [FromBody] ChangePermissionsRequest req)
+    {
+        var pubkey = HttpContext.GetPubKey();
+        if (string.IsNullOrEmpty(pubkey)) return Unauthorized();
+
+        var room = await _db.Rooms
+            .AsNoTracking()
+            .FirstOrDefaultAsync(a => a.Id == id);
+
+        if (room == default)
+        {
+            return NotFound();
+        }
+
+        var participant = await _db.Participants
+            .FirstOrDefaultAsync(a => a.RoomId == room.Id && a.Pubkey == req.Participant);
+
+        if (participant == default)
+        {
+            return BadRequest();
+        }
+
+        var callerParticipant = await _db.Participants
+            .AsNoTracking()
+            .FirstOrDefaultAsync(a => a.RoomId == room.Id && a.Pubkey == pubkey);
+
+        if (callerParticipant == default)
+        {
+            return BadRequest();
+        }
+
+        if (!callerParticipant.IsAdmin)
+        {
+            return Unauthorized();
+        }
+
+        participant.IsSpeaker = req.CanPublish;
+        await _db.SaveChangesAsync();
+
+        await _liveKit.UpdateParticipant(new()
+        {
+            Room = room.Id.ToString(),
+            Identity = participant.Pubkey,
+            Permission = new()
+            {
+                CanPublish = req.CanPublish
+            }
+        });
+
+        return Accepted();
     }
 }

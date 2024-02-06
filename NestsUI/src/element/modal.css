@@ -14,7 +14,7 @@
 .modal-body {
   background-color: var(--foreground);
   padding: 36px 33px;
-  border-radius: 16px;
+  border-radius: 24px;
   display: flex;
   flex-direction: column;
   margin-top: auto;
@@ -25,7 +25,7 @@
 @media (min-width: 600px) {
   .modal-body {
     padding: 24px;
-    width: 500px;
+    width: 460px;
   }
 }
 @media (max-width: 600px) {
@@ -36,4 +36,8 @@
 
 .modal-body input {
   background-color: var(--foreground-2);
+}
+
+.modal-body p {
+  color: #cbd5e1;
 }

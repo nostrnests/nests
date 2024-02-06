@@ -6,7 +6,7 @@ rtc:
     use_external_ip: false
     enable_loopback_candidate: false
 redis:
-    address: localhost:6679
+    address: redis:6379
     username: ""
     password: ""
     db: 0

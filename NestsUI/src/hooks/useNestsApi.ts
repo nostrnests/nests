@@ -4,6 +4,5 @@ import { useLogin } from "../login";
 
 export function useNestsApi() {
   const { signer } = useLogin();
-  if (!signer) return;
   return new NestsApi(ApiUrl, signer);
 }

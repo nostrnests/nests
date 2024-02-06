@@ -13,9 +13,8 @@ services:
     depends_on: 
       - redis
       - minio
-    network_mode: host
-    cap_add:
-      - ALL
+    ports:
+      - "7880:7880"
   livekit-egress:
     image: livekit/egress:latest
     restart: unless-stopped

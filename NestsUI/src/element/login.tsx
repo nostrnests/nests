@@ -12,7 +12,7 @@ export default function Login() {
         }}>
             Sign in with extension
         </PrimaryButton>
-        <Link to={""} className="text-highlight">
+        <Link to="/sign-up" className="text-highlight">
             Create a nostr account
         </Link>
     </div>

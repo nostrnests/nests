@@ -5,12 +5,13 @@ import useEventBuilder from "../hooks/useEventBuilder";
 import IconButton from "./icon-button";
 import { useLocalParticipant, useRoomContext } from "@livekit/components-react";
 import { useNavigate } from "react-router-dom";
-import { useHand } from "../login";
+import { useHand, useLogin } from "../login";
 
 export default function WriteMessage({ link }: { link: NostrLink }) {
     const room = useRoomContext();
     const localParticipant = useLocalParticipant();
     const [msg, setMsg] = useState("");
+    const login = useLogin();
     const { system, signer } = useEventBuilder();
     const navigate = useNavigate();
     const hand = useHand(link);
@@ -31,6 +32,9 @@ export default function WriteMessage({ link }: { link: NostrLink }) {
         room.localParticipant.setMicrophoneEnabled(!room.localParticipant.isMicrophoneEnabled);
     }
 
+    if (login.type === "none") return <div>
+        Please login to chat
+    </div>;
     return <>
         <div className="flex justify-evenly py-3">
             <IconButton className="rounded-full aspect-square bg-foreground-2" name="exit" size={25} onClick={() => navigate("/")} />

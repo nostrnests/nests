@@ -1,21 +1,26 @@
 import { LiveKitRoom, RoomAudioRenderer } from "@livekit/components-react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import NostrParticipants from "./element/participants";
 import { NostrEvent, NostrLink, parseNostrLink } from "@snort/system";
 import { useNestsApi } from "./hooks/useNestsApi";
 import Logo from "./element/logo";
 import RoomCard from "./element/room-card";
 import { useEventFeed } from "@snort/system-react";
-import { PrimaryButton } from "./element/button";
+import Button, { PrimaryButton } from "./element/button";
 import Icon from "./icon";
 import ChatMessages from "./element/chat-messages";
 import WriteMessage from "./element/write-message";
 import RoomPresence from "./element/presence";
 import useRoomPresence, { RoomPresenceContext } from "./hooks/useRoomPresence";
+import { useLogin } from "./login";
+import Modal from "./element/modal";
+import { useState } from "react";
 
 export default function Room() {
   const navigate = useNavigate();
   const location = useLocation();
+  const login = useLogin();
+  const [confirmGuest, setConfirmGuest] = useState(false);
   const room = location.state as {
     event: NostrEvent,
     token: string
@@ -54,6 +59,19 @@ export default function Room() {
           </div>
         </div>
       </RoomPresenceContext.Provider>
+      {login.type === "none" && !confirmGuest && <Modal id="join-as-guest">
+        <div className="flex flex-col gap-4 items-center">
+          <h2>
+            Join Room
+          </h2>
+          <Button className="rounded-full bg-foreground-2 w-full" onClick={() => setConfirmGuest(true)}>
+            Continue as Guest
+          </Button>
+          <Link to="/sign-up" className="text-highlight">
+            Create a nostr account
+          </Link>
+        </div>
+      </Modal>}
     </LiveKitRoom>
   </div>;
 }

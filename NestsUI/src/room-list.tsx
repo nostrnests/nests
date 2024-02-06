@@ -3,7 +3,6 @@ import { useRequestBuilder } from "@snort/system-react";
 import { useMemo } from "react";
 import RoomCard from "./element/room-card";
 import { PrimaryButton } from "./element/button";
-import Logo from "./element/logo";
 import { Link } from "react-router-dom";
 
 export default function RoomList() {
@@ -26,16 +25,6 @@ export default function RoomList() {
         return status === "planned";
     });
     return <>
-        <div className="flex justify-between px-10 pt-8 pb-1 items-center">
-            <Logo />
-            <div>
-                <Link to="/new">
-                    <PrimaryButton>
-                        New Room
-                    </PrimaryButton>
-                </Link>
-            </div>
-        </div>
         <div className="mx-auto w-[35rem] flex flex-col gap-8">
             <h1 className="text-3xl font-semibold">
                 Active Rooms

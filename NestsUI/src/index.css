@@ -8,7 +8,7 @@
   --foreground-2: #3e4556;
   --foreground-2-hover: #606981;
   --highlight: #805ce9;
-  --delete: #FF4A4E;
+  --delete: #ff4a4e;
 
   --primary-1: #8f69ff;
   --primary-2: #5d6dff;
@@ -47,6 +47,9 @@ h4 {
 }
 hr {
   border-color: var(--foreground-2);
+}
+a {
+  font-weight: 500;
 }
 body {
   font-family: "Inter", sans-serif;
