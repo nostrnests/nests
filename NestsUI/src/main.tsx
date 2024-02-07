@@ -69,6 +69,10 @@ const routes = [
   },
   {
     path: "/:id",
+    loader: async () => {
+      loadSession();
+      return null;
+    },
     element: <NostrRoute />,
   },
 ] as Array<RouteObject>;
