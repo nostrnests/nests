@@ -11,6 +11,7 @@ export default function IconButton({ name: iconName, size: iconSize, className, 
   return (
     <Button {...props} className={classNames("bg-foreground-2 hover:bg-foreground-2-hover", className)}>
       <Icon name={iconName} size={iconSize} />
+      {props.children}
     </Button>
   );
 }

@@ -84,3 +84,20 @@ input {
   font-weight: 400;
   color: #fff;
 }
+
+.react {
+  animation: react 5s forwards;
+}
+@keyframes react {
+  0% {
+    opacity: 0.1;
+    transform: scale(0.5);
+  }
+  10% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+  }
+}

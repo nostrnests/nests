@@ -1,6 +1,7 @@
 import { EventKind, NostrEvent, NostrLink, RequestBuilder } from "@snort/system";
 import { useRequestBuilder } from "@snort/system-react";
-import { createContext, useContext, useMemo } from "react";
+import { createContext, useContext, useEffect, useMemo } from "react";
+import usePresence from "./usePresence";
 
 export default function useRoomPresence(link?: NostrLink) {
   const subPresence = useMemo(() => {
@@ -13,6 +14,17 @@ export default function useRoomPresence(link?: NostrLink) {
 
     return rb;
   }, [link]);
+
+  const { sendPresence, interval } = usePresence(link);
+  useEffect(() => {
+    sendPresence();
+    const t = setInterval(async () => {
+      await sendPresence();
+    }, interval * 1000);
+    return () => clearInterval(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [link]);
+
   const presenceEvents = useRequestBuilder(subPresence);
   return presenceEvents.filter((a) => link?.referencesThis(a));
 }
@@ -21,6 +33,5 @@ export const RoomPresenceContext = createContext<Array<NostrEvent>>([]);
 
 export function useUserPresence(pk: string) {
   const ctx = useContext(RoomPresenceContext);
-
   return ctx.find((a) => a.pubkey === pk);
 }

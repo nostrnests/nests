@@ -2,21 +2,15 @@ import { unixNow } from "@snort/shared";
 import { EventBuilder, EventKind, NostrLink } from "@snort/system";
 import useEventBuilder from "./useEventBuilder";
 import { useLogin } from "../login";
-import { useEffect } from "react";
 
-export default function usePresence(link: NostrLink) {
+export default function usePresence(link?: NostrLink) {
   const { signer, system } = useEventBuilder();
   const login = useLogin();
   const interval = 60 * 2;
-  const hand = login.handMap.includes(link.id);
-
-  useEffect(() => {
-    sendPresence();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hand]);
+  const hand = login.handMap.includes(link?.id ?? "");
 
   async function sendPresence() {
-    if (!signer) return;
+    if (!signer || !link) return;
     const builder = new EventBuilder();
     builder
       .kind(10312 as EventKind)

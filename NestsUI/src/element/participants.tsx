@@ -3,12 +3,12 @@ import { useUserProfile } from "@snort/system-react";
 import { LocalParticipant, RemoteParticipant } from "livekit-client";
 import Icon from "../icon";
 import Avatar from "./avatar";
-import { hexToBech32 } from "@snort/shared";
+import { hexToBech32, unixNow } from "@snort/shared";
 import { useUserPresence } from "../hooks/useRoomPresence";
 import { NostrEvent } from "@snort/system";
-import { useCallback, useRef, useState } from "react";
-import { PrimaryButton } from "./button";
 import ProfileCard from "./profile-card";
+import useHoverMenu from "../hooks/useHoverMenu";
+import { useUserRoomReactions } from "../hooks/useRoomReactions";
 
 export default function NostrParticipants({ event }: { event: NostrEvent }) {
   const participants = useParticipants();
@@ -37,27 +37,23 @@ export default function NostrParticipants({ event }: { event: NostrEvent }) {
 function NostrParticipant({ p, event }: { p: RemoteParticipant | LocalParticipant; event: NostrEvent }) {
   const isGuest = p.identity.startsWith("guest-");
   const profile = useUserProfile(isGuest ? undefined : p.identity);
-  const presnce = useUserPresence(p.identity);
-  const [isHovering, setIsHovering] = useState(false);
+  const presence = useUserPresence(p.identity);
+  const reactions = useUserRoomReactions(p.identity);
+  const { handleMouseEnter, handleMouseLeave, isHovering } = useHoverMenu();
 
-  const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const handleMouseEnter = useCallback(() => {
-    hoverTimeoutRef.current && clearTimeout(hoverTimeoutRef.current);
-    hoverTimeoutRef.current = setTimeout(() => setIsHovering(true), 100); // Adjust timeout as needed
-  }, []);
-
-  const handleMouseLeave = useCallback(() => {
-    hoverTimeoutRef.current && clearTimeout(hoverTimeoutRef.current);
-    hoverTimeoutRef.current = setTimeout(() => setIsHovering(false), 300); // Adjust timeout as needed
-  }, []);
-
-  const isHandRaised = Boolean(presnce?.tags.find((a) => a[0] === "hand")?.[1]);
+  const isHandRaised = Boolean(presence?.tags.find((a) => a[0] === "hand")?.[1]);
   const isHost = event.pubkey === p.identity;
-
+  const reaction = reactions
+    ?.filter((a) => a.created_at > unixNow() - 10)
+    ?.sort((a, b) => (a.created_at > b.created_at ? -1 : 1))?.[0];
   return (
     <div className="flex items-center flex-col gap-2" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
       <div className="relative">
+        {reaction && (
+          <div key={reaction.id} className="absolute w-full h-full flex items-center justify-center text-3xl react">
+            {reaction.content}
+          </div>
+        )}
         {isHandRaised && (
           <div className="absolute w-full h-full">
             <div className="bg-foreground rounded-full inline-block w-10 h-10 -mt-4 -ml-4 flex items-center justify-center">
@@ -85,7 +81,6 @@ function NostrParticipant({ p, event }: { p: RemoteParticipant | LocalParticipan
           className={p.isSpeaking ? `outline outline-3${isHost ? " outline-primary" : ""}` : ""}
           link={false}
         />
-
         {isHovering && (
           <div className="absolute z-10 bg-foreground p-3 rounded-xl w-60 flex flex-col gap-2">
             <ProfileCard pubkey={p.identity} profile={profile} />

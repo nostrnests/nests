@@ -1,7 +1,8 @@
 /**
  * Nests API host base path
  */
-export const ApiUrl = "http://localhost:5070";
+//export const ApiUrl = "http://localhost:5070";
+export const ApiUrl = "https://nests.v0l.io";
 
 /**
  * Default relays to connect and publish to
