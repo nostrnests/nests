@@ -34,7 +34,8 @@
   }
 }
 
-.modal-body input, .modal-body textarea {
+.modal-body input,
+.modal-body textarea {
   background-color: var(--foreground-2);
 }
 

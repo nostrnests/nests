@@ -26,7 +26,7 @@ export default function ChatMessages({ link }: { link: NostrLink }) {
             return <ChatZap event={a} key={a.id} />;
           }
           default: {
-            return <ChatMessage event={a} key={a.id} />
+            return <ChatMessage event={a} key={a.id} />;
           }
         }
       })}
@@ -54,11 +54,13 @@ function ChatZap({ event }: { event: NostrEvent }) {
   const zap = parseZap(event);
   const senderProfile = useUserProfile(zap.sender);
   const targetProfile = useUserProfile(zap.receiver);
-  return <div className="border border-delete rounded-2xl px-3 py-4">
-    <DisplayName pubkey={zap.sender ?? event.pubkey} profile={senderProfile} />
-    <span> zapped </span>
-    <DisplayName pubkey={zap.receiver ?? event.pubkey} profile={targetProfile} />
-    <span> {zap.amount / 1000}K sats</span>
-    <div>{zap.content}</div>
-  </div>
+  return (
+    <div className="border border-delete rounded-2xl px-3 py-4">
+      <DisplayName pubkey={zap.sender ?? event.pubkey} profile={senderProfile} />
+      <span> zapped </span>
+      <DisplayName pubkey={zap.receiver ?? event.pubkey} profile={targetProfile} />
+      <span> {zap.amount / 1000}K sats</span>
+      <div>{zap.content}</div>
+    </div>
+  );
 }

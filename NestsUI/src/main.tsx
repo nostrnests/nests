@@ -85,9 +85,8 @@ const routes = [
 ] as Array<RouteObject>;
 const router = createBrowserRouter(routes);
 
-
 const snortSystem = new NostrSystem({
-  optimizer: hasWasm ? WasmOptimizer : undefined
+  optimizer: hasWasm ? WasmOptimizer : undefined,
 });
 DefaultRelays.forEach((r) => snortSystem.ConnectToRelay(r, { read: true, write: true }));
 

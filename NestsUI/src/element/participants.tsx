@@ -43,7 +43,7 @@ function NostrParticipant({ p, event }: { p: RemoteParticipant | LocalParticipan
   const presence = useUserPresence(p.identity);
   const reactions = useUserRoomReactions(p.identity);
   const permissions = useParticipantPermissions({
-    participant: p
+    participant: p,
   });
   if (permissions && p instanceof LocalParticipant) {
     if (permissions.canPublish && p.audioTracks.size === 0) {
@@ -61,62 +61,68 @@ function NostrParticipant({ p, event }: { p: RemoteParticipant | LocalParticipan
   const reaction = reactions
     ?.filter((a) => a.created_at > unixNow() - 10)
     ?.sort((a, b) => (a.created_at > b.created_at ? -1 : 1))?.[0];
-  return (<>
-    {zapping && <ZapFlow
-      onClose={() => setZapping(false)}
-      targets={[{
-        type: "pubkey",
-        weight: 1,
-        value: p.identity,
-        zap: {
-          pubkey: p.identity,
-          anon: false,
-          event: NostrLink.fromEvent(event)
-        }
-      }]} />}
-    <div className="flex items-center flex-col gap-2" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
-      <div className="relative">
-        {reaction && (
-          <div key={reaction.id} className="absolute w-full h-full flex items-center justify-center text-3xl react">
-            {reaction.content}
-          </div>
-        )}
-        {isHandRaised && (
-          <div className="absolute w-full h-full">
-            <div className="bg-foreground rounded-full inline-block w-10 h-10 -mt-4 -ml-4 flex items-center justify-center">
-              <Icon name="hand" size={25} />
-            </div>
-          </div>
-        )}
-        {(profile?.lud16 || profile?.lud06) && (
-          <div className="absolute w-full h-full rotate-[80deg]">
-            <div className="text-primary inline-block mt-[-8px] ml-[-8px]">
-              <Icon name="zap" className="rotate-[-80deg]" size={32} onClick={() => setZapping(true)} />
-            </div>
-          </div>
-        )}
-        {p.audioTracks.size > 0 && !p.isMicrophoneEnabled && (
-          <div className="absolute w-full h-full rotate-[135deg]">
-            <div className="bg-foreground rounded-full inline-block mt-[-4px] ml-[-4px] w-8 h-8 flex items-center justify-center">
-              <Icon name={p.isMicrophoneEnabled ? "mic" : "mic-off"} className="rotate-[-135deg]" size={20} />
-            </div>
-          </div>
-        )}
-        <Avatar
-          pubkey={p.identity}
-          size={72}
-          className={p.isSpeaking ? `outline outline-3${isHost ? " outline-primary" : ""}` : ""}
-          link={false}
+  return (
+    <>
+      {zapping && (
+        <ZapFlow
+          onClose={() => setZapping(false)}
+          targets={[
+            {
+              type: "pubkey",
+              weight: 1,
+              value: p.identity,
+              zap: {
+                pubkey: p.identity,
+                anon: false,
+                event: NostrLink.fromEvent(event),
+              },
+            },
+          ]}
         />
-        {isHovering && <ProfileCard participant={p} pubkey={p.identity} />}
+      )}
+      <div className="flex items-center flex-col gap-2" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+        <div className="relative">
+          {reaction && (
+            <div key={reaction.id} className="absolute w-full h-full flex items-center justify-center text-3xl react">
+              {reaction.content}
+            </div>
+          )}
+          {isHandRaised && (
+            <div className="absolute w-full h-full">
+              <div className="bg-foreground rounded-full inline-block w-10 h-10 -mt-4 -ml-4 flex items-center justify-center">
+                <Icon name="hand" size={25} />
+              </div>
+            </div>
+          )}
+          {(profile?.lud16 || profile?.lud06) && (
+            <div className="absolute w-full h-full rotate-[80deg]">
+              <div className="text-primary inline-block mt-[-8px] ml-[-8px]">
+                <Icon name="zap" className="rotate-[-80deg]" size={32} onClick={() => setZapping(true)} />
+              </div>
+            </div>
+          )}
+          {p.audioTracks.size > 0 && !p.isMicrophoneEnabled && (
+            <div className="absolute w-full h-full rotate-[135deg]">
+              <div className="bg-foreground rounded-full inline-block mt-[-4px] ml-[-4px] w-8 h-8 flex items-center justify-center">
+                <Icon name={p.isMicrophoneEnabled ? "mic" : "mic-off"} className="rotate-[-135deg]" size={20} />
+              </div>
+            </div>
+          )}
+          <Avatar
+            pubkey={p.identity}
+            size={72}
+            className={p.isSpeaking ? `outline outline-3${isHost ? " outline-primary" : ""}` : ""}
+            link={false}
+          />
+          {isHovering && <ProfileCard participant={p} pubkey={p.identity} />}
+        </div>
+        <div className={isHost ? "text-primary" : ""}>
+          {isGuest
+            ? "Guest (me)"
+            : profile?.display_name ?? profile?.name ?? hexToBech32("npub", p.identity).slice(0, 12)}
+        </div>
+        {isHost && <div className="text-primary">Host</div>}
       </div>
-      <div className={isHost ? "text-primary" : ""}>
-        {isGuest
-          ? "Guest (me)"
-          : profile?.display_name ?? profile?.name ?? hexToBech32("npub", p.identity).slice(0, 12)}
-      </div>
-      {isHost && <div className="text-primary">Host</div>}
-    </div>
-  </>
+    </>
   );
 }
