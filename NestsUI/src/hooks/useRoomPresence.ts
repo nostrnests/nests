@@ -18,7 +18,6 @@ export default function useRoomPresence(link: NostrLink | undefined, inRoom: boo
   const { sendPresence, interval } = usePresence(link);
   useEffect(() => {
     if (link?.id && inRoom) {
-      sendPresence();
       const t = setInterval(async () => {
         await sendPresence();
       }, interval * 1000);
