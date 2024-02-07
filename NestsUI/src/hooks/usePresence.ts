@@ -2,6 +2,7 @@ import { unixNow } from "@snort/shared";
 import { EventBuilder, EventKind, NostrLink } from "@snort/system";
 import useEventBuilder from "./useEventBuilder";
 import { useLogin } from "../login";
+import { useCallback } from "react";
 
 export default function usePresence(link?: NostrLink) {
   const { signer, system } = useEventBuilder();
@@ -9,7 +10,7 @@ export default function usePresence(link?: NostrLink) {
   const interval = 60 * 2;
   const hand = login.handMap.includes(link?.id ?? "");
 
-  async function sendPresence() {
+  const sendPresence = useCallback(async () => {
     if (!signer || !link) return;
     const builder = new EventBuilder();
     builder
@@ -22,7 +23,7 @@ export default function usePresence(link?: NostrLink) {
     }
     const ev = await builder.buildAndSign(signer);
     await system.BroadcastEvent(ev);
-  }
+  }, [signer, link, interval, hand, system]);
 
   return { sendPresence, interval, hand };
 }

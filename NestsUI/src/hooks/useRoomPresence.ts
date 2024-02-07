@@ -24,8 +24,7 @@ export default function useRoomPresence(link: NostrLink | undefined, inRoom: boo
       }, interval * 1000);
       return () => clearInterval(t);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [inRoom, link?.id]);
+  }, [sendPresence, inRoom, link?.id, interval]);
 
   const presenceEvents = useRequestBuilder(subPresence);
   return presenceEvents.filter((a) => link?.referencesThis(a));

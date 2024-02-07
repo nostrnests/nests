@@ -4,13 +4,14 @@ import Avatar from "./avatar";
 import { PrimaryButton } from "./button";
 import { useNestsApi } from "../hooks/useNestsApi";
 import { useEnsureRoom } from "@livekit/components-react";
+import { LocalParticipant, RemoteParticipant } from "livekit-client";
 
-export default function ProfileCard({ pubkey, profile }: { pubkey: string; profile?: CachedMetadata }) {
+export default function ProfileCard({ participant, pubkey, profile }: { participant: LocalParticipant | RemoteParticipant, pubkey: string; profile?: CachedMetadata }) {
   const api = useNestsApi();
   const room = useEnsureRoom();
 
   async function bringToStage() {
-    await api.updatePermissions(room.name, pubkey, true);
+    await api.updatePermissions(room.name, pubkey, !participant.isMicrophoneEnabled);
   }
 
   return (
@@ -24,7 +25,7 @@ export default function ProfileCard({ pubkey, profile }: { pubkey: string; profi
       </div>
       <p>{profile?.about}</p>
       <div>
-        <PrimaryButton onClick={bringToStage}>Bring to Stage</PrimaryButton>
+        <PrimaryButton onClick={bringToStage}>{participant.isMicrophoneEnabled ? "Remove from Stage" : "Bring to Stage"}</PrimaryButton>
       </div>
     </>
   );

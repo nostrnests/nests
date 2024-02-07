@@ -1,4 +1,4 @@
-import { useParticipants } from "@livekit/components-react";
+import { useParticipantPermissions, useParticipants } from "@livekit/components-react";
 import { useUserProfile } from "@snort/system-react";
 import { LocalParticipant, RemoteParticipant } from "livekit-client";
 import Icon from "../icon";
@@ -39,6 +39,18 @@ function NostrParticipant({ p, event }: { p: RemoteParticipant | LocalParticipan
   const profile = useUserProfile(isGuest ? undefined : p.identity);
   const presence = useUserPresence(p.identity);
   const reactions = useUserRoomReactions(p.identity);
+  const permissions = useParticipantPermissions({
+    participant: p
+  });
+  if (permissions && p instanceof LocalParticipant) {
+    if (permissions.canPublish && p.audioTracks.size === 0) {
+      console.debug("Sending mic track");
+      p.setMicrophoneEnabled(true);
+    } else if (!permissions.canPublish && p.audioTracks.size > 0) {
+      console.debug("Turning off mic");
+      p.setMicrophoneEnabled(false);
+    }
+  }
   const { handleMouseEnter, handleMouseLeave, isHovering } = useHoverMenu();
 
   const isHandRaised = Boolean(presence?.tags.find((a) => a[0] === "hand")?.[1]);
@@ -83,7 +95,7 @@ function NostrParticipant({ p, event }: { p: RemoteParticipant | LocalParticipan
         />
         {isHovering && (
           <div className="absolute z-10 bg-foreground p-3 rounded-xl w-60 flex flex-col gap-2">
-            <ProfileCard pubkey={p.identity} profile={profile} />
+            <ProfileCard participant={p} pubkey={p.identity} profile={profile} />
           </div>
         )}
       </div>
