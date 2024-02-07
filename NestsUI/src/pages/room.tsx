@@ -28,7 +28,7 @@ export default function Room() {
       }
     | undefined;
   const link = room ? NostrLink.fromEvent(room.event) : undefined;
-  const presence = useRoomPresence(link);
+  const presence = useRoomPresence(link, true);
   const reactions = useRoomReactions(link);
   if (!room?.token || !link) return <JoinRoom />;
 

@@ -41,7 +41,7 @@ export default function RoomCard({
   const login = useLogin();
 
   const eventLink = NostrLink.fromEvent(event);
-  const presence = useRoomPresence(eventLink);
+  const presence = useRoomPresence(eventLink, false);
 
   async function joinRoom() {
     if (!api) return;
