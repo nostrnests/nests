@@ -2,7 +2,10 @@ import { base64 } from "@scure/base";
 import { EventBuilder, EventKind, EventSigner } from "@snort/system";
 
 export class NestsApi {
-  constructor(readonly url: string, readonly signer?: EventSigner) {}
+  constructor(
+    readonly url: string,
+    readonly signer?: EventSigner,
+  ) {}
 
   async createRoom(): Promise<CreateRoomResponse> {
     return await this.#fetch<CreateRoomResponse>("GET", true, "/api/v1/nests");
@@ -10,17 +13,9 @@ export class NestsApi {
 
   async joinRoom(room: string) {
     if (this.signer) {
-      return await this.#fetch<JoinRoomResponse>(
-        "GET",
-        true,
-        `/api/v1/nests/${room}`
-      );
+      return await this.#fetch<JoinRoomResponse>("GET", true, `/api/v1/nests/${room}`);
     } else {
-      return await this.#fetch<JoinRoomResponse>(
-        "GET",
-        false,
-        `/api/v1/nests/${room}/guest`
-      );
+      return await this.#fetch<JoinRoomResponse>("GET", false, `/api/v1/nests/${room}/guest`);
     }
   }
 
@@ -39,16 +34,11 @@ export class NestsApi {
       JSON.stringify({
         participant: identity,
         can_publish: canPublish,
-      })
+      }),
     );
   }
 
-  async #fetch<R>(
-    method: "GET" | "PUT" | "POST",
-    auth: boolean,
-    path: string,
-    body?: BodyInit
-  ) {
+  async #fetch<R>(method: "GET" | "PUT" | "POST", auth: boolean, path: string, body?: BodyInit) {
     const url = `${this.url}${path}`;
     const headers: HeadersInit = {
       accept: "application/json",
@@ -64,9 +54,7 @@ export class NestsApi {
       builder.kind(EventKind.HttpAuthentication);
 
       const ev = JSON.stringify(await builder.buildAndSign(this.signer));
-      headers["authorization"] = `Nostr ${base64.encode(
-        new TextEncoder().encode(ev)
-      )}`;
+      headers["authorization"] = `Nostr ${base64.encode(new TextEncoder().encode(ev))}`;
     }
     const rsp = await fetch(url, {
       method: method,

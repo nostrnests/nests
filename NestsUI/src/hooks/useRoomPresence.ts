@@ -1,9 +1,4 @@
-import {
-  EventKind,
-  NostrEvent,
-  NostrLink,
-  RequestBuilder,
-} from "@snort/system";
+import { EventKind, NostrEvent, NostrLink, RequestBuilder } from "@snort/system";
 import { useRequestBuilder } from "@snort/system-react";
 import { createContext, useContext, useMemo } from "react";
 

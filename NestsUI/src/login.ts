@@ -48,9 +48,7 @@ class LoginStore extends ExternalStore<LoginSession> {
 
   toggleHand(link: NostrLink) {
     if (this.#session.handMap.includes(link.id)) {
-      this.#session.handMap = this.#session.handMap.filter(
-        (a) => a !== link.id
-      );
+      this.#session.handMap = this.#session.handMap.filter((a) => a !== link.id);
       this.notifyChange();
       return false;
     } else {
@@ -81,7 +79,7 @@ export function saveSession(s: LoginSession) {
 export function useLogin() {
   return useSyncExternalStore(
     (c) => LoginSystem.hook(c),
-    () => LoginSystem.snapshot()
+    () => LoginSystem.snapshot(),
   );
 }
 

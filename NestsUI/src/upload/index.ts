@@ -46,7 +46,7 @@ export async function openFile(): Promise<File | undefined> {
           }
         }, 300);
       },
-      { once: true }
+      { once: true },
     );
   });
 }

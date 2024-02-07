@@ -69,16 +69,18 @@ export default function Modal(props: ModalProps) {
     <div
       className={props.className === "hidden" ? props.className : `modal ${props.className || ""}`}
       onMouseDown={handleBackdropClick}
-      onClick={e => {
+      onClick={(e) => {
         e.stopPropagation();
-      }}>
+      }}
+    >
       <div
         className={props.bodyClassName || "modal-body"}
-        onMouseDown={e => e.stopPropagation()}
-        onClick={e => {
+        onMouseDown={(e) => e.stopPropagation()}
+        onClick={(e) => {
           e.stopPropagation();
           props.onClick?.(e);
-        }}>
+        }}
+      >
         {props.children}
       </div>
     </div>,

@@ -4,22 +4,14 @@ import { EventKind, EventPublisher, EventSigner } from "@snort/system";
 
 import { UploadResult } from ".";
 
-export default async function nostrBuildUpload(
-  file: File | Blob,
-  signer?: EventSigner
-): Promise<UploadResult> {
+export default async function nostrBuildUpload(file: File | Blob, signer?: EventSigner): Promise<UploadResult> {
   const auth = signer
     ? async (url: string, method: string) => {
         const publisher = new EventPublisher(signer, await signer.getPubKey());
         const auth = await publisher.generic((eb) => {
-          return eb
-            .kind(EventKind.HttpAuthentication)
-            .tag(["u", url])
-            .tag(["method", method]);
+          return eb.kind(EventKind.HttpAuthentication).tag(["u", url]).tag(["method", method]);
         });
-        return `Nostr ${base64.encode(
-          new TextEncoder().encode(JSON.stringify(auth))
-        )}`;
+        return `Nostr ${base64.encode(new TextEncoder().encode(JSON.stringify(auth)))}`;
       }
     : undefined;
 

@@ -14,7 +14,7 @@ export default function usePresence(link: NostrLink) {
     sendPresence();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hand]);
-  
+
   async function sendPresence() {
     if (!signer) return;
     const builder = new EventBuilder();
