@@ -16,11 +16,18 @@ import SignUp from "./element/sign-up";
 import Login from "./element/login";
 import NostrRoute from "./pages/nostr-route";
 
+import { WasmOptimizer, hasWasm, wasmInit } from "./wasm";
+
+async function routeInit() {
+  await loadSession();
+  await wasmInit();
+}
+
 const routes = [
   {
     element: <Layout />,
     loader: async () => {
-      loadSession();
+      await routeInit();
       return null;
     },
     children: [
@@ -57,7 +64,7 @@ const routes = [
   {
     element: <BackLayout />,
     loader: async () => {
-      loadSession();
+      await routeInit();
       return null;
     },
     children: [
@@ -70,7 +77,7 @@ const routes = [
   {
     path: "/:id",
     loader: async () => {
-      loadSession();
+      await routeInit();
       return null;
     },
     element: <NostrRoute />,
@@ -78,7 +85,10 @@ const routes = [
 ] as Array<RouteObject>;
 const router = createBrowserRouter(routes);
 
-const snortSystem = new NostrSystem({});
+
+const snortSystem = new NostrSystem({
+  optimizer: hasWasm ? WasmOptimizer : undefined
+});
 DefaultRelays.forEach((r) => snortSystem.ConnectToRelay(r, { read: true, write: true }));
 
 setLogLevel("debug");

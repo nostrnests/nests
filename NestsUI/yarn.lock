@@ -857,6 +857,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@snort/system-wasm@npm:^1.0.2":
+  version: 1.0.2
+  resolution: "@snort/system-wasm@npm:1.0.2"
+  checksum: 0cd754f8fceefc37d064423f46d57cb925faee9060b602eeef7d93cc92bc534d78e02b5b15531d96ee91dfa40d64c4cac82054597e9f59668fcf5c08fc871d5c
+  languageName: node
+  linkType: hard
+
 "@snort/system@npm:^1.2.1":
   version: 1.2.1
   resolution: "@snort/system@npm:1.2.1"
@@ -2818,6 +2825,7 @@ __metadata:
     "@snort/shared": "npm:^1.0.12"
     "@snort/system": "npm:^1.2.1"
     "@snort/system-react": "npm:^1.2.1"
+    "@snort/system-wasm": "npm:^1.0.2"
     "@szhsin/react-menu": "npm:^4.1.0"
     "@types/react": "npm:^18.2.48"
     "@types/react-dom": "npm:^18.2.17"
