@@ -2,7 +2,7 @@ import { unixNow } from "@snort/shared";
 import { EventBuilder, EventKind, NostrLink } from "@snort/system";
 import useEventBuilder from "./useEventBuilder";
 import { useLogin } from "../login";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 
 export default function usePresence(link?: NostrLink) {
   const { signer, system } = useEventBuilder();
@@ -24,6 +24,11 @@ export default function usePresence(link?: NostrLink) {
     const ev = await builder.buildAndSign(signer);
     await system.BroadcastEvent(ev);
   }, [signer, link, interval, hand, system]);
+
+  useEffect(() => {
+    sendPresence();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hand]);
 
   return { sendPresence, interval, hand };
 }

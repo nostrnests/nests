@@ -5,10 +5,12 @@ import Icon from "../icon";
 import Avatar from "./avatar";
 import { hexToBech32, unixNow } from "@snort/shared";
 import { useUserPresence } from "../hooks/useRoomPresence";
-import { NostrEvent } from "@snort/system";
+import { NostrEvent, NostrLink } from "@snort/system";
 import ProfileCard from "./profile-card";
 import useHoverMenu from "../hooks/useHoverMenu";
 import { useUserRoomReactions } from "../hooks/useRoomReactions";
+import { useState } from "react";
+import ZapFlow from "./zap-modal";
 
 export default function NostrParticipants({ event }: { event: NostrEvent }) {
   const participants = useParticipants();
@@ -37,6 +39,7 @@ export default function NostrParticipants({ event }: { event: NostrEvent }) {
 function NostrParticipant({ p, event }: { p: RemoteParticipant | LocalParticipant; event: NostrEvent }) {
   const isGuest = p.identity.startsWith("guest-");
   const profile = useUserProfile(isGuest ? undefined : p.identity);
+  const [zapping, setZapping] = useState(false);
   const presence = useUserPresence(p.identity);
   const reactions = useUserRoomReactions(p.identity);
   const permissions = useParticipantPermissions({
@@ -58,7 +61,19 @@ function NostrParticipant({ p, event }: { p: RemoteParticipant | LocalParticipan
   const reaction = reactions
     ?.filter((a) => a.created_at > unixNow() - 10)
     ?.sort((a, b) => (a.created_at > b.created_at ? -1 : 1))?.[0];
-  return (
+  return (<>
+    {zapping && <ZapFlow
+      onClose={() => setZapping(false)}
+      targets={[{
+        type: "pubkey",
+        weight: 1,
+        value: p.identity,
+        zap: {
+          pubkey: p.identity,
+          anon: false,
+          event: NostrLink.fromEvent(event)
+        }
+      }]} />}
     <div className="flex items-center flex-col gap-2" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
       <div className="relative">
         {reaction && (
@@ -76,7 +91,7 @@ function NostrParticipant({ p, event }: { p: RemoteParticipant | LocalParticipan
         {(profile?.lud16 || profile?.lud06) && (
           <div className="absolute w-full h-full rotate-[80deg]">
             <div className="text-primary inline-block mt-[-8px] ml-[-8px]">
-              <Icon name="zap" className="rotate-[-80deg]" size={32} />
+              <Icon name="zap" className="rotate-[-80deg]" size={32} onClick={() => setZapping(true)} />
             </div>
           </div>
         )}
@@ -93,11 +108,7 @@ function NostrParticipant({ p, event }: { p: RemoteParticipant | LocalParticipan
           className={p.isSpeaking ? `outline outline-3${isHost ? " outline-primary" : ""}` : ""}
           link={false}
         />
-        {isHovering && (
-          <div className="absolute z-10 bg-foreground p-3 rounded-xl w-60 flex flex-col gap-2">
-            <ProfileCard participant={p} pubkey={p.identity} profile={profile} />
-          </div>
-        )}
+        {isHovering && <ProfileCard participant={p} pubkey={p.identity} />}
       </div>
       <div className={isHost ? "text-primary" : ""}>
         {isGuest
@@ -106,5 +117,6 @@ function NostrParticipant({ p, event }: { p: RemoteParticipant | LocalParticipan
       </div>
       {isHost && <div className="text-primary">Host</div>}
     </div>
+  </>
   );
 }

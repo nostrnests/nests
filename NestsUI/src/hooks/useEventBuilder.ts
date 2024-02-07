@@ -6,5 +6,5 @@ export default function useEventBuilder() {
   const system = useContext(SnortContext);
   const login = useLogin();
 
-  return { system, signer: login.signer };
+  return { system, signer: login.signer, pubkey: login.pubkey };
 }

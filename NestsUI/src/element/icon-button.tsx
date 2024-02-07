@@ -9,7 +9,7 @@ export type IconButtonProps = {
 } & ButtonProps;
 export default function IconButton({ name: iconName, size: iconSize, className, ...props }: IconButtonProps) {
   return (
-    <Button {...props} className={classNames("bg-foreground-2 hover:bg-foreground-2-hover", className)}>
+    <Button {...props} className={classNames("bg-foreground-2 hover:bg-foreground-2-hover transition", className)}>
       <Icon name={iconName} size={iconSize} />
       {props.children}
     </Button>

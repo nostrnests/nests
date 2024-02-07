@@ -1175,6 +1175,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@webbtc/webln-types@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "@webbtc/webln-types@npm:3.0.0"
+  checksum: cc2c8b9eb49a107c96df410831101a843f7dbf5c19c47fd431126fd87400d7d5259feab2f7cf8ee224e904c1fdf8d24f3af74199b1cf5e3f68edd8f180a4c2a0
+  languageName: node
+  linkType: hard
+
 "abbrev@npm:^2.0.0":
   version: 2.0.0
   resolution: "abbrev@npm:2.0.0"
@@ -2817,6 +2824,7 @@ __metadata:
     "@typescript-eslint/eslint-plugin": "npm:^6.14.0"
     "@typescript-eslint/parser": "npm:^6.14.0"
     "@vitejs/plugin-react": "npm:^4.2.1"
+    "@webbtc/webln-types": "npm:^3.0.0"
     autoprefixer: "npm:^10.4.17"
     classnames: "npm:^2.5.1"
     dayjs: "npm:^1.11.10"
@@ -2826,6 +2834,7 @@ __metadata:
     livekit-client: "npm:^1.15.10"
     postcss: "npm:^8.4.33"
     prettier: "npm:^3.2.5"
+    qr-code-styling: "npm:^1.6.0-rc.1"
     react: "npm:^18.2.0"
     react-dom: "npm:^18.2.0"
     react-router-dom: "npm:^6.21.3"
@@ -3164,6 +3173,22 @@ __metadata:
   version: 2.3.1
   resolution: "punycode@npm:2.3.1"
   checksum: 14f76a8206bc3464f794fb2e3d3cc665ae416c01893ad7a02b23766eb07159144ee612ad67af5e84fa4479ccfe67678c4feb126b0485651b302babf66f04f9e9
+  languageName: node
+  linkType: hard
+
+"qr-code-styling@npm:^1.6.0-rc.1":
+  version: 1.6.0-rc.1
+  resolution: "qr-code-styling@npm:1.6.0-rc.1"
+  dependencies:
+    qrcode-generator: "npm:^1.4.3"
+  checksum: d62f63ba800dbf7aa645816fca81c9be33d8561deac3686a00b93ce9f68f1784e2f65e59fdc7b1af22e20f37a47f35f8a0c2827043403bfc058b659a14fe02dd
+  languageName: node
+  linkType: hard
+
+"qrcode-generator@npm:^1.4.3":
+  version: 1.4.4
+  resolution: "qrcode-generator@npm:1.4.4"
+  checksum: 3249fcff98cb9fa17c21329d3dfd895e294a2d6ea48161f7b377010779d41f0cd88668b7fb3478a659725061bb0a770b40a227c2f4853e8c4a6b947a9e8bf17a
   languageName: node
   linkType: hard
 
