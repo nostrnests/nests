@@ -19,7 +19,7 @@ export default function WriteMessage({ link }: { link: NostrLink }) {
   const refMenu = useRef<HTMLDivElement | null>(null);
 
   async function sendMessage() {
-    if (!signer) return;
+    if (!signer || msg.length === 0) return;
     const builder = new EventBuilder();
     builder
       .content(msg)
