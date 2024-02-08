@@ -42,7 +42,7 @@ export default function EditRoom({ event, onClose }: { event: NostrEvent; onClos
         const updateOrAddTag = (tag: string, value: string) => {
           const oldTag = event.tags.find(a => a[0] === tag);
           if (oldTag) {
-            oldTag[1] = name;
+            oldTag[1] = value;
           } else {
             event.tags.push([tag, value]);
           }
@@ -53,10 +53,12 @@ export default function EditRoom({ event, onClose }: { event: NostrEvent; onClos
         updateOrAddTag("image", image ?? "");
 
         event.id = EventExt.createId(event);
+        event.created_at = unixNow();
         const signed = await signer?.sign(event);
+        console.debug(signed);
         if (signed) {
           await system.BroadcastEvent(signed);
-          navigate("/");
+          onClose();
         }
       }}>Save</PrimaryButton>
       <Button className="bg-foreground-2 rounded-full" onClick={onClose}>
@@ -71,6 +73,7 @@ export default function EditRoom({ event, onClose }: { event: NostrEvent; onClos
             status[1] = "ended";
             event.tags.push(["ends", unixNow().toString()]);
             event.id = EventExt.createId(event);
+            event.created_at = unixNow();
             const signed = await signer?.sign(event);
             if (signed) {
               await system.BroadcastEvent(signed);

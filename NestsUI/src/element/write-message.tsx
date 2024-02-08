@@ -74,7 +74,7 @@ function MenuBar({ link }: { link: NostrLink }) {
   return (
     <div className={classNames("relative", desktopContainer)}>
       <div className="absolute top-[-10px]">
-        <VuBar track={localParticipant.microphoneTrack?.audioTrack?.mediaStreamTrack} />
+        <VuBar track={localParticipant.microphoneTrack?.audioTrack?.mediaStreamTrack} height={10}/>
       </div>
       <div className={classNames(desktopClasses, "flex justify-evenly py-3 gap-4")} ref={refMenu}>
         <IconButton
@@ -97,6 +97,7 @@ function MenuBar({ link }: { link: NostrLink }) {
             name={localParticipant.isMicrophoneEnabled ? "mic" : "mic-off"}
             size={25}
             onClick={toggleMute}
+
           />
         )}
         <ReactionsButton link={link} fromRef={refMenu} />
