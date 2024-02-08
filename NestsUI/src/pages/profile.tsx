@@ -22,7 +22,7 @@ export default function ProfilePage({ link }: { link: NostrLink }) {
   return (
     <>
       <Header />
-      <div className="w-[35rem] mx-auto flex flex-col gap-6">
+      <div className="lg:w-[35rem] mx-auto flex flex-col gap-6">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-4">
             <Avatar pubkey={link.id} size={60} link={false} />

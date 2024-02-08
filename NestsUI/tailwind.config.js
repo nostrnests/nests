@@ -16,12 +16,11 @@ export default {
         "gradient-10": "var(--gradient-10)",
         "gradient-11": "var(--gradient-11)",
       },
-      backgroundColor: {
+      colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
         "foreground-2": "var(--foreground-2)",
-      },
-      colors: {
+        "foreground-2-hover": "var(--foreground-2-hover)",
         primary: "var(--primary)",
         highlight: "var(--highlight)",
         delete: "var(--delete)",

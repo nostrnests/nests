@@ -16,7 +16,7 @@ export default function RoomList() {
   const events = useRequestBuilder(sub);
 
   return (
-    <div className="mx-auto w-[35rem] flex flex-col gap-8">
+    <div className="lg:mx-auto max-lg:px-4 lg:w-[35rem] flex flex-col gap-8">
       <RoomListList events={events} showCreateWhenEmpty={true} />
     </div>
   );

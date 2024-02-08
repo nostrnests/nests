@@ -56,6 +56,7 @@ body {
   background-color: var(--background);
   color: #fff;
   --primary: var(--primary-1);
+  overflow: hidden;
 }
 
 .stack {
@@ -97,4 +98,8 @@ textarea {
   100% {
     opacity: 0;
   }
+}
+
+.h-inherit {
+  height: inherit;
 }

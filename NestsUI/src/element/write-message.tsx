@@ -7,16 +7,12 @@ import { useLocalParticipant, useRoomContext } from "@livekit/components-react";
 import { useNavigate } from "react-router-dom";
 import { useHand, useLogin } from "../login";
 import { createPortal } from "react-dom";
+import classNames from "classnames";
 
-export default function WriteMessage({ link }: { link: NostrLink }) {
-  const room = useRoomContext();
-  const localParticipant = useLocalParticipant();
+export default function WriteMessage({ link, className }: { link: NostrLink; className?: string }) {
   const [msg, setMsg] = useState("");
   const login = useLogin();
   const { system, signer } = useEventBuilder();
-  const navigate = useNavigate();
-  const hand = useHand(link);
-  const refMenu = useRef<HTMLDivElement | null>(null);
 
   async function sendMessage() {
     if (!signer || msg.length === 0) return;
@@ -31,14 +27,52 @@ export default function WriteMessage({ link }: { link: NostrLink }) {
     setMsg("");
   }
 
+  if (login.type === "none") return <div>Please login to chat</div>;
+  return (
+    <>
+      <MenuBar link={link} />
+      <div className={classNames("flex bg-foreground-2 rounded-full py-1 px-2 pl-4 items-center", className)}>
+        <input
+          type="text"
+          className="grow bg-foreground-2 text-white"
+          placeholder="Comment"
+          value={msg}
+          onChange={(e) => setMsg(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key == "Enter") {
+              sendMessage();
+            }
+          }}
+        />
+        <PrimaryButton onClick={sendMessage}>Send</PrimaryButton>
+      </div>
+    </>
+  );
+}
+
+function MenuBar({ link }: { link: NostrLink }) {
+  const room = useRoomContext();
+  const localParticipant = useLocalParticipant();
+  const navigate = useNavigate();
+  const hand = useHand(link);
+  const refMenu = useRef<HTMLDivElement | null>(null);
+
   async function toggleMute() {
     room.localParticipant.setMicrophoneEnabled(!room.localParticipant.isMicrophoneEnabled);
   }
 
-  if (login.type === "none") return <div>Please login to chat</div>;
+  const desktopContainer = [
+    "lg:fixed",
+    "lg:bottom-10",
+    "lg:w-[calc(100vw-450px)]",
+    "lg:left-0",
+    "flex",
+    "justify-center",
+  ];
+  const desktopClasses = ["lg:bg-foreground", "lg:px-4", "lg:rounded-full"];
   return (
-    <>
-      <div className="flex justify-evenly py-3" ref={refMenu}>
+    <div className={classNames(desktopContainer)}>
+      <div className={classNames(desktopClasses, "flex justify-evenly py-3 gap-4")} ref={refMenu}>
         <IconButton
           className="rounded-full aspect-square bg-foreground-2"
           name="exit"
@@ -64,22 +98,7 @@ export default function WriteMessage({ link }: { link: NostrLink }) {
         <ReactionsButton link={link} fromRef={refMenu} />
         <IconButton className="rounded-full aspect-square" name="dots" size={25} />
       </div>
-      <div className="flex bg-foreground-2 rounded-full py-1 px-2 pl-4 items-center">
-        <input
-          type="text"
-          className="grow bg-foreground-2 text-white"
-          placeholder="Comment"
-          value={msg}
-          onChange={(e) => setMsg(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key == "Enter") {
-              sendMessage();
-            }
-          }}
-        />
-        <PrimaryButton onClick={sendMessage}>Send</PrimaryButton>
-      </div>
-    </>
+    </div>
   );
 }
 

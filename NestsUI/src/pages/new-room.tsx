@@ -100,7 +100,7 @@ export default function NewRoom() {
   if (login.type === "none") return <Navigate to={"/login"} />;
 
   return (
-    <div className="w-[35rem] mx-auto flex flex-col gap-4 mt-10">
+    <div className="lg:w-[35rem] mx-auto flex flex-col gap-4 mt-10">
       <h1 className="text-center">New Room</h1>
       <div>
         <div className="font-medium mb-2">Room name</div>

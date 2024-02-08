@@ -14,12 +14,12 @@ export default function Layout() {
 export function BackLayout() {
   const navigate = useNavigate();
   return (
-    <div>
+    <>
       <div className="px-4 py-6 flex gap-2 items-center text-highlight cursor-pointer" onClick={() => navigate(-1)}>
         <Icon name="chevron" />
         Back
       </div>
       <Outlet />
-    </div>
+    </>
   );
 }

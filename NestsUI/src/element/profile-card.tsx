@@ -35,7 +35,7 @@ export default function ProfileCard({
     );
   };
   return (
-    <div className="absolute z-10 bg-foreground-2 rounded-xl overflow-hidden flex flex-col font-medium w-max">
+    <div className="absolute z-10 bg-foreground-2 rounded-xl py-2 overflow-hidden flex flex-col font-medium w-max">
       {menuItem("eye", "View Profile", () => {
         navigate(`/${hexToBech32("npub", pubkey)}`);
       })}
@@ -47,7 +47,7 @@ export default function ProfileCard({
           })}
           {menuItem("mic-off", "Mute", () => {})}
           {menuItem("admin", "Make admin", () => {})}
-          <hr className="mx-4" />
+          <hr className="mx-4 border-foreground" />
           {menuItem("minus-circle", "Ban user", () => {}, "text-delete")}
         </>
       )}
