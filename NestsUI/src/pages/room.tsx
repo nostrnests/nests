@@ -42,7 +42,9 @@ export default function Room() {
       serverUrl={(livekitUrl ?? "").replace("+livekit", "")}
       token={room.token}
       connect={true}
-      audio={true}
+      audio={{
+        autoGainControl: false
+      }}
       className="overflow-hidden"
     >
       <RoomAudioRenderer />

@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { useHand, useLogin } from "../login";
 import { createPortal } from "react-dom";
 import classNames from "classnames";
+import VuBar from "./vu";
 
 export default function WriteMessage({ link, className }: { link: NostrLink; className?: string }) {
   const [msg, setMsg] = useState("");
@@ -71,7 +72,10 @@ function MenuBar({ link }: { link: NostrLink }) {
   ];
   const desktopClasses = ["lg:bg-foreground", "lg:px-4", "lg:rounded-full"];
   return (
-    <div className={classNames(desktopContainer)}>
+    <div className={classNames("relative", desktopContainer)}>
+      <div className="absolute top-[-10px]">
+        <VuBar track={localParticipant.microphoneTrack?.audioTrack?.mediaStreamTrack} />
+      </div>
       <div className={classNames(desktopClasses, "flex justify-evenly py-3 gap-4")} ref={refMenu}>
         <IconButton
           className="rounded-full aspect-square bg-foreground-2"
@@ -133,29 +137,29 @@ function ReactionsButton({ link, fromRef }: { link: NostrLink; fromRef: RefObjec
 
   const px = open
     ? createPortal(
-        <div
-          className="absolute bg-foreground-2 p-3 grid grid-cols-6 gap-4 text-3xl rounded-2xl select-none"
-          style={{
-            bottom: window.innerHeight - (pos?.top ?? 0),
-            left: pos?.left,
-            width: pos?.width,
-          }}
-        >
-          <ReactIcon content="🤙" />
-          <ReactIcon content="💯" />
-          <ReactIcon content="😂" />
-          <ReactIcon content="😅" />
-          <ReactIcon content="😳" />
-          <ReactIcon content="🤔" />
-          <ReactIcon content="🔥" />
-          <ReactIcon content="🤡" />
-          <ReactIcon content="🤩" />
-          <ReactIcon content="😱" />
-          <ReactIcon content="🤣" />
-          <ReactIcon content="🤯" />
-        </div>,
-        document.body,
-      )
+      <div
+        className="absolute bg-foreground-2 p-3 grid grid-cols-6 gap-4 text-3xl rounded-2xl select-none"
+        style={{
+          bottom: window.innerHeight - (pos?.top ?? 0),
+          left: pos?.left,
+          width: pos?.width,
+        }}
+      >
+        <ReactIcon content="🤙" />
+        <ReactIcon content="💯" />
+        <ReactIcon content="😂" />
+        <ReactIcon content="😅" />
+        <ReactIcon content="😳" />
+        <ReactIcon content="🤔" />
+        <ReactIcon content="🔥" />
+        <ReactIcon content="🤡" />
+        <ReactIcon content="🤩" />
+        <ReactIcon content="😱" />
+        <ReactIcon content="🤣" />
+        <ReactIcon content="🤯" />
+      </div>,
+      document.body,
+    )
     : undefined;
   return (
     <>

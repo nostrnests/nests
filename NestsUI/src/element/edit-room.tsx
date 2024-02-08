@@ -4,10 +4,13 @@ import Button, { PrimaryButton } from "./button";
 import useEventBuilder from "../hooks/useEventBuilder";
 import { unixNow } from "@snort/shared";
 import { useNavigate } from "react-router-dom";
+import BannerEditor from "./banner-editor";
 
 export default function EditRoom({ event, onClose }: { event: NostrEvent; onClose: () => void }) {
   const [name, setName] = useState(event.tags.find((a) => a[0] === "title")?.[1] ?? "");
   const [desc, setDesc] = useState(event.tags.find((a) => a[0] === "description")?.[1] ?? "");
+  const [color, setColor] = useState(event.tags.find((a) => a[0] === "color")?.[1]);
+  const [image, setImage] = useState(event.tags.find((a) => a[0] === "image")?.[1]);
   const { system, signer } = useEventBuilder();
   const navigate = useNavigate();
 
@@ -34,7 +37,28 @@ export default function EditRoom({ event, onClose }: { event: NostrEvent; onClos
           className="w-full"
         />
       </div>
-      <PrimaryButton>Save</PrimaryButton>
+      <BannerEditor onImage={setImage} onColor={setColor} initialColor={color} initialImage={image} />
+      <PrimaryButton onClick={async () => {
+        const updateOrAddTag = (tag: string, value: string) => {
+          const oldTag = event.tags.find(a => a[0] === tag);
+          if (oldTag) {
+            oldTag[1] = name;
+          } else {
+            event.tags.push([tag, value]);
+          }
+        }
+        updateOrAddTag("title", name);
+        updateOrAddTag("summary", desc);
+        updateOrAddTag("color", color ?? "");
+        updateOrAddTag("image", image ?? "");
+
+        event.id = EventExt.createId(event);
+        const signed = await signer?.sign(event);
+        if (signed) {
+          await system.BroadcastEvent(signed);
+          navigate("/");
+        }
+      }}>Save</PrimaryButton>
       <Button className="bg-foreground-2 rounded-full" onClick={onClose}>
         Cancel
       </Button>
