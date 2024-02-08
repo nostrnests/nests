@@ -10,12 +10,14 @@ import Button, { PrimaryButton } from "../element/button";
 import Icon from "../icon";
 import ChatMessages from "../element/chat-messages";
 import WriteMessage from "../element/write-message";
-import useRoomPresence, { RoomPresenceContext } from "../hooks/useRoomPresence";
+import useRoomPresence from "../hooks/useRoomPresence";
 import { useLogin } from "../login";
 import Modal from "../element/modal";
-import { useState } from "react";
-import { RoomReactions, useRoomReactions } from "../hooks/useRoomReactions";
+import { ReactNode, useState } from "react";
+import { useRoomReactions } from "../hooks/useRoomReactions";
 import classNames from "classnames";
+import Flyout from "../element/flyout";
+import { NostrRoomContext } from "../hooks/nostr-room-context";
 
 interface RoomState {
   event: NostrEvent;
@@ -28,6 +30,7 @@ export default function Room() {
   const location = useLocation();
   const login = useLogin();
   const [confirmGuest, setConfirmGuest] = useState(false);
+  const [flyout, setFlyout] = useState<ReactNode>();
   const room = location.state as RoomState | undefined;
   const link = room ? NostrLink.fromEvent(room.event) : undefined;
   const presence = useRoomPresence(link, true);
@@ -43,19 +46,20 @@ export default function Room() {
       token={room.token}
       connect={true}
       audio={{
-        autoGainControl: false
+        autoGainControl: false,
       }}
       className="overflow-hidden"
     >
       <RoomAudioRenderer />
-      <RoomPresenceContext.Provider value={presence}>
-        <RoomReactions.Provider value={reactions}>
-          <div className="w-screen flex overflow-hidden h-screen">
-            <ParticipantsPannel room={room} />
-            <ChatPannel link={link} />
-          </div>
-        </RoomReactions.Provider>
-      </RoomPresenceContext.Provider>
+      <NostrRoomContext.Provider value={{ reactions, presence, flyout, setFlyout }}>
+        <Flyout show={flyout !== undefined} onClose={() => setFlyout(undefined)}>
+          {flyout}
+        </Flyout>
+        <div className="w-screen flex overflow-hidden h-screen">
+          <ParticipantsPannel room={room} />
+          <ChatPannel link={link} />
+        </div>
+      </NostrRoomContext.Provider>
       {login.type === "none" && !confirmGuest && (
         <Modal id="join-as-guest">
           <div className="flex flex-col gap-4 items-center">
@@ -108,8 +112,7 @@ function ChatPannel({ link }: { link: NostrLink }) {
     <div
       className={classNames(
         mobileStyles,
-        `lg:w-[${ChatWidth}px]`,
-        "lg:h-screen bg-foreground grid grid-rows-[max-content_auto_max-content] overflow-hidden",
+        "lg:h-screen bg-foreground grid overflow-hidden grid-rows-[max-content_auto_max-content] w-chat",
       )}
     >
       <div

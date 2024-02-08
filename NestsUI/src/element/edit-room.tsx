@@ -38,29 +38,33 @@ export default function EditRoom({ event, onClose }: { event: NostrEvent; onClos
         />
       </div>
       <BannerEditor onImage={setImage} onColor={setColor} initialColor={color} initialImage={image} />
-      <PrimaryButton onClick={async () => {
-        const updateOrAddTag = (tag: string, value: string) => {
-          const oldTag = event.tags.find(a => a[0] === tag);
-          if (oldTag) {
-            oldTag[1] = value;
-          } else {
-            event.tags.push([tag, value]);
-          }
-        }
-        updateOrAddTag("title", name);
-        updateOrAddTag("summary", desc);
-        updateOrAddTag("color", color ?? "");
-        updateOrAddTag("image", image ?? "");
+      <PrimaryButton
+        onClick={async () => {
+          const updateOrAddTag = (tag: string, value: string) => {
+            const oldTag = event.tags.find((a) => a[0] === tag);
+            if (oldTag) {
+              oldTag[1] = value;
+            } else {
+              event.tags.push([tag, value]);
+            }
+          };
+          updateOrAddTag("title", name);
+          updateOrAddTag("summary", desc);
+          updateOrAddTag("color", color ?? "");
+          updateOrAddTag("image", image ?? "");
 
-        event.id = EventExt.createId(event);
-        event.created_at = unixNow();
-        const signed = await signer?.sign(event);
-        console.debug(signed);
-        if (signed) {
-          await system.BroadcastEvent(signed);
-          onClose();
-        }
-      }}>Save</PrimaryButton>
+          event.id = EventExt.createId(event);
+          event.created_at = unixNow();
+          const signed = await signer?.sign(event);
+          console.debug(signed);
+          if (signed) {
+            await system.BroadcastEvent(signed);
+            onClose();
+          }
+        }}
+      >
+        Save
+      </PrimaryButton>
       <Button className="bg-foreground-2 rounded-full" onClick={onClose}>
         Cancel
       </Button>

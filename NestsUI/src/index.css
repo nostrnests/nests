@@ -56,7 +56,6 @@ body {
   background-color: var(--background);
   color: #fff;
   --primary: var(--primary-1);
-  overflow: hidden;
 }
 
 .stack {
@@ -102,4 +101,18 @@ textarea {
 
 .h-inherit {
   height: inherit;
+}
+
+body {
+  --chat-w: 100vw;
+}
+
+.w-chat {
+  width: var(--chat-w);
+}
+
+@media screen(lg) {
+  body {
+    --chat-w: 450px;
+  }
 }

@@ -74,7 +74,7 @@ function MenuBar({ link }: { link: NostrLink }) {
   return (
     <div className={classNames("relative", desktopContainer)}>
       <div className="absolute top-[-10px]">
-        <VuBar track={localParticipant.microphoneTrack?.audioTrack?.mediaStreamTrack} height={10}/>
+        <VuBar track={localParticipant.microphoneTrack?.audioTrack?.mediaStreamTrack} height={10} />
       </div>
       <div className={classNames(desktopClasses, "flex justify-evenly py-3 gap-4")} ref={refMenu}>
         <IconButton
@@ -97,7 +97,6 @@ function MenuBar({ link }: { link: NostrLink }) {
             name={localParticipant.isMicrophoneEnabled ? "mic" : "mic-off"}
             size={25}
             onClick={toggleMute}
-
           />
         )}
         <ReactionsButton link={link} fromRef={refMenu} />
@@ -138,29 +137,29 @@ function ReactionsButton({ link, fromRef }: { link: NostrLink; fromRef: RefObjec
 
   const px = open
     ? createPortal(
-      <div
-        className="absolute bg-foreground-2 p-3 grid grid-cols-6 gap-4 text-3xl rounded-2xl select-none"
-        style={{
-          bottom: window.innerHeight - (pos?.top ?? 0),
-          left: pos?.left,
-          width: pos?.width,
-        }}
-      >
-        <ReactIcon content="🤙" />
-        <ReactIcon content="💯" />
-        <ReactIcon content="😂" />
-        <ReactIcon content="😅" />
-        <ReactIcon content="😳" />
-        <ReactIcon content="🤔" />
-        <ReactIcon content="🔥" />
-        <ReactIcon content="🤡" />
-        <ReactIcon content="🤩" />
-        <ReactIcon content="😱" />
-        <ReactIcon content="🤣" />
-        <ReactIcon content="🤯" />
-      </div>,
-      document.body,
-    )
+        <div
+          className="absolute bg-foreground-2 p-3 grid grid-cols-6 gap-4 text-3xl rounded-2xl select-none"
+          style={{
+            bottom: window.innerHeight - (pos?.top ?? 0),
+            left: pos?.left,
+            width: pos?.width,
+          }}
+        >
+          <ReactIcon content="🤙" />
+          <ReactIcon content="💯" />
+          <ReactIcon content="😂" />
+          <ReactIcon content="😅" />
+          <ReactIcon content="😳" />
+          <ReactIcon content="🤔" />
+          <ReactIcon content="🔥" />
+          <ReactIcon content="🤡" />
+          <ReactIcon content="🤩" />
+          <ReactIcon content="😱" />
+          <ReactIcon content="🤣" />
+          <ReactIcon content="🤯" />
+        </div>,
+        document.body,
+      )
     : undefined;
   return (
     <>

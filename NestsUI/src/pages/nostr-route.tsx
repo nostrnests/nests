@@ -12,7 +12,7 @@ export default function NostrRoute() {
   switch (link.type) {
     case NostrPrefix.PublicKey:
     case NostrPrefix.Profile: {
-      return <ProfilePage link={link} />;
+      return <ProfilePage link={link} header={true} />;
     }
     case NostrPrefix.Address: {
       return <Room />;

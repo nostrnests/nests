@@ -1,11 +1,12 @@
-import { hexToBech32 } from "@snort/shared";
 import { useNestsApi } from "../hooks/useNestsApi";
 import { useEnsureRoom } from "@livekit/components-react";
 import { LocalParticipant, RemoteParticipant } from "livekit-client";
 import Icon from "../icon";
-import { useNavigate } from "react-router-dom";
-import { ReactNode } from "react";
+import { ReactNode, useContext } from "react";
 import classNames from "classnames";
+import { NostrRoomContext } from "../hooks/nostr-room-context";
+import { ProfilePageContent } from "../pages/profile";
+import { NostrLink, NostrPrefix } from "@snort/system";
 
 export default function ProfileCard({
   participant,
@@ -16,8 +17,8 @@ export default function ProfileCard({
 }) {
   const api = useNestsApi();
   const room = useEnsureRoom();
+  const nostrRoom = useContext(NostrRoomContext);
   const isAdmin = true;
-  const navigate = useNavigate();
 
   const isSpeaker = participant.audioTracks.size > 0;
   const menuItem = (icon: string, text: ReactNode, onClick: () => void, className?: string) => {
@@ -37,7 +38,7 @@ export default function ProfileCard({
   return (
     <div className="absolute z-10 bg-foreground-2 rounded-xl py-2 overflow-hidden flex flex-col font-medium w-max">
       {menuItem("eye", "View Profile", () => {
-        navigate(`/${hexToBech32("npub", pubkey)}`);
+        nostrRoom.setFlyout(<ProfilePageContent link={new NostrLink(NostrPrefix.PublicKey, pubkey)} />);
       })}
       {menuItem("user-plus", "Follow", () => {})}
       {isAdmin && (

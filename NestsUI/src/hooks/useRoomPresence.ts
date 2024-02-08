@@ -1,7 +1,8 @@
-import { EventKind, NostrEvent, NostrLink, RequestBuilder } from "@snort/system";
+import { EventKind, NostrLink, RequestBuilder } from "@snort/system";
 import { useRequestBuilder } from "@snort/system-react";
-import { createContext, useContext, useEffect, useMemo } from "react";
+import { useContext, useEffect, useMemo } from "react";
 import usePresence from "./usePresence";
+import { NostrRoomContext } from "./nostr-room-context";
 
 export default function useRoomPresence(link: NostrLink | undefined, inRoom: boolean) {
   const subPresence = useMemo(() => {
@@ -29,9 +30,7 @@ export default function useRoomPresence(link: NostrLink | undefined, inRoom: boo
   return presenceEvents.filter((a) => link?.referencesThis(a));
 }
 
-export const RoomPresenceContext = createContext<Array<NostrEvent>>([]);
-
 export function useUserPresence(pk: string) {
-  const ctx = useContext(RoomPresenceContext);
-  return ctx.find((a) => a.pubkey === pk);
+  const ctx = useContext(NostrRoomContext);
+  return ctx.presence.find((a) => a.pubkey === pk);
 }

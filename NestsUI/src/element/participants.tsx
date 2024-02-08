@@ -83,26 +83,29 @@ function NostrParticipant({ p, event }: { p: RemoteParticipant | LocalParticipan
       <div className="flex items-center flex-col gap-2" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
         <div className="relative">
           {reaction && (
-            <div key={reaction.id} className="absolute w-full h-full flex items-center justify-center text-3xl react">
+            <div
+              key={reaction.id}
+              className="absolute w-[72px] h-[72px] flex items-center justify-center text-3xl react"
+            >
               {reaction.content}
             </div>
           )}
           {isHandRaised && (
-            <div className="absolute w-full h-full">
+            <div className="absolute w-[72px] h-[72px]">
               <div className="bg-foreground rounded-full inline-block w-10 h-10 -mt-4 -ml-4 flex items-center justify-center">
                 <Icon name="hand" size={25} />
               </div>
             </div>
           )}
           {(profile?.lud16 || profile?.lud06) && (
-            <div className="absolute w-full h-full rotate-[80deg]">
+            <div className="absolute w-[72px] h-[72px] rotate-[80deg]">
               <div className="text-primary inline-block mt-[-8px] ml-[-8px]">
                 <Icon name="zap" className="rotate-[-80deg]" size={32} onClick={() => setZapping(true)} />
               </div>
             </div>
           )}
           {p.audioTracks.size > 0 && !p.isMicrophoneEnabled && (
-            <div className="absolute w-full h-full rotate-[135deg]">
+            <div className="absolute w-[72px] h-[72px] rotate-[135deg]">
               <div className="bg-foreground rounded-full inline-block mt-[-4px] ml-[-4px] w-8 h-8 flex items-center justify-center">
                 <Icon name={p.isMicrophoneEnabled ? "mic" : "mic-off"} className="rotate-[-135deg]" size={20} />
               </div>
