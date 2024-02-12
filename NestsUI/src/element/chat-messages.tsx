@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import Avatar from "./avatar";
 import { hexToBech32 } from "@snort/shared";
 import DisplayName from "./display-name";
+import Icon from "../icon";
 
 export default function ChatMessages({ link }: { link: NostrLink }) {
   const sub = useMemo(() => {
@@ -55,12 +56,18 @@ function ChatZap({ event }: { event: NostrEvent }) {
   const senderProfile = useUserProfile(zap.sender);
   const targetProfile = useUserProfile(zap.receiver);
   return (
-    <div className="border border-delete rounded-2xl px-3 py-4">
-      <DisplayName pubkey={zap.sender ?? event.pubkey} profile={senderProfile} />
-      <span> zapped </span>
-      <DisplayName pubkey={zap.receiver ?? event.pubkey} profile={targetProfile} />
-      <span> {zap.amount / 1000}K sats</span>
-      <div>{zap.content}</div>
+    <div className="rounded-2xl px-3 py-4 bg-foreground-2">
+      <div className="flex gap-2 items-center">
+        <Avatar pubkey={zap.sender ?? event.pubkey} link={false} size={32} className="outline outline-2 outline-bitcoin" />
+        <Icon name="zap" className="text-bitcoin" />
+        <span>
+          <DisplayName pubkey={zap.sender ?? event.pubkey} profile={senderProfile} className="text-bitcoin font-bold" />
+          <span> zapped </span>
+          <DisplayName pubkey={zap.receiver ?? event.pubkey} profile={targetProfile} />
+          <span className="text-bitcoin font-bold"> {zap.amount / 1000}K sats</span>
+        </span>
+      </div>
+      {zap.content && <div className="mt-2">{zap.content}</div>}
     </div>
   );
 }

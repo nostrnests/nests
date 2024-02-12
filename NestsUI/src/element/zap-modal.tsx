@@ -31,7 +31,7 @@ export default function ZapFlow({ targets, onClose }: { targets: Array<ZapTarget
 
   useEffect(() => {
     if (customAmount !== undefined) {
-      setAmount(customAmount - (customAmount % inc));
+      setAmount((customAmount - (customAmount % inc)));
     }
   }, [customAmount]);
 
@@ -76,7 +76,7 @@ export default function ZapFlow({ targets, onClose }: { targets: Array<ZapTarget
                   const res = await zapper.send(
                     window.webln ? WebLnWallet : undefined,
                     targets.map((a) => ({ ...a, memo: comment })),
-                    amount,
+                    customAmount !== undefined ? customAmount : amount,
                   );
                   if (!res[0].paid) {
                     setInvoice(res[0].pr);
