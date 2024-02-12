@@ -8,6 +8,7 @@ import { NostrRoomContext } from "../hooks/nostr-room-context";
 import { ProfilePageContent } from "../pages/profile";
 import { NostrLink, NostrPrefix } from "@snort/system";
 import { useIsAdmin } from "../hooks/useIsAdmin";
+import { useLogin } from "../login";
 
 export default function ProfileCard({
   participant,
@@ -17,11 +18,16 @@ export default function ProfileCard({
   pubkey: string;
 }) {
   const api = useNestsApi();
+  const login = useLogin();
   const room = useEnsureRoom();
   const nostrRoom = useContext(NostrRoomContext);
-  const isAdmin = useIsAdmin();
+  const isLoginAdmin = useIsAdmin();
+  const thisIsAdmin = nostrRoom.info?.admins.includes(pubkey);
+  const isLoginHost = login.pubkey && nostrRoom.info?.host === login.pubkey;
+  const isSelf = pubkey === login.pubkey;
 
   const isSpeaker = participant.audioTracks.size > 0;
+  const isMuted = !participant.isMicrophoneEnabled;
   const menuItem = (icon: string, text: ReactNode, onClick: () => void, className?: string) => {
     return (
       <div
@@ -41,16 +47,25 @@ export default function ProfileCard({
       {menuItem("eye", "View Profile", () => {
         nostrRoom.setFlyout(<ProfilePageContent link={new NostrLink(NostrPrefix.PublicKey, pubkey)} />);
       })}
-      {menuItem("user-plus", "Follow", () => {})}
-      {isAdmin && (
+      {menuItem("user-plus", "Follow", () => { })}
+      {isLoginAdmin && (
         <>
-          {menuItem(isSpeaker ? "exit" : "enter", !isSpeaker ? "Add to stage" : "Remove from stage", async () => {
-            await api.updatePermissions(room.name, pubkey, !isSpeaker);
+          {menuItem(isSpeaker ? "exit" : "enter", !isSpeaker ? "Add to stage" : isSelf ? "Leave stage" : "Remove from stage", async () => {
+            await api.updatePermissions(room.name, pubkey, { can_publish: !isSpeaker });
           })}
-          {menuItem("mic-off", "Mute", () => {})}
-          {menuItem("admin", "Make admin", () => {})}
-          <hr className="mx-4 border-foreground" />
-          {menuItem("minus-circle", "Ban user", () => {}, "text-delete hover:text-delete")}
+          {!isMuted && menuItem("mic-off", "Mute", async () => {
+            await api.updatePermissions(room.name, pubkey, { mute_microphone: true });
+          })}
+          {!thisIsAdmin && menuItem("admin", "Make admin", async () => {
+            await api.updatePermissions(room.name, pubkey, { is_admin: true });
+          })}
+          {thisIsAdmin && !isLoginHost && menuItem("admin", "Remove admin", async () => {
+            await api.updatePermissions(room.name, pubkey, { is_admin: false });
+          })}
+          {!isSelf && !isLoginHost && <>
+            <hr className="mx-4 border-foreground" />
+            {menuItem("minus-circle", "Ban user", () => { }, "text-delete hover:text-delete")}
+          </>}
         </>
       )}
     </div>

@@ -137,29 +137,29 @@ function ReactionsButton({ link, fromRef }: { link: NostrLink; fromRef: RefObjec
 
   const px = open
     ? createPortal(
-        <div
-          className="absolute bg-foreground-2 p-3 grid grid-cols-6 gap-4 text-3xl rounded-2xl select-none"
-          style={{
-            bottom: window.innerHeight - (pos?.top ?? 0) + 5,
-            left: pos?.left,
-            width: pos?.width,
-          }}
-        >
-          <ReactIcon content="🤙" />
-          <ReactIcon content="💯" />
-          <ReactIcon content="😂" />
-          <ReactIcon content="😅" />
-          <ReactIcon content="😳" />
-          <ReactIcon content="🤔" />
-          <ReactIcon content="🔥" />
-          <ReactIcon content="🤡" />
-          <ReactIcon content="🤩" />
-          <ReactIcon content="😱" />
-          <ReactIcon content="🤣" />
-          <ReactIcon content="🤯" />
-        </div>,
-        document.body,
-      )
+      <div
+        className="absolute bg-foreground-2 p-3 grid grid-cols-6 gap-4 text-3xl rounded-2xl select-none"
+        style={{
+          bottom: window.innerHeight - (pos?.top ?? 0) + 5,
+          left: pos?.left,
+          width: pos?.width,
+        }}
+      >
+        <ReactIcon content="🤙" />
+        <ReactIcon content="💯" />
+        <ReactIcon content="😂" />
+        <ReactIcon content="😅" />
+        <ReactIcon content="😳" />
+        <ReactIcon content="🤔" />
+        <ReactIcon content="🔥" />
+        <ReactIcon content="🤡" />
+        <ReactIcon content="🤩" />
+        <ReactIcon content="😱" />
+        <ReactIcon content="🤣" />
+        <ReactIcon content="🤯" />
+      </div>,
+      document.body,
+    )
     : undefined;
   return (
     <>
@@ -244,12 +244,12 @@ function RoomOptionsButton({ link }: { link: NostrLink }) {
             {localParticipant.microphoneTrack &&
               login.pubkey &&
               menuItem("exit", "Leave Stage", async () => {
-                await api.updatePermissions(link.id, login.pubkey!, false);
+                await api.updatePermissions(link.id, login.pubkey!, { can_publish: false });
                 setOpen(false);
               })}
-            {isAdmin && menuItem("audio", "Stream Audio", () => {})}
-            {isAdmin && menuItem("rec", "Start Room Recording", () => {})}
-            {isAdmin && menuItem("folder", "Room Recordings", () => {}, "opacity-50 cursor-not-allowed")}
+            {isAdmin && menuItem("audio", "Stream Audio", () => { })}
+            {isAdmin && menuItem("rec", "Start Room Recording", () => { })}
+            {isAdmin && menuItem("folder", "Room Recordings", () => { }, "opacity-50 cursor-not-allowed")}
           </div>,
           document.body,
         )}

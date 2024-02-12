@@ -12,7 +12,7 @@ export class NestsApi {
   constructor(
     readonly url: string,
     readonly signer?: EventSigner,
-  ) {}
+  ) { }
 
   async createRoom(): Promise<CreateRoomResponse> {
     return await this.#fetch<CreateRoomResponse>("GET", true, "/api/v1/nests");
@@ -33,14 +33,14 @@ export class NestsApi {
    * @param canPublish
    * @returns
    */
-  async updatePermissions(room: string, identity: string, canPublish: boolean) {
+  async updatePermissions(room: string, identity: string, req: { can_publish?: boolean, mute_microphone?: boolean, is_admin?: boolean }) {
     return await this.#fetch(
       "POST",
       true,
       `/api/v1/nests/${room}/permissions`,
       JSON.stringify({
         participant: identity,
-        can_publish: canPublish,
+        ...req
       }),
     );
   }
