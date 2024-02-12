@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { LNWallet, ZapTarget, Zapper } from "../zapper";
 import DisplayName from "./display-name";
 import Modal from "./modal";
@@ -25,9 +25,23 @@ export default function ZapFlow({ targets, onClose }: { targets: Array<ZapTarget
   const profile = useUserProfile(target.value);
   const inc = 500;
   const [amount, setAmount] = useState(inc);
+  const [customAmount, setCustomAmount] = useState<number>();
   const [comment, setComment] = useState("");
   const [invoice, setInvoice] = useState("");
 
+  useEffect(() => {
+    if (customAmount !== undefined) {
+      setAmount(customAmount - (customAmount % inc));
+    }
+  }, [customAmount]);
+
+  function formatAmount(n: number) {
+    if (n === 1_000_000) {
+      return "1M";
+    } else {
+      return `${(n / 1000).toLocaleString()}K`;
+    }
+  }
   return (
     <Modal id="zap" onClose={onClose}>
       <div className="flex flex-col gap-4">
@@ -35,14 +49,14 @@ export default function ZapFlow({ targets, onClose }: { targets: Array<ZapTarget
         {invoice && <QrCode data={`lightning:${invoice}`} className="mx-auto" />}
         {!invoice && (
           <>
-            <div className="grid grid-cols-[max-content_auto_max-content] items-center select-none">
+            <div className={`grid grid-cols-[max-content_auto_max-content] items-center select-none`}>
               <IconButton
                 name="chevron"
                 className="rounded-full aspect-square"
                 onClick={() => setAmount((v) => Math.max(inc, v - inc))}
               />
               <div className="text-center">
-                <div className="text-3xl font-semibold">{(amount / 1000).toLocaleString()}K</div>
+                <div className="text-3xl font-semibold">{customAmount ? (customAmount.toLocaleString()) : formatAmount(amount)}</div>
                 <div className="text-sm">Sats</div>
               </div>
               <IconButton
@@ -51,6 +65,7 @@ export default function ZapFlow({ targets, onClose }: { targets: Array<ZapTarget
                 onClick={() => setAmount((v) => Math.min(1_000_000, v + inc))}
               />
             </div>
+            <input placeholder="Custom amount" type="number" value={customAmount} onChange={e => setCustomAmount(e.target.value ? Number(e.target.value) : undefined)} />
             <textarea placeholder="Personal note" value={comment} onChange={(e) => setComment(e.target.value)} />
             <PrimaryButton
               onClick={async () => {
