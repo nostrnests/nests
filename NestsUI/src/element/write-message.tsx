@@ -1,6 +1,6 @@
 import { EventBuilder, EventKind, NostrLink } from "@snort/system";
 import Button, { PrimaryButton } from "./button";
-import { RefObject, useRef, useState } from "react";
+import { ReactNode, RefObject, useEffect, useRef, useState } from "react";
 import useEventBuilder from "../hooks/useEventBuilder";
 import IconButton from "./icon-button";
 import { useLocalParticipant, useRoomContext } from "@livekit/components-react";
@@ -8,7 +8,10 @@ import { useNavigate } from "react-router-dom";
 import { useHand, useLogin } from "../login";
 import { createPortal } from "react-dom";
 import classNames from "classnames";
-import VuBar from "./vu";
+import Icon from "../icon";
+import { hexToBech32 } from "@snort/shared";
+import { useIsAdmin } from "../hooks/useIsAdmin";
+import { useNestsApi } from "../hooks/useNestsApi";
 
 export default function WriteMessage({ link, className }: { link: NostrLink; className?: string }) {
   const [msg, setMsg] = useState("");
@@ -73,9 +76,6 @@ function MenuBar({ link }: { link: NostrLink }) {
   const desktopClasses = ["lg:bg-foreground", "lg:px-4", "lg:rounded-full"];
   return (
     <div className={classNames("relative", desktopContainer)}>
-      <div className="absolute top-[-10px]">
-        <VuBar track={localParticipant.microphoneTrack?.audioTrack?.mediaStreamTrack} height={10} />
-      </div>
       <div className={classNames(desktopClasses, "flex justify-evenly py-3 gap-4")} ref={refMenu}>
         <IconButton
           className="rounded-full aspect-square bg-foreground-2"
@@ -100,7 +100,7 @@ function MenuBar({ link }: { link: NostrLink }) {
           />
         )}
         <ReactionsButton link={link} fromRef={refMenu} />
-        <IconButton className="rounded-full aspect-square" name="dots" size={25} />
+        <RoomOptionsButton link={link} />
       </div>
     </div>
   );
@@ -140,7 +140,7 @@ function ReactionsButton({ link, fromRef }: { link: NostrLink; fromRef: RefObjec
         <div
           className="absolute bg-foreground-2 p-3 grid grid-cols-6 gap-4 text-3xl rounded-2xl select-none"
           style={{
-            bottom: window.innerHeight - (pos?.top ?? 0),
+            bottom: window.innerHeight - (pos?.top ?? 0) + 5,
             left: pos?.left,
             width: pos?.width,
           }}
@@ -170,6 +170,89 @@ function ReactionsButton({ link, fromRef }: { link: NostrLink; fromRef: RefObjec
         onClick={() => setOpen((s) => !s)}
       />
       {px}
+    </>
+  );
+}
+
+function RoomOptionsButton({ link }: { link: NostrLink }) {
+  const [open, setOpen] = useState(false);
+  const login = useLogin();
+  const ref = useRef<HTMLButtonElement | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+  const [w, setW] = useState(230);
+  const navigate = useNavigate();
+  const isAdmin = useIsAdmin();
+  const localParticipant = useLocalParticipant();
+  const api = useNestsApi();
+
+  const menuItem = (icon: string, text: ReactNode, onClick: () => void, className?: string) => {
+    return (
+      <div
+        className={classNames(
+          "flex items-center gap-3 px-4 py-3 first:pt-4 last:pb-4 hover:bg-foreground hover:text-primary transition cursor-pointer select-none",
+          className,
+        )}
+        onClick={onClick}
+      >
+        <Icon name={icon} />
+        <div>{text}</div>
+      </div>
+    );
+  };
+
+  useEffect(() => {
+    const t = setInterval(() => {
+      const elm = menuRef.current;
+      if (!elm) return;
+      if (elm.offsetWidth !== 0) {
+        setW(elm.offsetWidth);
+      }
+    }, 100);
+    return () => clearInterval(t);
+  }, []);
+
+  return (
+    <>
+      <IconButton
+        className={`rounded-full aspect-square${open ? " text-highlight" : ""}`}
+        name="dots"
+        size={25}
+        ref={ref}
+        onClick={() => setOpen((s) => !s)}
+      />
+      {open &&
+        ref.current &&
+        createPortal(
+          <div
+            className="absolute bg-foreground-2 flex flex-col rounded-2xl select-none overflow-hidden whitespace-nowrap"
+            ref={menuRef}
+            style={{
+              bottom: window.innerHeight - ref.current.getBoundingClientRect().top + 15,
+              left: Math.min(window.innerWidth - w, ref.current.getBoundingClientRect().left),
+            }}
+          >
+            {login.pubkey &&
+              menuItem("person", "Profile", () => {
+                navigate(`/${hexToBech32("npub", login.pubkey)}`);
+              })}
+            {menuItem("copy", "Copy Room Link", () => {
+              window.navigator.clipboard.writeText(
+                `${window.location.protocol}//${window.location.host}/${link.encode()}`,
+              );
+              setOpen(false);
+            })}
+            {localParticipant.microphoneTrack &&
+              login.pubkey &&
+              menuItem("exit", "Leave Stage", async () => {
+                await api.updatePermissions(link.id, login.pubkey!, false);
+                setOpen(false);
+              })}
+            {isAdmin && menuItem("audio", "Stream Audio", () => {})}
+            {isAdmin && menuItem("rec", "Start Room Recording", () => {})}
+            {isAdmin && menuItem("folder", "Room Recordings", () => {}, "opacity-50 cursor-not-allowed")}
+          </div>,
+          document.body,
+        )}
     </>
   );
 }

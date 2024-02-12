@@ -1,6 +1,13 @@
 import { base64 } from "@scure/base";
 import { EventBuilder, EventKind, EventSigner } from "@snort/system";
 
+export interface RoomInfo {
+  host: string;
+  speakers: Array<string>;
+  admins: Array<string>;
+  link: string;
+}
+
 export class NestsApi {
   constructor(
     readonly url: string,
@@ -36,6 +43,10 @@ export class NestsApi {
         can_publish: canPublish,
       }),
     );
+  }
+
+  async getRoomInfo(room: string) {
+    return await this.#fetch<RoomInfo>("GET", false, `/api/v1/nests/${room}/info`);
   }
 
   async #fetch<R>(method: "GET" | "PUT" | "POST", auth: boolean, path: string, body?: BodyInit) {

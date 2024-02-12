@@ -17,7 +17,6 @@
     "@snort/system": "^1.2.1",
     "@snort/system-react": "^1.2.1",
     "@snort/system-wasm": "^1.0.2",
-    "@szhsin/react-menu": "^4.1.0",
     "classnames": "^2.5.1",
     "dayjs": "^1.11.10",
     "livekit-client": "^1.15.10",

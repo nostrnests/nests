@@ -1,4 +1,4 @@
-import { LiveKitRoom, RoomAudioRenderer } from "@livekit/components-react";
+import { LiveKitRoom, RoomAudioRenderer, useParticipants } from "@livekit/components-react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import NostrParticipants from "../element/participants";
 import { NostrEvent, NostrLink, parseNostrLink } from "@snort/system";
@@ -13,11 +13,13 @@ import WriteMessage from "../element/write-message";
 import useRoomPresence from "../hooks/useRoomPresence";
 import { useLogin } from "../login";
 import Modal from "../element/modal";
-import { ReactNode, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { useRoomReactions } from "../hooks/useRoomReactions";
 import classNames from "classnames";
 import Flyout from "../element/flyout";
 import { NostrRoomContext } from "../hooks/nostr-room-context";
+import { NestsApi, RoomInfo } from "../api";
+import { ApiUrl } from "../const";
 
 interface RoomState {
   event: NostrEvent;
@@ -30,11 +32,8 @@ export default function Room() {
   const location = useLocation();
   const login = useLogin();
   const [confirmGuest, setConfirmGuest] = useState(false);
-  const [flyout, setFlyout] = useState<ReactNode>();
   const room = location.state as RoomState | undefined;
   const link = room ? NostrLink.fromEvent(room.event) : undefined;
-  const presence = useRoomPresence(link, true);
-  const reactions = useRoomReactions(link);
   if (!room?.token || !link) return <JoinRoom />;
 
   const livekitUrl = room.event.tags.find(
@@ -51,15 +50,12 @@ export default function Room() {
       className="overflow-hidden"
     >
       <RoomAudioRenderer />
-      <NostrRoomContext.Provider value={{ reactions, presence, flyout, setFlyout }}>
-        <Flyout show={flyout !== undefined} onClose={() => setFlyout(undefined)}>
-          {flyout}
-        </Flyout>
+      <NostrRoomContextProvider link={link}>
         <div className="w-screen flex overflow-hidden h-screen">
           <ParticipantsPannel room={room} />
           <ChatPannel link={link} />
         </div>
-      </NostrRoomContext.Provider>
+      </NostrRoomContextProvider>
       {login.type === "none" && !confirmGuest && (
         <Modal id="join-as-guest">
           <div className="flex flex-col gap-4 items-center">
@@ -94,7 +90,7 @@ function ParticipantsPannel({ room }: { room: RoomState }) {
 }
 
 function ChatPannel({ link }: { link: NostrLink }) {
-  const [expanded, setExpanded] = useState(true);
+  const [expanded, setExpanded] = useState(false);
   const mobileStyles = [
     {
       "max-lg:translate-y-[20vh] max-lg:h-[80vh]": expanded,
@@ -160,5 +156,28 @@ function JoinRoom() {
         Join
       </PrimaryButton>
     </div>
+  );
+}
+
+function NostrRoomContextProvider({ link, children }: { link: NostrLink; children?: ReactNode }) {
+  const [flyout, setFlyout] = useState<ReactNode>();
+  const [roomInfo, setRoomInfo] = useState<RoomInfo>();
+  const presence = useRoomPresence(link, true);
+  const reactions = useRoomReactions(link);
+  const participants = useParticipants();
+
+  useEffect(() => {
+    const api = new NestsApi(ApiUrl);
+    api.getRoomInfo(link.id).then(setRoomInfo);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(participants.map((a) => a.permissions))]);
+
+  return (
+    <NostrRoomContext.Provider value={{ reactions, presence, flyout, setFlyout, info: roomInfo }}>
+      <Flyout show={flyout !== undefined} onClose={() => setFlyout(undefined)}>
+        {flyout}
+      </Flyout>
+      {children}
+    </NostrRoomContext.Provider>
   );
 }

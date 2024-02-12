@@ -16,7 +16,7 @@ export default function useRoomPresence(link: NostrLink | undefined, inRoom: boo
     return rb;
   }, [link]);
 
-  const { sendPresence, interval } = usePresence(link);
+  const { sendPresence, interval, hand } = usePresence(link);
   useEffect(() => {
     if (link?.id && inRoom) {
       const t = setInterval(async () => {
@@ -25,6 +25,12 @@ export default function useRoomPresence(link: NostrLink | undefined, inRoom: boo
       return () => clearInterval(t);
     }
   }, [sendPresence, inRoom, link?.id, interval]);
+  useEffect(() => {
+    if (inRoom) {
+      sendPresence();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [inRoom, hand]);
 
   const presenceEvents = useRequestBuilder(subPresence);
   return presenceEvents.filter((a) => link?.referencesThis(a));

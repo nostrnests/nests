@@ -1,6 +1,6 @@
 import { useParticipantPermissions, useParticipants } from "@livekit/components-react";
 import { useUserProfile } from "@snort/system-react";
-import { LocalParticipant, RemoteParticipant } from "livekit-client";
+import { LocalParticipant, RemoteParticipant, Track } from "livekit-client";
 import Icon from "../icon";
 import Avatar from "./avatar";
 import { hexToBech32, unixNow } from "@snort/shared";
@@ -11,6 +11,7 @@ import useHoverMenu from "../hooks/useHoverMenu";
 import { useUserRoomReactions } from "../hooks/useRoomReactions";
 import { useState } from "react";
 import ZapFlow from "./zap-modal";
+import VuBar from "./vu";
 
 export default function NostrParticipants({ event }: { event: NostrEvent }) {
   const participants = useParticipants();
@@ -125,6 +126,7 @@ function NostrParticipant({ p, event }: { p: RemoteParticipant | LocalParticipan
             : profile?.display_name ?? profile?.name ?? hexToBech32("npub", p.identity).slice(0, 12)}
         </div>
         {isHost && <div className="text-primary">Host</div>}
+        <VuBar track={p.getTrack(Track.Source.Microphone)?.audioTrack?.mediaStreamTrack} height={10} width={80} />
       </div>
     </>
   );

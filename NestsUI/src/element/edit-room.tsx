@@ -53,8 +53,8 @@ export default function EditRoom({ event, onClose }: { event: NostrEvent; onClos
           updateOrAddTag("color", color ?? "");
           updateOrAddTag("image", image ?? "");
 
-          event.id = EventExt.createId(event);
           event.created_at = unixNow();
+          event.id = EventExt.createId(event);
           const signed = await signer?.sign(event);
           console.debug(signed);
           if (signed) {
