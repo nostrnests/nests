@@ -45,7 +45,33 @@ public class LiveKitApi
         return await TwirpRpc<UpdateParticipantRequest, Room>(token, "livekit.RoomService", "UpdateParticipant", req);
     }
 
-    private async Task<R> TwirpRpc<T, R>(string token, string service, string method, T req) where T : IMessage where R : IMessage, new()
+    public async Task<ParticipantInfo> GetParticipant(RoomParticipantIdentity req)
+    {
+        var token = _jwt.CreateToken("backend",
+            new LiveKitJwt.Permissions
+            {
+                Room = req.Room,
+                RoomAdmin = true,
+            });
+
+        return await TwirpRpc<RoomParticipantIdentity, ParticipantInfo>(token, "livekit.RoomService", "GetParticipant",
+            req);
+    }
+
+    public async Task MutePublishedTrack(MuteRoomTrackRequest req)
+    {
+        var token = _jwt.CreateToken("backend",
+            new LiveKitJwt.Permissions
+            {
+                Room = req.Room,
+                RoomAdmin = true,
+            });
+
+        await TwirpRpc<MuteRoomTrackRequest, Room>(token, "livekit.RoomService", "MutePublishedTrack", req);
+    }
+
+    private async Task<TR> TwirpRpc<T, TR>(string token, string service, string method, T req)
+        where T : IMessage where TR : IMessage, new()
     {
         var twirpReq = new HttpRequestMessage(HttpMethod.Post, $"/twirp/{service}/{method}");
         using var stream = new MemoryStream();
@@ -54,7 +80,7 @@ public class LiveKitApi
 
         twirpReq.Content = new ByteArrayContent(stream.ToArray())
         {
-            Headers = {ContentType = new MediaTypeHeaderValue("application/protobuf")}
+            Headers = { ContentType = new MediaTypeHeaderValue("application/protobuf") }
         };
 
         twirpReq.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
@@ -63,7 +89,7 @@ public class LiveKitApi
         var rsp = await _client.SendAsync(twirpReq);
         if (rsp.IsSuccessStatusCode)
         {
-            var ret = new R();
+            var ret = new TR();
             ret.MergeFrom(await rsp.Content.ReadAsStreamAsync());
             return ret;
         }
@@ -74,13 +100,10 @@ public class LiveKitApi
 
     class TwirpError
     {
-        [JsonProperty("code")]
-        public string Code { get; init; } = null!;
+        [JsonProperty("code")] public string Code { get; init; } = null!;
 
-        [JsonProperty("msg")]
-        public string? Message { get; init; }
+        [JsonProperty("msg")] public string? Message { get; init; }
 
-        [JsonProperty("meta")]
-        public object? Meta { get; init; }
+        [JsonProperty("meta")] public object? Meta { get; init; }
     }
 }

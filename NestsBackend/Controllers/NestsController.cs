@@ -232,25 +232,63 @@ public class NestsController : Controller
             return BadRequest();
         }
 
-        if (!callerParticipant.IsAdmin)
+        var isAllowedEditSelf = callerParticipant.Pubkey == participant.Pubkey && req.CanPublish == false;
+        var isHost = callerParticipant.Pubkey == room.CreatedBy;
+        if (!(callerParticipant.IsAdmin || isAllowedEditSelf))
         {
             return Unauthorized();
         }
 
-        participant.IsSpeaker = req.CanPublish;
-        await _db.SaveChangesAsync();
-
-        await _liveKit.UpdateParticipant(new()
+        var changes = false;
+        if (req.CanPublish.HasValue)
         {
-            Room = room.Id.ToString(),
-            Identity = participant.Pubkey,
-            Permission = new()
-            {
-                CanPublish = req.CanPublish
-            }
-        });
+            participant.IsSpeaker = req.CanPublish.Value;
+            changes = true;
+        }
 
-        return Accepted();
+        if (req.IsAdmin.HasValue && isHost)
+        {
+            participant.IsAdmin = req.IsAdmin.Value;
+            changes = true;
+        }
+
+        if (req.MuteMicrophone.HasValue)
+        {
+            var roomParticipant = await _liveKit.GetParticipant(new()
+            {
+                Room = room.Id.ToString(),
+                Identity = participant.Pubkey
+            });
+            var micTrack = roomParticipant.Tracks.FirstOrDefault(a => a.Source == TrackSource.Microphone);
+            if (micTrack != default)
+            {
+                await _liveKit.MutePublishedTrack(new()
+                {
+                    Room = room.Id.ToString(),
+                    Identity = participant.Pubkey,
+                    Muted = req.MuteMicrophone.Value,
+                    TrackSid = micTrack.Sid
+                });
+                changes = true;
+            }
+        }
+
+        if (changes)
+        {
+            await _db.SaveChangesAsync();
+            await _liveKit.UpdateParticipant(new()
+            {
+                Room = room.Id.ToString(),
+                Identity = participant.Pubkey,
+                Permission = new()
+                {
+                    CanPublish = participant.IsSpeaker
+                }
+            });
+            return Accepted();
+        }
+
+        return NoContent();
     }
 
     [HttpGet("{id:guid}/info")]
