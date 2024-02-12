@@ -5,6 +5,8 @@ using Microsoft.EntityFrameworkCore;
 using Nests.Database;
 using NestsBackend.Model;
 using NestsBackend.Services;
+using Nostr.Client.Identifiers;
+using Nostr.Client.Messages;
 using Room = Nests.Database.Room;
 
 namespace NestsBackend.Controllers;
@@ -136,7 +138,7 @@ public class NestsController : Controller
             CanPublish = false
         });
 
-        return Json(new {token});
+        return Json(new { token });
     }
 
     /// <summary>
@@ -188,7 +190,7 @@ public class NestsController : Controller
             CanPublishSources = ["microphone"]
         });
 
-        return Json(new {token});
+        return Json(new { token });
     }
 
     /// <summary>
@@ -249,5 +251,28 @@ public class NestsController : Controller
         });
 
         return Accepted();
+    }
+
+    [HttpGet("{id:guid}/info")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetRoomInfo([FromRoute] Guid id)
+    {
+        var room = await _db.Rooms
+            .AsNoTracking()
+            .Include(a => a.Participants)
+            .FirstOrDefaultAsync(a => a.Id == id);
+
+        if (room == default)
+        {
+            return NotFound();
+        }
+
+        return Json(new RoomInfoResponse
+        {
+            Host = room.CreatedBy,
+            Speakers = room.Participants.Where(a => a.IsSpeaker).Select(a => a.Pubkey).ToList(),
+            Admins = room.Participants.Where(a => a.IsAdmin).Select(a => a.Pubkey).ToList(),
+            Link = new NostrAddressIdentifier(room.Id.ToString(), room.CreatedBy, null, (NostrKind)30312).ToBech32()
+        });
     }
 }

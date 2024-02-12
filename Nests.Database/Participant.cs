@@ -12,10 +12,13 @@ public class Participant
     public Guid RoomId { get; init; }
     public Room Room { get; set; } = null!;
 
+    /// <summary>
+    /// User can moderate the room
+    /// </summary>
     public bool IsAdmin { get; set; } = true;
 
     /// <summary>
-    /// If this person can publish audio
+    /// User can publish audio (speak)
     /// </summary>
     public bool IsSpeaker { get; set; }
 }
