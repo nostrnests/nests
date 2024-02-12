@@ -68,7 +68,6 @@ export default function VuBar({
       return () => {
         clearInterval(t);
         audioContext.close();
-        trackClone.stop();
       };
     }
   }, [ref, track, full]);
