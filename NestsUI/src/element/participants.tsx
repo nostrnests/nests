@@ -9,9 +9,10 @@ import { NostrEvent, NostrLink } from "@snort/system";
 import ProfileCard from "./profile-card";
 import useHoverMenu from "../hooks/useHoverMenu";
 import { useUserRoomReactions } from "../hooks/useRoomReactions";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import ZapFlow from "./zap-modal";
 import VuBar from "./vu";
+import { NostrRoomContext } from "../hooks/nostr-room-context";
 
 export default function NostrParticipants({ event }: { event: NostrEvent }) {
   const participants = useParticipants();
@@ -56,9 +57,12 @@ function NostrParticipant({ p, event }: { p: RemoteParticipant | LocalParticipan
     }
   }
   const { handleMouseEnter, handleMouseLeave, isHovering } = useHoverMenu();
+  const room = useContext(NostrRoomContext);
 
   const isHandRaised = Boolean(presence?.tags.find((a) => a[0] === "hand")?.[1]);
+  const isSpeaker = p.tracks.size > 0;
   const isHost = event.pubkey === p.identity;
+  const isAdmin = room.info?.admins.includes(p.identity);
   const reaction = reactions
     ?.filter((a) => a.created_at > unixNow() - 10)
     ?.sort((a, b) => (a.created_at > b.created_at ? -1 : 1))?.[0];
@@ -115,7 +119,7 @@ function NostrParticipant({ p, event }: { p: RemoteParticipant | LocalParticipan
           <Avatar
             pubkey={p.identity}
             size={72}
-            className={p.isSpeaking ? `outline outline-3${isHost ? " outline-primary" : ""}` : ""}
+            className={p.isSpeaking ? `outline outline-4${isHost ? " outline-primary" : ""}` : ""}
             link={false}
           />
           {isHovering && <ProfileCard participant={p} pubkey={p.identity} />}
@@ -126,6 +130,8 @@ function NostrParticipant({ p, event }: { p: RemoteParticipant | LocalParticipan
             : profile?.display_name ?? profile?.name ?? hexToBech32("npub", p.identity).slice(0, 12)}
         </div>
         {isHost && <div className="text-primary">Host</div>}
+        {!isHost && isAdmin && <div className="text-primary">Moderator</div>}
+        {!isHost && !isAdmin && isSpeaker && <div>Speaker</div>}
         <VuBar track={p.getTrack(Track.Source.Microphone)?.audioTrack?.mediaStreamTrack} height={10} width={80} />
       </div>
     </>

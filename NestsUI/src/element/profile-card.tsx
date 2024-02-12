@@ -23,7 +23,7 @@ export default function ProfileCard({
   const nostrRoom = useContext(NostrRoomContext);
   const isLoginAdmin = useIsAdmin();
   const thisIsAdmin = nostrRoom.info?.admins.includes(pubkey);
-  const isLoginHost = login.pubkey && nostrRoom.info?.host === login.pubkey;
+  const thisIsHost = pubkey === nostrRoom.info?.host;
   const isSelf = pubkey === login.pubkey;
 
   const isSpeaker = participant.audioTracks.size > 0;
@@ -56,13 +56,13 @@ export default function ProfileCard({
           {!isMuted && menuItem("mic-off", "Mute", async () => {
             await api.updatePermissions(room.name, pubkey, { mute_microphone: true });
           })}
-          {!thisIsAdmin && menuItem("admin", "Make admin", async () => {
+          {!thisIsAdmin && !thisIsHost && menuItem("admin", "Make admin", async () => {
             await api.updatePermissions(room.name, pubkey, { is_admin: true });
           })}
-          {thisIsAdmin && !isLoginHost && menuItem("admin", "Remove admin", async () => {
+          {thisIsAdmin && !thisIsHost && menuItem("admin", "Remove admin", async () => {
             await api.updatePermissions(room.name, pubkey, { is_admin: false });
           })}
-          {!isSelf && !isLoginHost && <>
+          {!isSelf && !thisIsHost && <>
             <hr className="mx-4 border-foreground" />
             {menuItem("minus-circle", "Ban user", () => { }, "text-delete hover:text-delete")}
           </>}

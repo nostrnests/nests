@@ -4,11 +4,12 @@ import Spinner from "./spinner";
 
 export type ButtonProps = Omit<HTMLProps<HTMLButtonElement>, "onClick"> & {
   onClick?: (e: React.MouseEvent) => Promise<void> | void;
+  loading?: boolean;
 };
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ children, onClick, className, ...props }: ButtonProps, ref) => {
-    const [loading, setLoading] = useState(false);
+  ({ children, onClick, className, loading, ...props }: ButtonProps, ref) => {
+    const [lx, setLoading] = useState(loading);
     return (
       <button
         {...props}
@@ -24,12 +25,12 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           }
         }}
       >
-        {loading && (
+        {lx && (
           <span className="absolute w-full h-full top-0 left-0 flex items-center justify-center">
             <Spinner />
           </span>
         )}
-        <span className={loading ? "invisible" : ""}>{children}</span>
+        <span className={lx ? "invisible" : ""}>{children}</span>
       </button>
     );
   },

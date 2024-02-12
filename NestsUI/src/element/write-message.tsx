@@ -16,10 +16,12 @@ import { useNestsApi } from "../hooks/useNestsApi";
 export default function WriteMessage({ link, className }: { link: NostrLink; className?: string }) {
   const [msg, setMsg] = useState("");
   const login = useLogin();
+  const [sending, setSending] = useState(false);
   const { system, signer } = useEventBuilder();
 
   async function sendMessage() {
     if (!signer || msg.length === 0) return;
+    setSending(true);
     const builder = new EventBuilder();
     builder
       .content(msg)
@@ -27,8 +29,9 @@ export default function WriteMessage({ link, className }: { link: NostrLink; cla
       .tag(link.toEventTag()!);
 
     const ev = await builder.buildAndSign(signer);
-    await system.BroadcastEvent(ev);
     setMsg("");
+    await system.BroadcastEvent(ev);
+    setSending(false);
   }
 
   if (login.type === "none") return <div>Please login to chat</div>;
@@ -48,7 +51,7 @@ export default function WriteMessage({ link, className }: { link: NostrLink; cla
             }
           }}
         />
-        <PrimaryButton onClick={sendMessage}>Send</PrimaryButton>
+        <PrimaryButton onClick={sendMessage} loading={sending}>Send</PrimaryButton>
       </div>
     </>
   );
