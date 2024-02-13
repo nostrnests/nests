@@ -1,6 +1,7 @@
-import { EventKind, NostrEvent, NostrLink, RequestBuilder } from "@snort/system";
+import { EventKind, NostrLink, RequestBuilder } from "@snort/system";
 import { useRequestBuilder } from "@snort/system-react";
-import { createContext, useContext, useMemo } from "react";
+import { useMemo } from "react";
+import { useNostrRoom } from "./nostr-room-context";
 
 export function useRoomReactions(link?: NostrLink) {
   const sub = useMemo(() => {
@@ -17,9 +18,7 @@ export function useRoomReactions(link?: NostrLink) {
   return reactions.filter((a) => link?.referencesThis(a));
 }
 
-export const RoomReactions = createContext<Array<NostrEvent>>([]);
-
 export function useUserRoomReactions(pk: string) {
-  const ctx = useContext(RoomReactions);
-  return ctx?.filter((a) => a.pubkey === pk);
+  const ctx = useNostrRoom();
+  return ctx.reactions.filter((a) => a.pubkey === pk);
 }
