@@ -1,5 +1,5 @@
 import { NostrEvent, TaggedNostrEvent } from "@snort/system";
-import { ReactNode, createContext } from "react";
+import { ReactNode, createContext, useContext } from "react";
 import { RoomInfo } from "../api";
 
 export interface RoomState {
@@ -15,3 +15,7 @@ export const NostrRoomContext = createContext<RoomState>({
   presence: [],
   setFlyout: () => {},
 });
+
+export function useNostrRoom() {
+  return useContext(NostrRoomContext);
+}

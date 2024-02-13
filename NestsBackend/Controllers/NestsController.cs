@@ -12,6 +12,8 @@ using Room = Nests.Database.Room;
 namespace NestsBackend.Controllers;
 
 [Route("/api/v1/nests")]
+[Consumes("application/json")]
+[Produces("application/json")]
 public class NestsController : Controller
 {
     private readonly Config _config;
@@ -56,34 +58,9 @@ public class NestsController : Controller
         _db.Participants.Add(user);
         await _db.SaveChangesAsync();
 
-        var liveKitEgress = new RoomEgress()
-        {
-            Room = new RoomCompositeEgressRequest()
-            {
-                RoomName = room.Id.ToString(),
-                SegmentOutputs =
-                {
-                    new SegmentedFileOutput
-                    {
-                        Protocol = SegmentedFileProtocol.HlsProtocol,
-                        FilenamePrefix = $"{room.Id}/r",
-                        PlaylistName = "live.m3u8",
-                        S3 = new S3Upload
-                        {
-                            Endpoint = _config.EgressS3.Endpoint.ToString(),
-                            Bucket = _config.EgressS3.Bucket,
-                            AccessKey = _config.EgressS3.Key,
-                            Secret = _config.EgressS3.Secret
-                        }
-                    }
-                }
-            }
-        };
-
         var liveKitReq = new CreateRoomRequest
         {
-            Name = room.Id.ToString(),
-            //Egress = liveKitEgress
+            Name = room.Id.ToString()
         };
 
         await _liveKit.CreateRoom(liveKitReq);
@@ -249,6 +226,7 @@ public class NestsController : Controller
         if (req.IsAdmin.HasValue && isHost)
         {
             participant.IsAdmin = req.IsAdmin.Value;
+            await UpdateRoomInfo(room.Id);
             changes = true;
         }
 
@@ -295,22 +273,262 @@ public class NestsController : Controller
     [AllowAnonymous]
     public async Task<IActionResult> GetRoomInfo([FromRoute] Guid id)
     {
-        var room = await _db.Rooms
-            .AsNoTracking()
-            .Include(a => a.Participants)
-            .FirstOrDefaultAsync(a => a.Id == id);
+        var ret = await GetRoomInfoObject(id);
 
-        if (room == default)
+        if (ret == default)
         {
             return NotFound();
         }
 
-        return Json(new RoomInfoResponse
+        return Json(ret);
+    }
+
+    /// <summary>
+    /// Start a new recording
+    /// </summary>
+    /// <param name="roomId"></param>
+    /// <returns></returns>
+    [HttpPost("{roomId:guid}/recording")]
+    [Authorize(AuthenticationSchemes = NostrAuth.Scheme)]
+    public async Task<IActionResult> StartRecording([FromRoute] Guid roomId)
+    {
+        var roomInfo = await GetAdminUserAndRoom(roomId);
+        if (roomInfo == default)
+        {
+            return BadRequest();
+        }
+
+        var (room, user) = roomInfo.Value;
+        var recordingId = Guid.NewGuid();
+
+        if (_config.EgressRecordingPath == default)
+        {
+            throw new Exception("Recording path not configured");
+        }
+
+        var req = new RoomCompositeEgressRequest
+        {
+            AudioOnly = true,
+            RoomName = roomId.ToString(),
+            FileOutputs =
+            {
+                new EncodedFileOutput
+                {
+                    FileType = EncodedFileType.Mp4,
+                    Filepath = $"{_config.EgressRecordingPath}/{recordingId}"
+                }
+            }
+        };
+
+        var rsp = await _liveKit.StartRoomCompositeEgress(req);
+        if (rsp.Status is EgressStatus.EgressStarting)
+        {
+            var newRecording = new Recording()
+            {
+                Id = recordingId,
+                RoomId = room.Id,
+                StartedBy = user.Pubkey,
+                EgressId = rsp.EgressId
+            };
+            _db.Recordings.Add(newRecording);
+            await _db.SaveChangesAsync();
+            await UpdateRoomInfo(roomId);
+            return Accepted();
+        }
+
+        return BadRequest();
+    }
+
+    /// <summary>
+    /// Stop a recording
+    /// </summary>
+    /// <param name="roomId"></param>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    [HttpPatch("{roomId:guid}/recording/{id:guid}")]
+    [Authorize(AuthenticationSchemes = NostrAuth.Scheme)]
+    public async Task<IActionResult> StopRecording([FromRoute] Guid roomId, [FromRoute] Guid id)
+    {
+        var roomInfo = await GetAdminUserAndRoom(roomId);
+        if (roomInfo == default)
+        {
+            return BadRequest();
+        }
+
+        var (room, _) = roomInfo.Value;
+        var recording = await _db.Recordings
+            .FirstOrDefaultAsync(a => a.Id == id && a.RoomId == roomId);
+        if (recording == default)
+        {
+            return NotFound();
+        }
+
+        if (recording.Stopped.HasValue)
+        {
+            return BadRequest(new NestError("Already stopped"));
+        }
+
+        await _liveKit.StopEgress(recording.RoomId, new()
+        {
+            EgressId = recording.EgressId
+        });
+        recording.Stopped = DateTime.UtcNow;
+        await _db.SaveChangesAsync();
+
+        await UpdateRoomInfo(roomId);
+
+        return Accepted();
+    }
+
+    [HttpGet("{roomId:guid}/recording")]
+    [Authorize(AuthenticationSchemes = NostrAuth.Scheme)]
+    public async Task<IActionResult> ListRecordings([FromRoute] Guid roomId)
+    {
+        var roomInfo = await GetAdminUserAndRoom(roomId);
+        if (roomInfo == default)
+        {
+            return BadRequest();
+        }
+
+        var (room, _) = roomInfo.Value;
+        return Json(room.Recordings.Select(a => new RoomRecording()
+        {
+            Id = a.Id,
+            Started = a.Started,
+            Stopped = a.Stopped,
+            Url = new Uri($"http://localhost:5070/api/v1/nests/{room.Id}/recording/{a.Id}")
+        }));
+    }
+
+    [HttpGet("{roomId:guid}/recording/{id:guid}")]
+    public async Task<IActionResult> GetRecording([FromRoute] Guid roomId, [FromRoute] Guid id)
+    {
+        var roomInfo = await GetAdminUserAndRoom(roomId);
+        if (roomInfo == default)
+        {
+            return BadRequest();
+        }
+
+        var recording = await _db.Recordings
+            .FirstOrDefaultAsync(a => a.Id == id && a.RoomId == roomId);
+        if (recording == default)
+        {
+            return NotFound();
+        }
+
+        if (!recording.Stopped.HasValue)
+        {
+            return BadRequest(new NestError("Recording not finished"));
+        }
+
+        var path = Path.Combine(_config.ApiRecordingPath!, $"{recording.Id}.mp4")
+        if (Path.Exists(path))
+        {
+            var fs = new FileStream(path, FileMode.Open,
+                FileAccess.Read);
+            return File(fs, "audio/mp4");
+        }
+
+        return NotFound();
+    }
+
+    /// <summary>
+    /// Delete a recording for a room
+    /// </summary>
+    /// <param name="roomId"></param>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    [HttpDelete("{roomId:guid}/recording/{id:guid}")]
+    [Authorize(AuthenticationSchemes = NostrAuth.Scheme)]
+    public async Task<IActionResult> DeleteRecording([FromRoute] Guid roomId, [FromRoute] Guid id)
+    {
+        var roomInfo = await GetAdminUserAndRoom(roomId);
+        if (roomInfo == default)
+        {
+            return BadRequest();
+        }
+
+        var recording = await _db.Recordings
+            .AsNoTracking()
+            .FirstOrDefaultAsync(a => a.Id == id && a.RoomId == roomId);
+        if (recording == default)
+        {
+            return NotFound();
+        }
+
+        var path = Path.Combine(_config.ApiRecordingPath!, $"{recording.Id}.mp4");
+        if (Path.Exists(path))
+        {
+            System.IO.File.Delete(path);
+            await _db.Recordings
+                .Where(a => a.Id == recording.Id)
+                .ExecuteDeleteAsync();
+            return Accepted();
+        }
+
+        return NotFound();
+    }
+
+    private async Task<(Room, Participant)?> GetAdminUserAndRoom(Guid roomId)
+    {
+        var pubkey = HttpContext.GetPubKey();
+        if (string.IsNullOrEmpty(pubkey)) return default;
+
+        var room = await _db.Rooms
+            .AsNoTracking()
+            .Include(a => a.Recordings)
+            .FirstOrDefaultAsync(a => a.Id == roomId);
+
+        if (room == default)
+        {
+            return default;
+        }
+
+        var user = await _db.Participants
+            .AsNoTracking()
+            .FirstOrDefaultAsync(a => a.Pubkey == pubkey && a.RoomId == room.Id);
+
+        if (user == default)
+        {
+            return default;
+        }
+
+        if (!user.IsAdmin)
+        {
+            return default;
+        }
+
+        return (room, user);
+    }
+
+    private async Task<RoomInfoResponse?> GetRoomInfoObject(Guid roomId)
+    {
+        var room = await _db.Rooms
+            .AsNoTracking()
+            .Include(a => a.Participants)
+            .Include(a => a.Recordings)
+            .FirstOrDefaultAsync(a => a.Id == roomId);
+
+        if (room == default)
+        {
+            return default;
+        }
+
+        return new RoomInfoResponse
         {
             Host = room.CreatedBy,
             Speakers = room.Participants.Where(a => a.IsSpeaker).Select(a => a.Pubkey).ToList(),
             Admins = room.Participants.Where(a => a.IsAdmin).Select(a => a.Pubkey).ToList(),
-            Link = new NostrAddressIdentifier(room.Id.ToString(), room.CreatedBy, null, (NostrKind)30312).ToBech32()
-        });
+            Link = new NostrAddressIdentifier(room.Id.ToString(), room.CreatedBy, null, (NostrKind)30312).ToBech32(),
+            Recording = room.Recordings.Any(a => a.Stopped == null)
+        };
+    }
+
+    private async Task UpdateRoomInfo(Guid roomId)
+    {
+        var info = await GetRoomInfoObject(roomId);
+        if (info == default) return;
+
+        await _liveKit.UpdateRoomMetadata(roomId, info);
     }
 }

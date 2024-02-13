@@ -25,3 +25,7 @@ turn:
     external_tls: true
 keys:
     APIA2zJFaMRctfZ: jWXlEyKmu5eazIGViKFfO0TgT6el8EyjvMR0Tei3HFrB
+webhook:
+    api_key: APIA2zJFaMRctfZ
+    urls:
+        - "http://10.100.2.136:5070/api/v1/livekit/webhook"

@@ -9,10 +9,10 @@ import { NostrEvent, NostrLink } from "@snort/system";
 import ProfileCard from "./profile-card";
 import useHoverMenu from "../hooks/useHoverMenu";
 import { useUserRoomReactions } from "../hooks/useRoomReactions";
-import { useContext, useState } from "react";
+import { useState } from "react";
 import ZapFlow from "./zap-modal";
 import VuBar from "./vu";
-import { NostrRoomContext } from "../hooks/nostr-room-context";
+import { useNostrRoom } from "../hooks/nostr-room-context";
 
 export default function NostrParticipants({ event }: { event: NostrEvent }) {
   const participants = useParticipants();
@@ -57,7 +57,7 @@ function NostrParticipant({ p, event }: { p: RemoteParticipant | LocalParticipan
     }
   }
   const { handleMouseEnter, handleMouseLeave, isHovering } = useHoverMenu();
-  const room = useContext(NostrRoomContext);
+  const room = useNostrRoom();
 
   const isHandRaised = Boolean(presence?.tags.find((a) => a[0] === "hand")?.[1]);
   const isSpeaker = p.tracks.size > 0;

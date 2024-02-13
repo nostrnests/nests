@@ -2,6 +2,7 @@ import "./modal.css";
 
 import React, { ReactNode, useEffect } from "react";
 import { createPortal } from "react-dom";
+import IconButton from "./icon-button";
 
 export interface ModalProps {
   id: string;
@@ -81,6 +82,12 @@ export default function Modal(props: ModalProps) {
           props.onClick?.(e);
         }}
       >
+        <div className="absolute right-4 top-4">
+          <IconButton name="x" onClick={e => {
+            e.stopPropagation();
+            props.onClose?.(e);
+          }} className="rounded-full aspect-square" size={10} />
+        </div>
         {props.children}
       </div>
     </div>,

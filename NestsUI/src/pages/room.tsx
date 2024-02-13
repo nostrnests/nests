@@ -1,4 +1,4 @@
-import { LiveKitRoom, RoomAudioRenderer, useParticipants } from "@livekit/components-react";
+import { LiveKitRoom, RoomAudioRenderer, useEnsureRoom, useParticipants } from "@livekit/components-react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import NostrParticipants from "../element/participants";
 import { NostrEvent, NostrLink, parseNostrLink } from "@snort/system";
@@ -165,12 +165,19 @@ function NostrRoomContextProvider({ link, children }: { link: NostrLink; childre
   const presence = useRoomPresence(link, true);
   const reactions = useRoomReactions(link);
   const participants = useParticipants();
+  const room = useEnsureRoom();
 
   useEffect(() => {
     const api = new NestsApi(ApiUrl);
     api.getRoomInfo(link.id).then(setRoomInfo);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(participants.map((a) => a.permissions))]);
+
+  useEffect(() => {
+    if (room.metadata) {
+      setRoomInfo(JSON.parse(room.metadata) as RoomInfo);
+    }
+  }, [room.metadata]);
 
   return (
     <NostrRoomContext.Provider value={{ reactions, presence, flyout, setFlyout, info: roomInfo }}>

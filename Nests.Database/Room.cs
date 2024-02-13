@@ -10,4 +10,6 @@ public class Room
     public string CreatedBy { get; init; } = null!;
     
     public List<Participant> Participants { get; init; } = new();
+
+    public List<Recording> Recordings { get; init; } = new();
 }

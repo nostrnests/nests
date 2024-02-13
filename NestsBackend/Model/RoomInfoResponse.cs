@@ -15,4 +15,7 @@ public class RoomInfoResponse
     
     [JsonProperty("link")]
     public string Link { get; init; } = null!;
+    
+    [JsonProperty("recording")]
+    public bool Recording { get; init; }
 }

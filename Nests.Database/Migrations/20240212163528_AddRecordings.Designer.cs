@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Nests.Database;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Nests.Database.Migrations
 {
     [DbContext(typeof(NestsContext))]
-    partial class NestsContextModelSnapshot : ModelSnapshot
+    [Migration("20240212163528_AddRecordings")]
+    partial class AddRecordings
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -56,6 +59,10 @@ namespace Nests.Database.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("EgressId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("NodeId")
                         .IsRequired()
                         .HasColumnType("text");
 

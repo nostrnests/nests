@@ -18,12 +18,13 @@ services:
   livekit-egress:
     image: livekit/egress:latest
     restart: unless-stopped
-    cap_add:
-      - "SYS_ADMIN"
     environment:
       - "EGRESS_CONFIG_FILE=/etc/egress.yaml"
+    ports:
+      - "7980:7980"
     volumes:
       - ./compose-config/egress.yaml:/etc/egress.yaml
+      - ./recordings:/recordings
     depends_on:
       - livekit
       - redis
@@ -45,25 +46,6 @@ services:
     environment:
       - "POSTGRES_DB=nests"
       - "POSTGRES_HOST_AUTH_METHOD=trust"
-  minio:
-    image: quay.io/minio/minio
-    restart: unless-stopped
-    command:
-      - "server"
-      - "/data"
-      - "--console-address"
-      - ":9011"
-      - "--address"
-      - ":9010"
-    environment:
-      - "MINIO_SERVER_URL=http://minio:9010"
-      - "MINIO_ROOT_USER=admin"
-      - "MINIO_ROOT_PASSWORD=adminadmin"
-    ports:
-      - "9010:9010"
-      - "9011:9011"
-    volumes:
-      - "minio:/data"
   strfry:
     image: dockurr/strfry
     restart: unless-stopped

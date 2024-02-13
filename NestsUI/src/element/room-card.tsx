@@ -15,6 +15,7 @@ import IconButton from "./icon-button";
 import Modal from "./modal";
 import EditRoom from "./edit-room";
 import { useLogin } from "../login";
+import { useNostrRoom } from "../hooks/nostr-room-context";
 
 export default function RoomCard({
   event,
@@ -42,6 +43,7 @@ export default function RoomCard({
 
   const eventLink = NostrLink.fromEvent(event);
   const presence = useRoomPresence(eventLink, false);
+  const roomContext = useNostrRoom();
 
   async function joinRoom() {
     if (!api) return;
@@ -85,7 +87,13 @@ export default function RoomCard({
           </div>
         )}
         <div className="flex justify-between">
-          {status === "live" ? <ListenerCount n={presence.length} /> : <StartTime n={Number(starts)} />}
+          <div className="flex gap-4 items-center">
+            {status === "live" ? <ListenerCount n={presence.length} /> : <StartTime n={Number(starts)} />}
+            {inRoom && roomContext.info?.recording === true && <div className="px-2 py-1 flex gap-1 items-center bg-white rounded-full text-delete font-semibold text-sm">
+              <span className="rounded-full w-4 h-4 bg-delete animate-pulse"></span>
+              REC
+            </div>}
+          </div>
           {!inRoom && (
             <div>
               <AvatarStack>

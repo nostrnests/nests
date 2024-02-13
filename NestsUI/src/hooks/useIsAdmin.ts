@@ -1,9 +1,8 @@
-import { useContext } from "react";
 import { useLogin } from "../login";
-import { NostrRoomContext } from "./nostr-room-context";
+import { useNostrRoom } from "./nostr-room-context";
 
 export function useIsAdmin() {
   const login = useLogin();
-  const nostrRoom = useContext(NostrRoomContext);
+  const nostrRoom = useNostrRoom();
   return login.pubkey && nostrRoom.info?.admins.includes(login.pubkey);
 }

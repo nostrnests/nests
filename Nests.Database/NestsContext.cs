@@ -11,6 +11,8 @@ public class NestsContext : DbContext
     public DbSet<Room> Rooms => Set<Room>();
 
     public DbSet<Participant> Participants => Set<Participant>();
+
+    public DbSet<Recording> Recordings => Set<Recording>();
     
     public NestsContext(DbContextOptions<NestsContext> ctx) : base(ctx)
     {

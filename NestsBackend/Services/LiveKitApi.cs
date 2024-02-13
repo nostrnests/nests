@@ -28,6 +28,7 @@ public class LiveKitApi
             new LiveKitJwt.Permissions
             {
                 RoomCreate = true,
+                RoomRecord = true,
             });
 
         return await TwirpRpc<CreateRoomRequest, Room>(token, "livekit.RoomService", "CreateRoom", req);
@@ -70,6 +71,49 @@ public class LiveKitApi
         await TwirpRpc<MuteRoomTrackRequest, Room>(token, "livekit.RoomService", "MutePublishedTrack", req);
     }
 
+    public async Task<EgressInfo> StartRoomCompositeEgress(RoomCompositeEgressRequest req)
+    {
+        var token = _jwt.CreateToken("backend",
+            new LiveKitJwt.Permissions
+            {
+                Room = req.RoomName,
+                RoomAdmin = true,
+                RoomRecord = true,
+            });
+
+        return await TwirpRpc<RoomCompositeEgressRequest, EgressInfo>(token, "livekit.Egress",
+            "StartRoomCompositeEgress", req);
+    }
+
+    public async Task<EgressInfo> StopEgress(Guid roomId, StopEgressRequest req)
+    {
+        var token = _jwt.CreateToken("backend",
+            new LiveKitJwt.Permissions
+            {
+                Room = roomId.ToString(),
+                RoomAdmin = true,
+                RoomRecord = true,
+            });
+
+        return await TwirpRpc<StopEgressRequest, EgressInfo>(token, "livekit.Egress", "StopEgress", req);
+    }
+
+    public async Task<Room> UpdateRoomMetadata(Guid roomId, object obj)
+    {
+        var token = _jwt.CreateToken("backend",
+            new LiveKitJwt.Permissions
+            {
+                Room = roomId.ToString(),
+                RoomAdmin = true
+            });
+
+        return await TwirpRpc<UpdateRoomMetadataRequest, Room>(token, "livekit.RoomService", "UpdateRoomMetadata", new()
+        {
+            Room = roomId.ToString(),
+            Metadata = JsonConvert.SerializeObject(obj)
+        });
+    }
+
     private async Task<TR> TwirpRpc<T, TR>(string token, string service, string method, T req)
         where T : IMessage where TR : IMessage, new()
     {
@@ -100,10 +144,13 @@ public class LiveKitApi
 
     class TwirpError
     {
-        [JsonProperty("code")] public string Code { get; init; } = null!;
+        [JsonProperty("code")]
+        public string Code { get; init; } = null!;
 
-        [JsonProperty("msg")] public string? Message { get; init; }
+        [JsonProperty("msg")]
+        public string? Message { get; init; }
 
-        [JsonProperty("meta")] public object? Meta { get; init; }
+        [JsonProperty("meta")]
+        public object? Meta { get; init; }
     }
 }

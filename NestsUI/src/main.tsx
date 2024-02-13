@@ -18,6 +18,12 @@ import NostrRoute from "./pages/nostr-route";
 
 import { WasmOptimizer, hasWasm, wasmInit } from "./wasm";
 
+import localizedFormat from "dayjs/plugin/localizedFormat";
+import relativeTime from "dayjs/plugin/relativeTime";
+import dayjs from "dayjs";
+dayjs.extend(localizedFormat);
+dayjs.extend(relativeTime);
+
 async function routeInit() {
   await loadSession();
   await wasmInit();
