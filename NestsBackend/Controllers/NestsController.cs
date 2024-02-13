@@ -396,7 +396,7 @@ public class NestsController : Controller
             Id = a.Id,
             Started = a.Started,
             Stopped = a.Stopped,
-            Url = new Uri($"http://localhost:5070/api/v1/nests/{room.Id}/recording/{a.Id}")
+            Url = new Uri(_config.PublicUrl, $"/api/v1/nests/{room.Id}/recording/{a.Id}")
         }));
     }
 
@@ -421,7 +421,7 @@ public class NestsController : Controller
             return BadRequest(new NestError("Recording not finished"));
         }
 
-        var path = Path.Combine(_config.ApiRecordingPath!, $"{recording.Id}.mp4")
+        var path = Path.Combine(_config.ApiRecordingPath!, $"{recording.Id}.mp4");
         if (Path.Exists(path))
         {
             var fs = new FileStream(path, FileMode.Open,
