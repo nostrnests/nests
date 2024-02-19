@@ -1,6 +1,6 @@
 import { useParticipantPermissions, useParticipants } from "@livekit/components-react";
 import { useUserProfile } from "@snort/system-react";
-import { LocalParticipant, RemoteParticipant, Track } from "livekit-client";
+import { LocalParticipant, RemoteParticipant } from "livekit-client";
 import Icon from "../icon";
 import Avatar from "./avatar";
 import { hexToBech32, unixNow } from "@snort/shared";
@@ -11,7 +11,6 @@ import useHoverMenu from "../hooks/useHoverMenu";
 import { useUserRoomReactions } from "../hooks/useRoomReactions";
 import { useState } from "react";
 import ZapFlow from "./zap-modal";
-import VuBar from "./vu";
 import { useNostrRoom } from "../hooks/nostr-room-context";
 import { FormattedMessage } from "react-intl";
 
@@ -147,7 +146,6 @@ function NostrParticipant({ p, event }: { p: RemoteParticipant | LocalParticipan
             <FormattedMessage defaultMessage="Speaker" />
           </div>
         )}
-        <VuBar track={p.getTrack(Track.Source.Microphone)?.audioTrack?.mediaStreamTrack} height={10} width={80} />
       </div>
     </>
   );

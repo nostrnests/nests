@@ -5,11 +5,13 @@ export default function VuBar({
   full,
   width,
   height,
+  className,
 }: {
   track?: MediaStreamTrack;
   full?: boolean;
   height?: number;
   width?: number;
+  className?: string;
 }) {
   const ref = useRef<HTMLCanvasElement | null>(null);
 
@@ -60,9 +62,9 @@ export default function VuBar({
           }
         }
 
-        const barLen = ((vol - minVU) / (maxVU - minVU)) * canvas.width;
+        const barLen = ((vol - minVU) / (maxVU - minVU)) * canvas.height;
         ctx.fillStyle = "#00FF00";
-        ctx.fillRect(0, 0, barLen, canvas.height);
+        ctx.fillRect(0, canvas.height - barLen, canvas.width, barLen);
       }, 50);
 
       return () => {
@@ -72,5 +74,5 @@ export default function VuBar({
     }
   }, [ref, track, full]);
 
-  return <canvas ref={ref} width={width ?? 200} height={height ?? 10}></canvas>;
+  return <canvas ref={ref} width={width ?? 200} height={height ?? 10} className={className}></canvas>;
 }

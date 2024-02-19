@@ -11,6 +11,8 @@ import classNames from "classnames";
 import { RoomOptionsButton } from "./room-menu-bar";
 import { LIVE_CHAT } from "../const";
 import { FormattedMessage, useIntl } from "react-intl";
+import { Track } from "livekit-client";
+import VuBar from "./vu";
 
 export default function WriteMessage({ link, className }: { link: NostrLink; className?: string }) {
   const [msg, setMsg] = useState("");
@@ -100,11 +102,17 @@ function MenuBar({ link }: { link: NostrLink }) {
         />
         {room.localParticipant.audioTracks.size > 0 && (
           <IconButton
-            className={`rounded-full aspect-square${localParticipant.isMicrophoneEnabled ? " text-highlight" : ""}`}
+            className={`relative rounded-full overflow-hidden aspect-square${localParticipant.isMicrophoneEnabled ? " text-highlight" : ""}`}
             name={localParticipant.isMicrophoneEnabled ? "mic" : "mic-off"}
             size={25}
             onClick={toggleMute}
-          />
+          >
+            <VuBar
+              track={room.localParticipant.getTrack(Track.Source.Microphone)?.audioTrack?.mediaStreamTrack}
+              height={40}
+              width={40}
+              className="absolute top-0 left-0 w-full h-full opacity-20" />
+          </IconButton>
         )}
         <ReactionsButton link={link} fromRef={refMenu} />
         <RoomOptionsButton link={link} />
@@ -144,29 +152,29 @@ function ReactionsButton({ link, fromRef }: { link: NostrLink; fromRef: RefObjec
 
   const px = open
     ? createPortal(
-        <div
-          className="absolute bg-foreground-2 p-3 grid grid-cols-6 gap-4 text-3xl rounded-2xl select-none"
-          style={{
-            bottom: window.innerHeight - (pos?.top ?? 0) + 5,
-            left: pos?.left,
-            width: pos?.width,
-          }}
-        >
-          <ReactIcon content="🤙" />
-          <ReactIcon content="💯" />
-          <ReactIcon content="😂" />
-          <ReactIcon content="😅" />
-          <ReactIcon content="😳" />
-          <ReactIcon content="🤔" />
-          <ReactIcon content="🔥" />
-          <ReactIcon content="🤡" />
-          <ReactIcon content="🤩" />
-          <ReactIcon content="😱" />
-          <ReactIcon content="🤣" />
-          <ReactIcon content="🤯" />
-        </div>,
-        document.body,
-      )
+      <div
+        className="absolute bg-foreground-2 p-3 grid grid-cols-6 gap-4 text-3xl rounded-2xl select-none"
+        style={{
+          bottom: window.innerHeight - (pos?.top ?? 0) + 5,
+          left: pos?.left,
+          width: pos?.width,
+        }}
+      >
+        <ReactIcon content="🤙" />
+        <ReactIcon content="💯" />
+        <ReactIcon content="😂" />
+        <ReactIcon content="😅" />
+        <ReactIcon content="😳" />
+        <ReactIcon content="🤔" />
+        <ReactIcon content="🔥" />
+        <ReactIcon content="🤡" />
+        <ReactIcon content="🤩" />
+        <ReactIcon content="😱" />
+        <ReactIcon content="🤣" />
+        <ReactIcon content="🤯" />
+      </div>,
+      document.body,
+    )
     : undefined;
   return (
     <>
