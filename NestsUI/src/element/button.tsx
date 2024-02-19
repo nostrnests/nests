@@ -39,5 +39,8 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 const PrimaryButton = forwardRef<HTMLButtonElement, ButtonProps>(({ className, ...props }: ButtonProps, ref) => {
   return <Button {...props} className={classNames("rounded-full bg-primary", className)} ref={ref} />;
 });
-export { PrimaryButton };
+const SecondaryButton = forwardRef<HTMLButtonElement, ButtonProps>(({ className, ...props }: ButtonProps, ref) => {
+  return <Button {...props} className={classNames("rounded-full bg-foreground-2", className)} ref={ref} />;
+});
+export { PrimaryButton, SecondaryButton };
 export default Button;

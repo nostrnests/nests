@@ -10,6 +10,7 @@ import { ROOM_KIND } from "../const";
 import { FormattedMessage } from "react-intl";
 import { logout, useLogin } from "../login";
 import { useNavigate } from "react-router-dom";
+import FollowButton from "../element/follow-button";
 
 export default function ProfilePage({ link, header }: { link: NostrLink; header: boolean }) {
   return (
@@ -54,9 +55,7 @@ export function ProfilePageContent({ link }: { link: NostrLink }) {
             <FormattedMessage defaultMessage="Logout" />
           </PrimaryButton>
         ) : (
-          <PrimaryButton>
-            <FormattedMessage defaultMessage="Follow" />
-          </PrimaryButton>
+          <FollowButton pubkey={link.id} />
         )}
       </div>
       <p>{meta?.about}</p>

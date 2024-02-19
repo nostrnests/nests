@@ -1,6 +1,6 @@
 import { EventExt, NostrEvent } from "@snort/system";
 import { useState } from "react";
-import Button, { PrimaryButton } from "./button";
+import Button, { PrimaryButton, SecondaryButton } from "./button";
 import useEventBuilder from "../hooks/useEventBuilder";
 import { unixNow } from "@snort/shared";
 import { useNavigate } from "react-router-dom";
@@ -80,9 +80,9 @@ export default function EditRoom({ event, onClose }: { event: NostrEvent; onClos
       >
         <FormattedMessage defaultMessage="Save" />
       </PrimaryButton>
-      <Button className="bg-foreground-2 rounded-full" onClick={onClose}>
+      <SecondaryButton onClick={onClose}>
         <FormattedMessage defaultMessage="Cancel" />
-      </Button>
+      </SecondaryButton>
       <hr />
       <Button
         className="bg-delete rounded-full"

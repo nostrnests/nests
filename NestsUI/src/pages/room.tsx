@@ -6,7 +6,7 @@ import { useNestsApi } from "../hooks/useNestsApi";
 import Logo from "../element/logo";
 import RoomCard from "../element/room-card";
 import { useEventFeed } from "@snort/system-react";
-import Button, { PrimaryButton } from "../element/button";
+import { PrimaryButton, SecondaryButton } from "../element/button";
 import Icon from "../icon";
 import ChatMessages from "../element/chat-messages";
 import WriteMessage from "../element/write-message";
@@ -51,7 +51,7 @@ export default function Room() {
       className="overflow-hidden"
     >
       <RoomAudioRenderer />
-      <NostrRoomContextProvider link={link}>
+      <NostrRoomContextProvider event={room.event} >
         <div className="w-screen flex overflow-hidden h-screen">
           <ParticipantsPannel room={room} />
           <ChatPannel link={link} />
@@ -63,9 +63,9 @@ export default function Room() {
             <h2>
               <FormattedMessage defaultMessage="Join Room" />
             </h2>
-            <Button className="rounded-full bg-foreground-2 w-full" onClick={() => setConfirmGuest(true)}>
+            <SecondaryButton className="w-full" onClick={() => setConfirmGuest(true)}>
               <FormattedMessage defaultMessage="Continue as Guest" />
-            </Button>
+            </SecondaryButton>
             <Link to="/sign-up" className="text-highlight">
               <FormattedMessage defaultMessage="Create a nostr account" />
             </Link>
@@ -113,7 +113,7 @@ function ChatPannel({ link }: { link: NostrLink }) {
     <div
       className={classNames(
         mobileStyles,
-        "lg:h-screen bg-foreground grid overflow-hidden grid-rows-[max-content_auto_max-content] w-chat",
+        "lg:h-screen bg-foreground overflow-hidden flex flex-col w-chat",
       )}
     >
       <div
@@ -125,9 +125,7 @@ function ChatPannel({ link }: { link: NostrLink }) {
       <div className={classNames("px-6 py-4 text-xl font-semibold backdrop-blur-sm max-lg:hidden")}>
         <FormattedMessage defaultMessage="Chat" />
       </div>
-      <div className={classNames("overflow-y-scroll", hiddenWhenCollapsed)}>
-        <ChatMessages link={link} />
-      </div>
+      <ChatMessages link={link} className={classNames(hiddenWhenCollapsed)} />
       <div className={classNames("px-5 lg:py-3", { "max-lg:py-2": expanded })}>
         <WriteMessage link={link} className={classNames(hiddenWhenCollapsed)} />
       </div>
@@ -166,9 +164,10 @@ function JoinRoom() {
   );
 }
 
-function NostrRoomContextProvider({ link, children }: { link: NostrLink; children?: ReactNode }) {
+function NostrRoomContextProvider({ event, children }: { event: NostrEvent, children?: ReactNode }) {
   const [flyout, setFlyout] = useState<ReactNode>();
   const [roomInfo, setRoomInfo] = useState<RoomInfo>();
+  const link = NostrLink.fromEvent(event);
   const presence = useRoomPresence(link, true);
   const reactions = useRoomReactions(link);
   const participants = useParticipants();
@@ -187,7 +186,7 @@ function NostrRoomContextProvider({ link, children }: { link: NostrLink; childre
   }, [room.metadata]);
 
   return (
-    <NostrRoomContext.Provider value={{ reactions, presence, flyout, setFlyout, info: roomInfo }}>
+    <NostrRoomContext.Provider value={{ event, reactions, presence, flyout, setFlyout, info: roomInfo }}>
       <Flyout show={flyout !== undefined} onClose={() => setFlyout(undefined)}>
         {flyout}
       </Flyout>

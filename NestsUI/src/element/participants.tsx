@@ -1,9 +1,9 @@
 import { useParticipantPermissions, useParticipants } from "@livekit/components-react";
 import { useUserProfile } from "@snort/system-react";
-import { LocalParticipant, RemoteParticipant } from "livekit-client";
+import { LocalParticipant, RemoteParticipant, Track } from "livekit-client";
 import Icon from "../icon";
 import Avatar from "./avatar";
-import { hexToBech32, unixNow } from "@snort/shared";
+import { unixNow } from "@snort/shared";
 import { useUserPresence } from "../hooks/useRoomPresence";
 import { NostrEvent, NostrLink } from "@snort/system";
 import ProfileCard from "./profile-card";
@@ -13,6 +13,8 @@ import { useState } from "react";
 import ZapFlow from "./zap-modal";
 import { useNostrRoom } from "../hooks/nostr-room-context";
 import { FormattedMessage } from "react-intl";
+import DisplayName from "./display-name";
+import VuBar from "./vu";
 
 export default function NostrParticipants({ event }: { event: NostrEvent }) {
   const participants = useParticipants();
@@ -40,6 +42,7 @@ export default function NostrParticipants({ event }: { event: NostrEvent }) {
 
 function NostrParticipant({ p, event }: { p: RemoteParticipant | LocalParticipant; event: NostrEvent }) {
   const isGuest = p.identity.startsWith("guest-");
+  const isMe = p instanceof LocalParticipant;
   const profile = useUserProfile(isGuest ? undefined : p.identity);
   const [zapping, setZapping] = useState(false);
   const presence = useUserPresence(p.identity);
@@ -109,26 +112,33 @@ function NostrParticipant({ p, event }: { p: RemoteParticipant | LocalParticipan
               </div>
             </div>
           )}
-          {p.audioTracks.size > 0 && !p.isMicrophoneEnabled && (
+          {p.audioTracks.size > 0 && (
             <div className="absolute w-[72px] h-[72px] rotate-[135deg]">
               <div className="bg-foreground rounded-full inline-block mt-[-4px] ml-[-4px] w-8 h-8 flex items-center justify-center">
-                <Icon name={p.isMicrophoneEnabled ? "mic" : "mic-off"} className="rotate-[-135deg]" size={20} />
+                <div className="flex items-center justify-center relative rotate-[-135deg] w-full h-full overflow-hidden rounded-full">
+                  <Icon name={p.isMicrophoneEnabled ? "mic" : "mic-off"} className="z-20" size={20} />
+                  <VuBar
+                    track={p.getTrack(Track.Source.Microphone)?.audioTrack?.mediaStreamTrack}
+                    height={40}
+                    width={40}
+                    className="absolute top-0 left-0 w-full h-full z-10" />
+                </div>
               </div>
             </div>
           )}
           <Avatar
             pubkey={p.identity}
             size={72}
-            className={p.isSpeaking ? `outline outline-4${isHost ? " outline-primary" : ""}` : ""}
+            className={""}
             link={false}
           />
-          {isHovering && <ProfileCard participant={p} pubkey={p.identity} />}
+          {isHovering && !isGuest && <ProfileCard participant={p} pubkey={p.identity} />}
         </div>
-        <div className={isHost ? "text-primary" : ""}>
+        <div className={`text-center ${isHost ? "text-primary" : ""}`}>
           {isGuest ? (
-            <FormattedMessage defaultMessage="Guest (me)" />
+            isMe ? <FormattedMessage defaultMessage="Guest (me)" /> : <FormattedMessage defaultMessage="Guest" />
           ) : (
-            profile?.display_name ?? profile?.name ?? hexToBech32("npub", p.identity).slice(0, 12)
+            <DisplayName pubkey={p.identity} profile={profile} />
           )}
         </div>
         {isHost && (

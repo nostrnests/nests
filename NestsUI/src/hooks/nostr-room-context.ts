@@ -3,6 +3,7 @@ import { ReactNode, createContext, useContext } from "react";
 import { RoomInfo } from "../api";
 
 export interface RoomState {
+  event: NostrEvent;
   reactions: Array<NostrEvent>;
   presence: Array<TaggedNostrEvent>;
   flyout?: ReactNode;
@@ -11,9 +12,10 @@ export interface RoomState {
 }
 
 export const NostrRoomContext = createContext<RoomState>({
+  event: {} as NostrEvent,
   reactions: [],
   presence: [],
-  setFlyout: () => {},
+  setFlyout: () => { },
 });
 
 export function useNostrRoom() {

@@ -7,5 +7,13 @@ export default function DisplayName({
   profile,
   ...props
 }: { pubkey: string; profile?: CachedMetadata } & HTMLProps<HTMLSpanElement>) {
-  return <span {...props}>{profile?.display_name ?? profile?.name ?? hexToBech32("npub", pubkey).slice(0, 12)}</span>;
+  const getName = () => {
+    if ((profile?.display_name?.length ?? 0) > 0) {
+      return profile?.display_name;
+    } else if ((profile?.name?.length ?? 0) > 0) {
+      return profile?.name;
+    }
+    return hexToBech32("npub", pubkey).slice(0, 12);
+  }
+  return <span {...props}>{getName()}</span>;
 }

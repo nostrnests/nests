@@ -16,6 +16,7 @@ import Modal from "./modal";
 import dayjs from "dayjs";
 import Async from "./async";
 import { FormattedMessage } from "react-intl";
+import ShareModal from "./share-modal";
 
 export function RoomOptionsButton({ link }: { link: NostrLink }) {
   const [open, setOpen] = useState(false);
@@ -23,6 +24,7 @@ export function RoomOptionsButton({ link }: { link: NostrLink }) {
   const ref = useRef<HTMLButtonElement | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const [recordings, setRecordings] = useState<Array<RoomRecording>>();
+  const [share, setShare] = useState(false);
   const [w, setW] = useState(230);
   const navigate = useNavigate();
   const isAdmin = useIsAdmin();
@@ -80,10 +82,8 @@ export function RoomOptionsButton({ link }: { link: NostrLink }) {
               menuItem("person", <FormattedMessage defaultMessage="Profile" />, () => {
                 navigate(`/${hexToBech32("npub", login.pubkey)}`);
               })}
-            {menuItem("copy", <FormattedMessage defaultMessage="Copy Room Link" />, () => {
-              window.navigator.clipboard.writeText(
-                `${window.location.protocol}//${window.location.host}/${link.encode()}`,
-              );
+            {menuItem("share", <FormattedMessage defaultMessage="Share" />, () => {
+              setShare(true);
               setOpen(false);
             })}
             {localParticipant.microphoneTrack &&
@@ -92,7 +92,7 @@ export function RoomOptionsButton({ link }: { link: NostrLink }) {
                 await api.updatePermissions(link.id, login.pubkey!, { can_publish: false });
                 setOpen(false);
               })}
-            {isAdmin && menuItem("audio", <FormattedMessage defaultMessage="Stream Audio" />, () => {})}
+            {isAdmin && menuItem("audio", <FormattedMessage defaultMessage="Stream Audio" />, () => { })}
             {isAdmin &&
               roomContext.info?.recording === false &&
               menuItem("rec", <FormattedMessage defaultMessage="Start Recording" />, async () => {
@@ -158,9 +158,13 @@ export function RoomOptionsButton({ link }: { link: NostrLink }) {
                 </div>
               </div>
             ))}
+            {recordings.length === 0 && <FormattedMessage defaultMessage="No Recordings" />}
           </div>
         </Modal>
       )}
+      {share && <Modal id="share-room" onClose={() => setShare(false)}>
+        <ShareModal event={roomContext.event} />
+      </Modal>}
     </>
   );
 }

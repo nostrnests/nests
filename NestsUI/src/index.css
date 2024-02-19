@@ -118,3 +118,7 @@ body {
     --chat-w: 450px;
   }
 }
+
+.overflow-wrap {
+  overflow-wrap: break-word;
+}

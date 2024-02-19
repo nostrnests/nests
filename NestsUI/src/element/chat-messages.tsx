@@ -1,4 +1,4 @@
-import { EventKind, NostrEvent, NostrLink, RequestBuilder, parseZap } from "@snort/system";
+import { EventKind, NostrEvent, NostrLink, ParsedFragment, RequestBuilder, parseNostrLink, parseZap, transformText } from "@snort/system";
 import { useRequestBuilder, useUserProfile } from "@snort/system-react";
 import { useMemo } from "react";
 import Avatar from "./avatar";
@@ -7,8 +7,10 @@ import DisplayName from "./display-name";
 import Icon from "../icon";
 import { LIVE_CHAT } from "../const";
 import { FormattedMessage, FormattedNumber } from "react-intl";
+import classNames from "classnames";
+import Mention from "./mention";
 
-export default function ChatMessages({ link }: { link: NostrLink }) {
+export default function ChatMessages({ link, className }: { link: NostrLink, className?: string }) {
   const sub = useMemo(() => {
     const rb = new RequestBuilder(`chat-messages:${link.id}`);
     rb.withOptions({ leaveOpen: true }).withFilter().kinds([LIVE_CHAT, EventKind.ZapReceipt]).replyToLink([link]);
@@ -19,7 +21,7 @@ export default function ChatMessages({ link }: { link: NostrLink }) {
   const messages = useRequestBuilder(sub);
 
   return (
-    <div className="flex flex-col-reverse gap-3 px-5">
+    <div className={classNames("overflow-y-auto flex flex-col-reverse gap-3 px-5", className)} >
       {messages.map((a) => {
         switch (a.kind) {
           case EventKind.ZapReceipt: {
@@ -36,15 +38,28 @@ export default function ChatMessages({ link }: { link: NostrLink }) {
 
 function ChatMessage({ event }: { event: NostrEvent }) {
   const profile = useUserProfile(event.pubkey);
+  const frags = useMemo(() => {
+    return transformText(event.content, event.tags);
+  }, [event.content, event.tags]);
+
+  function renderFrag(frag: ParsedFragment) {
+    switch (frag.type) {
+      case "link": return <a href={frag.content} rel="noreferer" target="_blank" className="text-highlight">
+        {frag.content}
+      </a>
+      case "mention": return <Mention link={parseNostrLink(frag.content)} />
+      default: return frag.content;
+    }
+  }
 
   return (
     <div className="grid grid-cols-[32px_auto] gap-2">
-      <Avatar pubkey={event.pubkey} size={32} link={false} />
-      <div className="flex flex-col text-sm">
+      <Avatar pubkey={event.pubkey} size={32} link={true} />
+      <div className="flex flex-col text-sm text-wrap overflow-wrap overflow-hidden">
         <div className="text-medium leading-8">
           {profile?.display_name ?? profile?.name ?? hexToBech32("nput", event.pubkey).slice(0, 12)}
         </div>
-        {event.content}
+        {frags.map(renderFrag)}
       </div>
     </div>
   );

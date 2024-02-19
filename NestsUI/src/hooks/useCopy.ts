@@ -7,18 +7,7 @@ export const useCopy = (timeout = 2000) => {
   const copy = async (text: string) => {
     setError(false);
     try {
-      if (navigator.clipboard && window.isSecureContext) {
-        await navigator.clipboard.writeText(text);
-      } else {
-        const textArea = document.createElement("textarea");
-        textArea.value = text;
-        textArea.style.position = "absolute";
-        textArea.style.opacity = "0";
-        document.body.appendChild(textArea);
-        textArea.select();
-        await document.execCommand("copy");
-        textArea.remove();
-      }
+      await copy(text);
       setCopied(true);
     } catch (error) {
       setError(true);
@@ -29,3 +18,19 @@ export const useCopy = (timeout = 2000) => {
 
   return { error, copied, copy };
 };
+
+
+export async function copy(text: string) {
+  if (navigator.clipboard && window.isSecureContext) {
+    await navigator.clipboard.writeText(text);
+  } else {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.position = "absolute";
+    textArea.style.opacity = "0";
+    document.body.appendChild(textArea);
+    textArea.select();
+    document.execCommand("copy");
+    textArea.remove();
+  }
+}

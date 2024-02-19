@@ -16,7 +16,7 @@ export default function Avatar({
   outline?: number;
   link: boolean;
 }) {
-  const profile = useUserProfile(pubkey);
+  const profile = useUserProfile(pubkey.startsWith("guest") ? undefined: pubkey);
   function getAvatar() {
     if ((profile?.picture?.length ?? 0) > 0) {
       return profile?.picture;

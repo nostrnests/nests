@@ -50,8 +50,7 @@ export default function VuBar({
         const data = filteredAudio(dataArray);
         const vol = peakVolume(data);
 
-        ctx.fillStyle = "black";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         if (full) {
           ctx.fillStyle = "#00FF00AA";
@@ -63,7 +62,7 @@ export default function VuBar({
         }
 
         const barLen = ((vol - minVU) / (maxVU - minVU)) * canvas.height;
-        ctx.fillStyle = "#00FF00";
+        ctx.fillStyle = "#3e4556";
         ctx.fillRect(0, canvas.height - barLen, canvas.width, barLen);
       }, 50);
 

@@ -1,5 +1,5 @@
 import { useCallback, useContext, useMemo, useState } from "react";
-import Button, { PrimaryButton } from "../element/button";
+import { PrimaryButton, SecondaryButton } from "../element/button";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { NestsApi } from "../api";
 import { ApiUrl, DefaultRelays, ROOM_KIND } from "../const";
@@ -120,9 +120,9 @@ export default function NewRoom() {
       <RoomCard event={dmeoRoom} />
       <div className="flex gap-2 justify-center">
         <Link to="/">
-          <Button className="rounded-full bg-foreground-2">
+          <SecondaryButton>
             <FormattedMessage defaultMessage="Cancel" />
-          </Button>
+          </SecondaryButton>
         </Link>
         <PrimaryButton onClick={async () => await createRoom()}>
           <FormattedMessage defaultMessage="Create" />
