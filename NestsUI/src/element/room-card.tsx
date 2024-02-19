@@ -31,7 +31,7 @@ export default function RoomCard({
   className?: string;
   link?: boolean;
   join?: boolean;
-  presenceEvents?: Array<NostrEvent>
+  presenceEvents?: Array<NostrEvent>;
 }) {
   const profile = useUserProfile(event.pubkey);
   const title = event.tags.find((a) => a[0] === "title")?.[1];

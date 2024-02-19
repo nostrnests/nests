@@ -44,16 +44,20 @@ export function ProfilePageContent({ link }: { link: NostrLink }) {
             <DisplayName pubkey={link.id} profile={meta} />
           </h3>
         </div>
-        {login.pubkey === link.id ?
-          <PrimaryButton onClick={() => {
-            logout();
-            navigate("/");
-          }}>
+        {login.pubkey === link.id ? (
+          <PrimaryButton
+            onClick={() => {
+              logout();
+              navigate("/");
+            }}
+          >
             <FormattedMessage defaultMessage="Logout" />
-          </PrimaryButton> :
+          </PrimaryButton>
+        ) : (
           <PrimaryButton>
             <FormattedMessage defaultMessage="Follow" />
-          </PrimaryButton>}
+          </PrimaryButton>
+        )}
       </div>
       <p>{meta?.about}</p>
       <hr />

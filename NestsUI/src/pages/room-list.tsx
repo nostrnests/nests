@@ -31,15 +31,13 @@ export function RoomListList({
 }: {
   events: Array<NostrEvent>;
   showCreateWhenEmpty: boolean;
-  showEmptyRooms?: boolean
+  showEmptyRooms?: boolean;
 }) {
   const subPresence = useMemo(() => {
     if (events.length > 0) {
       const rb = new RequestBuilder("presence:room-list");
-      const fx = rb.withOptions({ leaveOpen: false })
-        .withFilter()
-        .kinds([ROOM_PRESENCE]);
-      fx.replyToLink(events.map(a => NostrLink.fromEvent(a)));
+      const fx = rb.withOptions({ leaveOpen: false }).withFilter().kinds([ROOM_PRESENCE]);
+      fx.replyToLink(events.map((a) => NostrLink.fromEvent(a)));
 
       return rb;
     }
@@ -48,13 +46,13 @@ export function RoomListList({
   const roomPresence = useRequestBuilder(subPresence);
 
   const eventsWithPresence = useMemo(() => {
-    return events.map(a => {
-      const pres = roomPresence.filter(a => NostrLink.fromEvent(a).isReplyToThis(a));
+    return events.map((a) => {
+      const pres = roomPresence.filter((a) => NostrLink.fromEvent(a).isReplyToThis(a));
       return {
         event: a,
-        presence: pres
+        presence: pres,
       };
-    })
+    });
   }, [events, roomPresence]);
 
   const liveRooms = eventsWithPresence.filter((a) => {
