@@ -109,7 +109,6 @@ public class NestsController : Controller
         var token = _liveKitJwt.CreateToken(guid, new LiveKitJwt.Permissions()
         {
             Room = room.Id.ToString(),
-            Hidden = true,
             RoomJoin = true,
             CanSubscribe = true,
             CanPublish = false
@@ -260,7 +259,8 @@ public class NestsController : Controller
                 Identity = participant.Pubkey,
                 Permission = new()
                 {
-                    CanPublish = participant.IsSpeaker
+                    CanPublish = participant.IsSpeaker,
+                    CanSubscribe = true
                 }
             });
             return Accepted();
