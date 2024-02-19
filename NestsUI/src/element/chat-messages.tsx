@@ -5,14 +5,13 @@ import Avatar from "./avatar";
 import { hexToBech32 } from "@snort/shared";
 import DisplayName from "./display-name";
 import Icon from "../icon";
+import { LIVE_CHAT } from "../const";
+import { FormattedMessage, FormattedNumber } from "react-intl";
 
 export default function ChatMessages({ link }: { link: NostrLink }) {
   const sub = useMemo(() => {
     const rb = new RequestBuilder(`chat-messages:${link.id}`);
-    rb.withOptions({ leaveOpen: true })
-      .withFilter()
-      .kinds([1311 as EventKind, EventKind.ZapReceipt])
-      .replyToLink([link]);
+    rb.withOptions({ leaveOpen: true }).withFilter().kinds([LIVE_CHAT, EventKind.ZapReceipt]).replyToLink([link]);
 
     return rb;
   }, [link]);
@@ -66,10 +65,24 @@ function ChatZap({ event }: { event: NostrEvent }) {
         />
         <Icon name="zap" className="text-bitcoin" />
         <span>
-          <DisplayName pubkey={zap.sender ?? event.pubkey} profile={senderProfile} className="text-bitcoin font-bold" />
-          <span> zapped </span>
-          <DisplayName pubkey={zap.receiver ?? event.pubkey} profile={targetProfile} />
-          <span className="text-bitcoin font-bold"> {zap.amount / 1000}K sats</span>
+          <FormattedMessage
+            defaultMessage="{sender} zapped {receiver} {amount} sats"
+            values={{
+              sender: (
+                <DisplayName
+                  pubkey={zap.sender ?? event.pubkey}
+                  profile={senderProfile}
+                  className="text-bitcoin font-bold"
+                />
+              ),
+              receiver: <DisplayName pubkey={zap.receiver ?? event.pubkey} profile={targetProfile} />,
+              amount: (
+                <span className="text-bitcoin font-bold">
+                  <FormattedNumber value={zap.amount / 1000} />K sats
+                </span>
+              ),
+            }}
+          />
         </span>
       </div>
       {zap.content && <div className="mt-2">{zap.content}</div>}

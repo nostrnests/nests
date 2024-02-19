@@ -13,6 +13,7 @@ import { useState } from "react";
 import ZapFlow from "./zap-modal";
 import VuBar from "./vu";
 import { useNostrRoom } from "../hooks/nostr-room-context";
+import { FormattedMessage } from "react-intl";
 
 export default function NostrParticipants({ event }: { event: NostrEvent }) {
   const participants = useParticipants();
@@ -125,13 +126,27 @@ function NostrParticipant({ p, event }: { p: RemoteParticipant | LocalParticipan
           {isHovering && <ProfileCard participant={p} pubkey={p.identity} />}
         </div>
         <div className={isHost ? "text-primary" : ""}>
-          {isGuest
-            ? "Guest (me)"
-            : profile?.display_name ?? profile?.name ?? hexToBech32("npub", p.identity).slice(0, 12)}
+          {isGuest ? (
+            <FormattedMessage defaultMessage="Guest (me)" />
+          ) : (
+            profile?.display_name ?? profile?.name ?? hexToBech32("npub", p.identity).slice(0, 12)
+          )}
         </div>
-        {isHost && <div className="text-primary">Host</div>}
-        {!isHost && isAdmin && <div className="text-primary">Moderator</div>}
-        {!isHost && !isAdmin && isSpeaker && <div>Speaker</div>}
+        {isHost && (
+          <div className="text-primary">
+            <FormattedMessage defaultMessage="Host" />
+          </div>
+        )}
+        {!isHost && isAdmin && (
+          <div className="text-primary">
+            <FormattedMessage defaultMessage="Moderator" />
+          </div>
+        )}
+        {!isHost && !isAdmin && isSpeaker && (
+          <div>
+            <FormattedMessage defaultMessage="Speaker" />
+          </div>
+        )}
         <VuBar track={p.getTrack(Track.Source.Microphone)?.audioTrack?.mediaStreamTrack} height={10} width={80} />
       </div>
     </>

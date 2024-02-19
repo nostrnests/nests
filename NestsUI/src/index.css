@@ -10,6 +10,7 @@
   --highlight: #805ce9;
   --delete: #ff4a4e;
   --bitcoin: #ff7a30;
+  --success: var(--primary-5);
 
   --primary-1: #8f69ff;
   --primary-2: #5d6dff;

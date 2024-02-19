@@ -15,6 +15,7 @@ import { RoomRecording } from "../api";
 import Modal from "./modal";
 import dayjs from "dayjs";
 import Async from "./async";
+import { FormattedMessage } from "react-intl";
 
 export function RoomOptionsButton({ link }: { link: NostrLink }) {
   const [open, setOpen] = useState(false);
@@ -76,10 +77,10 @@ export function RoomOptionsButton({ link }: { link: NostrLink }) {
             }}
           >
             {login.pubkey &&
-              menuItem("person", "Profile", () => {
+              menuItem("person", <FormattedMessage defaultMessage="Profile" />, () => {
                 navigate(`/${hexToBech32("npub", login.pubkey)}`);
               })}
-            {menuItem("copy", "Copy Room Link", () => {
+            {menuItem("copy", <FormattedMessage defaultMessage="Copy Room Link" />, () => {
               window.navigator.clipboard.writeText(
                 `${window.location.protocol}//${window.location.host}/${link.encode()}`,
               );
@@ -87,20 +88,20 @@ export function RoomOptionsButton({ link }: { link: NostrLink }) {
             })}
             {localParticipant.microphoneTrack &&
               login.pubkey &&
-              menuItem("exit", "Leave Stage", async () => {
+              menuItem("exit", <FormattedMessage defaultMessage="Leave Stage" />, async () => {
                 await api.updatePermissions(link.id, login.pubkey!, { can_publish: false });
                 setOpen(false);
               })}
-            {isAdmin && menuItem("audio", "Stream Audio", () => {})}
+            {isAdmin && menuItem("audio", <FormattedMessage defaultMessage="Stream Audio" />, () => {})}
             {isAdmin &&
               roomContext.info?.recording === false &&
-              menuItem("rec", "Start Recording", async () => {
+              menuItem("rec", <FormattedMessage defaultMessage="Start Recording" />, async () => {
                 await api.startRecording(link.id);
                 setOpen(false);
               })}
             {isAdmin &&
               roomContext.info?.recording === true &&
-              menuItem("stop-rec", "Stop Recording", async () => {
+              menuItem("stop-rec", <FormattedMessage defaultMessage="Stop Recording" />, async () => {
                 const recs = await api.listRecording(link.id);
                 if (recs) {
                   const activeRecording = recs.find((a) => a.stopped === undefined);
@@ -111,7 +112,7 @@ export function RoomOptionsButton({ link }: { link: NostrLink }) {
                 }
               })}
             {isAdmin &&
-              menuItem("folder", "Room Recordings", async () => {
+              menuItem("folder", <FormattedMessage defaultMessage="Room Recordings" />, async () => {
                 const recs = await api.listRecording(link.id);
                 setRecordings(recs);
                 setOpen(false);
@@ -121,7 +122,9 @@ export function RoomOptionsButton({ link }: { link: NostrLink }) {
         )}
       {recordings && (
         <Modal id="room-recordings" onClose={() => setRecordings(undefined)}>
-          <h2 className="text-center mb-4">Room Recordings</h2>
+          <h2 className="text-center mb-4">
+            <FormattedMessage defaultMessage="Room Recordings" />
+          </h2>
           <div className="flex flex-col gap-2">
             {recordings.map((a) => (
               <div className="flex items-center justify-between">
@@ -142,7 +145,7 @@ export function RoomOptionsButton({ link }: { link: NostrLink }) {
                       atag.click();
                     }}
                   >
-                    Download
+                    <FormattedMessage defaultMessage="Download" />
                   </Async>
                   <IconButton
                     name="trash"

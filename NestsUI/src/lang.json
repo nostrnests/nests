@@ -1,0 +1,213 @@
+{
+  "+0zv6g": {
+    "defaultMessage": "Image"
+  },
+  "+t+11k": {
+    "defaultMessage": "Close Room"
+  },
+  "/8ACb2": {
+    "defaultMessage": "Add to stage"
+  },
+  "/jswUE": {
+    "defaultMessage": "Leave Stage"
+  },
+  "0vL5u1": {
+    "defaultMessage": "Create an account"
+  },
+  "1FTExG": {
+    "defaultMessage": "<lg>{n}</lg> <sm>Sats</sm>"
+  },
+  "1j+1E2": {
+    "defaultMessage": "Copy Room Link"
+  },
+  "1t2eph": {
+    "defaultMessage": "Remove admin"
+  },
+  "2jp98l": {
+    "defaultMessage": "Custom amount",
+    "description": "Custom amount for zaps"
+  },
+  "3s2cxm": {
+    "defaultMessage": "Lobby"
+  },
+  "47FYwb": {
+    "defaultMessage": "Cancel"
+  },
+  "5q3qC0": {
+    "defaultMessage": "Download"
+  },
+  "6jRTzo": {
+    "defaultMessage": "Not a valid nostr address"
+  },
+  "6sGucA": {
+    "defaultMessage": "New Room"
+  },
+  "6xQg6j": {
+    "defaultMessage": "Ban user"
+  },
+  "7vwVDQ": {
+    "defaultMessage": "Nostr address not found"
+  },
+  "9Xmefb": {
+    "defaultMessage": "Short description about the room",
+    "description": "Placeholder text for room description"
+  },
+  "9gg+Ph": {
+    "defaultMessage": "Insert cool name here",
+    "description": "Placeholder text for room name"
+  },
+  "9pMqYs": {
+    "defaultMessage": "Nostr Address"
+  },
+  "AyGauy": {
+    "defaultMessage": "Login"
+  },
+  "CE79Az": {
+    "defaultMessage": "There are no active rooms yet."
+  },
+  "D5Li4U": {
+    "defaultMessage": "Start a new room"
+  },
+  "H5DrhC": {
+    "defaultMessage": "{sender} zapped {receiver} {amount} sats"
+  },
+  "IbE9GF": {
+    "defaultMessage": "Scheduled Time (optional)"
+  },
+  "Iul/hR": {
+    "defaultMessage": "Active Rooms"
+  },
+  "JVshdm": {
+    "defaultMessage": "Make admin"
+  },
+  "Jkxa7F": {
+    "defaultMessage": "View Profile"
+  },
+  "LXSV6y": {
+    "defaultMessage": "Already have an account"
+  },
+  "MKDHEa": {
+    "defaultMessage": "Join Room"
+  },
+  "MU0ket": {
+    "defaultMessage": "Speaker"
+  },
+  "Og+vtv": {
+    "defaultMessage": "Continue as Guest"
+  },
+  "P6PLpi": {
+    "defaultMessage": "Join"
+  },
+  "QQkNag": {
+    "defaultMessage": "Hosted by {name}"
+  },
+  "QtFGiO": {
+    "defaultMessage": "Host"
+  },
+  "RXjNVY": {
+    "defaultMessage": "Create a nostr account"
+  },
+  "SQJto2": {
+    "defaultMessage": "Sign in"
+  },
+  "ST6+Xe": {
+    "defaultMessage": "Guest (me)"
+  },
+  "Sl9epY": {
+    "defaultMessage": "Remove from stage"
+  },
+  "T4lB1e": {
+    "defaultMessage": "Leave stage"
+  },
+  "U/VWC2": {
+    "defaultMessage": "Stream Audio"
+  },
+  "VvvK+z": {
+    "defaultMessage": "Sign in with extension"
+  },
+  "VzzYJk": {
+    "defaultMessage": "Create"
+  },
+  "WTrOy3": {
+    "defaultMessage": "Chat"
+  },
+  "btNUvb": {
+    "defaultMessage": "Room name"
+  },
+  "cXAlMR": {
+    "defaultMessage": "Scheduled"
+  },
+  "cyR7Kh": {
+    "defaultMessage": "Back"
+  },
+  "dM9S71": {
+    "defaultMessage": "Schedule a room"
+  },
+  "e7PVtu": {
+    "defaultMessage": "Banner Color or Image"
+  },
+  "fBI91o": {
+    "defaultMessage": "Zap"
+  },
+  "fZupOJ": {
+    "defaultMessage": "Comment",
+    "description": "Placeholder for writing comment"
+  },
+  "fzgxCV": {
+    "defaultMessage": "Please login to chat"
+  },
+  "huqKGl": {
+    "defaultMessage": "Create account"
+  },
+  "hvEgD/": {
+    "defaultMessage": "Room Recordings"
+  },
+  "ieGrWo": {
+    "defaultMessage": "Follow"
+  },
+  "itPgxd": {
+    "defaultMessage": "Profile"
+  },
+  "jvo0vs": {
+    "defaultMessage": "Save"
+  },
+  "kEseyR": {
+    "defaultMessage": "Send",
+    "description": "Send message button text"
+  },
+  "mBMl8U": {
+    "defaultMessage": "Room Description (Optional 140 chars)"
+  },
+  "mBUsTH": {
+    "defaultMessage": "Select image",
+    "description": "Select an image to upload as room banner image"
+  },
+  "pXFAd/": {
+    "defaultMessage": "Stop Recording"
+  },
+  "st17aP": {
+    "defaultMessage": "There are no scheduled rooms right now."
+  },
+  "tarxmH": {
+    "defaultMessage": "Address is not a nostr bunker"
+  },
+  "uMhpKe": {
+    "defaultMessage": "Color"
+  },
+  "x82IOl": {
+    "defaultMessage": "Mute"
+  },
+  "xbQgN4": {
+    "defaultMessage": "Start Recording"
+  },
+  "zA95/o": {
+    "defaultMessage": "Moderator"
+  },
+  "zCUH3/": {
+    "defaultMessage": "Room Settings"
+  },
+  "zHj+Ut": {
+    "defaultMessage": "Time",
+    "description": "Date time input placeholder text"
+  }
+}

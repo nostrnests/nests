@@ -1,13 +1,17 @@
 import { ExternalStore } from "@snort/shared";
-import { EventSigner, Nip7Signer, NostrLink } from "@snort/system";
+import { EventSigner, Nip46Signer, Nip7Signer, NostrLink, PrivateKeySigner } from "@snort/system";
 import { useSyncExternalStore } from "react";
 import usePresence from "./hooks/usePresence";
 
-type LoginTypes = "none" | "nip7";
+type LoginTypes = "none" | "nip7" | "nip46";
+export type SupportedLocales = "en-US";
 
 export interface LoginData {
   type: LoginTypes;
   pubkey?: string;
+  locale: SupportedLocales;
+  privateKey?: string;
+  signerRelay?: Array<string>;
 }
 export interface LoginLoaded {
   signer?: EventSigner;
@@ -19,7 +23,13 @@ class LoginStore extends ExternalStore<LoginSession> {
   #session: LoginSession = {
     type: "none",
     handMap: [],
+    locale: "en-US",
   };
+
+  constructor() {
+    super();
+    this.loadSession();
+  }
 
   async loginWithNip7() {
     if (this.#session.type !== "none") {
@@ -32,13 +42,32 @@ class LoginStore extends ExternalStore<LoginSession> {
     this.notifyChange();
   }
 
-  async loadSession() {
+  async loginWithNip46(signer: Nip46Signer) {
+    if (this.#session.type !== "none") {
+      throw new Error("Already logged in ");
+    }
+    this.#session.type = "nip46";
+    this.#session.signer = signer;
+    this.#session.privateKey = signer.privateKey;
+    this.#session.signerRelay = signer.relays;
+    const pk = await this.#session.signer.getPubKey();
+    this.#session.pubkey = pk;
+    this.notifyChange();
+  }
+
+  loadSession() {
     const json = window.localStorage.getItem("session");
     if (json) {
       const session = JSON.parse(json) as LoginSession;
       switch (session.type) {
         case "nip7": {
           session.signer = new Nip7Signer();
+          break;
+        }
+        case "nip46": {
+          const url = `bunker://${session.pubkey!}?${session.signerRelay?.map((a) => `relay=${encodeURIComponent(a)}`).join("&")}`;
+          session.signer = new Nip46Signer(url, new PrivateKeySigner(session.privateKey!));
+          session.signer.init();
           break;
         }
       }
@@ -65,12 +94,10 @@ class LoginStore extends ExternalStore<LoginSession> {
 
 const LoginSystem = new LoginStore();
 LoginSystem.on("change", () => {
-  saveSession(LoginSystem.takeSnapshot());
+  const ret = LoginSystem.takeSnapshot();
+  delete ret["signer"];
+  saveSession(ret);
 });
-
-export async function loadSession() {
-  await LoginSystem.loadSession();
-}
 
 export function saveSession(s: LoginSession) {
   window.localStorage.setItem("session", JSON.stringify(s));
@@ -83,11 +110,15 @@ export function useLogin() {
   );
 }
 
-export async function loginWith(type: LoginTypes) {
+export async function loginWith(type: LoginTypes, data?: Nip46Signer) {
   switch (type) {
     case "nip7": {
       await LoginSystem.loginWithNip7();
-      return;
+      break;
+    }
+    case "nip46": {
+      await LoginSystem.loginWithNip46(data!);
+      break;
     }
   }
 }

@@ -4,6 +4,7 @@ import { openFile } from "../upload";
 import nostrBuildUpload from "../upload/nostrbuild";
 import Spinner from "./spinner";
 import { useLogin } from "../login";
+import { FormattedMessage } from "react-intl";
 
 export default function BannerEditor({
   initialColor,
@@ -31,7 +32,9 @@ export default function BannerEditor({
 
   return (
     <div>
-      <div className="font-medium mb-2">Banner Color or Image</div>
+      <div className="font-medium mb-2">
+        <FormattedMessage defaultMessage="Banner Color or Image" />
+      </div>
       <div className="flex gap-1 mb-2">
         <div
           className={`${bgType === "color" ? "bg-primary " : ""}rounded-full px-3 py-1 cursor-pointer`}
@@ -40,13 +43,13 @@ export default function BannerEditor({
             setImage(undefined);
           }}
         >
-          Color
+          <FormattedMessage defaultMessage="Color" />
         </div>
         <div
           className={`${bgType === "image" ? "bg-primary " : ""}rounded-full px-3 py-1 cursor-pointer`}
           onClick={() => setBgType("image")}
         >
-          Image
+          <FormattedMessage defaultMessage="Image" />
         </div>
       </div>
       {bgType === "color" && (
@@ -79,7 +82,14 @@ export default function BannerEditor({
           }}
         >
           {image && !imageProcessing && <img src={image} />}
-          {!image && !imageProcessing && <span className="leading-10">Select image</span>}
+          {!image && !imageProcessing && (
+            <span className="leading-10">
+              <FormattedMessage
+                defaultMessage="Select image"
+                description="Select an image to upload as room banner image"
+              />
+            </span>
+          )}
           {imageProcessing && <Spinner size={30} />}
         </div>
       )}

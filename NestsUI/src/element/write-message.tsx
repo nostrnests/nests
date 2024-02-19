@@ -9,21 +9,21 @@ import { useHand, useLogin } from "../login";
 import { createPortal } from "react-dom";
 import classNames from "classnames";
 import { RoomOptionsButton } from "./room-menu-bar";
+import { LIVE_CHAT } from "../const";
+import { FormattedMessage, useIntl } from "react-intl";
 
 export default function WriteMessage({ link, className }: { link: NostrLink; className?: string }) {
   const [msg, setMsg] = useState("");
   const login = useLogin();
   const [sending, setSending] = useState(false);
   const { system, signer } = useEventBuilder();
+  const { formatMessage } = useIntl();
 
   async function sendMessage() {
     if (!signer || msg.length === 0) return;
     setSending(true);
     const builder = new EventBuilder();
-    builder
-      .content(msg)
-      .kind(1311 as EventKind)
-      .tag(link.toEventTag()!);
+    builder.content(msg).kind(LIVE_CHAT).tag(link.toEventTag()!);
 
     const ev = await builder.buildAndSign(signer);
     setMsg("");
@@ -31,7 +31,12 @@ export default function WriteMessage({ link, className }: { link: NostrLink; cla
     setSending(false);
   }
 
-  if (login.type === "none") return <div>Please login to chat</div>;
+  if (login.type === "none")
+    return (
+      <div>
+        <FormattedMessage defaultMessage="Please login to chat" />
+      </div>
+    );
   return (
     <>
       <MenuBar link={link} />
@@ -39,7 +44,7 @@ export default function WriteMessage({ link, className }: { link: NostrLink; cla
         <input
           type="text"
           className="grow bg-foreground-2 text-white"
-          placeholder="Comment"
+          placeholder={formatMessage({ defaultMessage: "Comment", description: "Placeholder for writing comment" })}
           value={msg}
           onChange={(e) => setMsg(e.target.value)}
           onKeyDown={(e) => {
@@ -49,7 +54,7 @@ export default function WriteMessage({ link, className }: { link: NostrLink; cla
           }}
         />
         <PrimaryButton onClick={sendMessage} loading={sending}>
-          Send
+          <FormattedMessage defaultMessage="Send" description="Send message button text" />
         </PrimaryButton>
       </div>
     </>

@@ -8,6 +8,8 @@ import { useUserProfile } from "@snort/system-react";
 import useEventBuilder from "../hooks/useEventBuilder";
 import { EventPublisher } from "@snort/system";
 import QrCode from "./qr";
+import { FormattedMessage, useIntl } from "react-intl";
+import Copy from "./copy";
 
 const WebLnWallet = {
   payInvoice: async (pr: string) => {
@@ -28,6 +30,7 @@ export default function ZapFlow({ targets, onClose }: { targets: Array<ZapTarget
   const [customAmount, setCustomAmount] = useState<number>();
   const [comment, setComment] = useState("");
   const [invoice, setInvoice] = useState("");
+  const { formatMessage } = useIntl();
 
   useEffect(() => {
     if (customAmount !== undefined) {
@@ -46,7 +49,12 @@ export default function ZapFlow({ targets, onClose }: { targets: Array<ZapTarget
     <Modal id="zap" onClose={onClose}>
       <div className="flex flex-col gap-4">
         {target.type === "pubkey" && <DisplayName pubkey={target.value!} profile={profile} className="text-center" />}
-        {invoice && <QrCode data={`lightning:${invoice}`} className="mx-auto" />}
+        {invoice && (
+          <div className="flex flex-col items-center justify-center gap-4">
+            <QrCode data={`lightning:${invoice}`} link={`lightning:${invoice}`} />
+            <Copy text={invoice} className="text-sm" />
+          </div>
+        )}
         {!invoice && (
           <>
             <div className={`grid grid-cols-[max-content_auto_max-content] items-center select-none`}>
@@ -56,10 +64,14 @@ export default function ZapFlow({ targets, onClose }: { targets: Array<ZapTarget
                 onClick={() => setAmount((v) => Math.max(inc, v - inc))}
               />
               <div className="text-center">
-                <div className="text-3xl font-semibold">
-                  {customAmount ? customAmount.toLocaleString() : formatAmount(amount)}
-                </div>
-                <div className="text-sm">Sats</div>
+                <FormattedMessage
+                  defaultMessage="<lg>{n}</lg> <sm>Sats</sm>"
+                  values={{
+                    lg: (c) => <span className="text-3xl font-semibold">{c}</span>,
+                    sm: (c) => <span className="text-sm">{c}</span>,
+                    n: customAmount ? customAmount.toLocaleString() : formatAmount(amount),
+                  }}
+                />
               </div>
               <IconButton
                 name="chevron"
@@ -68,7 +80,7 @@ export default function ZapFlow({ targets, onClose }: { targets: Array<ZapTarget
               />
             </div>
             <input
-              placeholder="Custom amount"
+              placeholder={formatMessage({ defaultMessage: "Custom amount", description: "Custom amount for zaps" })}
               type="number"
               value={customAmount}
               onChange={(e) => setCustomAmount(e.target.value ? Number(e.target.value) : undefined)}
@@ -91,7 +103,7 @@ export default function ZapFlow({ targets, onClose }: { targets: Array<ZapTarget
                 }
               }}
             >
-              Zap
+              <FormattedMessage defaultMessage="Zap" />
             </PrimaryButton>
           </>
         )}

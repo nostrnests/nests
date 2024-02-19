@@ -11,7 +11,6 @@ import { setLogLevel } from "livekit-client";
 import { DefaultRelays } from "./const";
 import RoomList from "./pages/room-list";
 import NewRoom from "./pages/new-room";
-import { loadSession } from "./login";
 import SignUp from "./element/sign-up";
 import Login from "./element/login";
 import NostrRoute from "./pages/nostr-route";
@@ -21,11 +20,11 @@ import { WasmOptimizer, hasWasm, wasmInit } from "./wasm";
 import localizedFormat from "dayjs/plugin/localizedFormat";
 import relativeTime from "dayjs/plugin/relativeTime";
 import dayjs from "dayjs";
+import IntlContext from "./intl";
 dayjs.extend(localizedFormat);
 dayjs.extend(relativeTime);
 
 async function routeInit() {
-  await loadSession();
   await wasmInit();
 }
 
@@ -101,7 +100,9 @@ setLogLevel("debug");
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <SnortContext.Provider value={snortSystem}>
-      <RouterProvider router={router} />
+      <IntlContext>
+        <RouterProvider router={router} />
+      </IntlContext>
     </SnortContext.Provider>
   </React.StrictMode>,
 );

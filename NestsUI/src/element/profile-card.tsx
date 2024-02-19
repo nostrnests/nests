@@ -9,6 +9,7 @@ import { ProfilePageContent } from "../pages/profile";
 import { NostrLink, NostrPrefix } from "@snort/system";
 import { useIsAdmin } from "../hooks/useIsAdmin";
 import { useLogin } from "../login";
+import { FormattedMessage } from "react-intl";
 
 export default function ProfileCard({
   participant,
@@ -44,37 +45,48 @@ export default function ProfileCard({
   };
   return (
     <div className="absolute z-10 bg-foreground-2 rounded-xl overflow-hidden flex flex-col font-medium w-max">
-      {menuItem("eye", "View Profile", () => {
+      {menuItem("eye", <FormattedMessage defaultMessage="View Profile" />, () => {
         nostrRoom.setFlyout(<ProfilePageContent link={new NostrLink(NostrPrefix.PublicKey, pubkey)} />);
       })}
-      {menuItem("user-plus", "Follow", () => {})}
+      {menuItem("user-plus", <FormattedMessage defaultMessage="Follow" />, () => {})}
       {isLoginAdmin && (
         <>
           {menuItem(
             isSpeaker ? "exit" : "enter",
-            !isSpeaker ? "Add to stage" : isSelf ? "Leave stage" : "Remove from stage",
+            !isSpeaker ? (
+              <FormattedMessage defaultMessage="Add to stage" />
+            ) : isSelf ? (
+              <FormattedMessage defaultMessage="Leave stage" />
+            ) : (
+              <FormattedMessage defaultMessage="Remove from stage" />
+            ),
             async () => {
               await api.updatePermissions(room.name, pubkey, { can_publish: !isSpeaker });
             },
           )}
           {!isMuted &&
-            menuItem("mic-off", "Mute", async () => {
+            menuItem("mic-off", <FormattedMessage defaultMessage="Mute" />, async () => {
               await api.updatePermissions(room.name, pubkey, { mute_microphone: true });
             })}
           {!thisIsAdmin &&
             !thisIsHost &&
-            menuItem("admin", "Make admin", async () => {
+            menuItem("admin", <FormattedMessage defaultMessage="Make admin" />, async () => {
               await api.updatePermissions(room.name, pubkey, { is_admin: true });
             })}
           {thisIsAdmin &&
             !thisIsHost &&
-            menuItem("admin", "Remove admin", async () => {
+            menuItem("admin", <FormattedMessage defaultMessage="Remove admin" />, async () => {
               await api.updatePermissions(room.name, pubkey, { is_admin: false });
             })}
           {!isSelf && !thisIsHost && (
             <>
               <hr className="mx-4 border-foreground" />
-              {menuItem("minus-circle", "Ban user", () => {}, "text-delete hover:text-delete")}
+              {menuItem(
+                "minus-circle",
+                <FormattedMessage defaultMessage="Ban user" />,
+                () => {},
+                "text-delete hover:text-delete",
+              )}
             </>
           )}
         </>

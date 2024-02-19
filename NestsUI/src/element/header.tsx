@@ -3,6 +3,7 @@ import { PrimaryButton } from "./button";
 import Logo from "./logo";
 import Avatar from "./avatar";
 import { useLogin } from "../login";
+import { FormattedMessage } from "react-intl";
 
 export default function Header() {
   const login = useLogin();
@@ -13,14 +14,18 @@ export default function Header() {
         {!login.pubkey && (
           <>
             <Link to="/login">
-              <PrimaryButton>Login</PrimaryButton>
+              <PrimaryButton>
+                <FormattedMessage defaultMessage="Login" />
+              </PrimaryButton>
             </Link>
           </>
         )}
         {login.pubkey && (
           <>
             <Link to="/new">
-              <PrimaryButton>New Room</PrimaryButton>
+              <PrimaryButton>
+                <FormattedMessage defaultMessage="New Room" />
+              </PrimaryButton>
             </Link>
             <Avatar pubkey={login.pubkey} link={true} size={40} />
           </>

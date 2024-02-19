@@ -1,6 +1,7 @@
 import { Outlet, useNavigate } from "react-router-dom";
 import Icon from "../icon";
 import Header from "../element/header";
+import { FormattedMessage } from "react-intl";
 
 export default function Layout() {
   return (
@@ -17,7 +18,7 @@ export function BackLayout() {
     <>
       <div className="px-4 py-6 flex gap-2 items-center text-highlight cursor-pointer" onClick={() => navigate(-1)}>
         <Icon name="chevron" />
-        Back
+        <FormattedMessage defaultMessage="Back" />
       </div>
       <Outlet />
     </>

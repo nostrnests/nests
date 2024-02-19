@@ -1,4 +1,4 @@
-import { EventKind, NostrLink, RequestBuilder } from "@snort/system";
+import { NostrLink, RequestBuilder } from "@snort/system";
 import { useRequestBuilder, useUserProfile } from "@snort/system-react";
 import Avatar from "../element/avatar";
 import DisplayName from "../element/display-name";
@@ -6,6 +6,7 @@ import { PrimaryButton } from "../element/button";
 import Header from "../element/header";
 import { useMemo } from "react";
 import { RoomListList } from "./room-list";
+import { ROOM_KIND } from "../const";
 
 export default function ProfilePage({ link, header }: { link: NostrLink; header: boolean }) {
   return (
@@ -22,9 +23,7 @@ export function ProfilePageContent({ link }: { link: NostrLink }) {
   const meta = useUserProfile(link.id);
   const sub = useMemo(() => {
     const rb = new RequestBuilder(`rooms:${link.id.slice(0, 12)}`);
-    rb.withFilter()
-      .kinds([30_312 as EventKind])
-      .authors([link.id]);
+    rb.withFilter().kinds([ROOM_KIND]).authors([link.id]);
 
     return rb;
   }, [link.id]);

@@ -1,6 +1,9 @@
 /**
  * Nests API host base path
  */
+
+import { EventKind } from "@snort/system";
+
 //export const ApiUrl = "http://localhost:5070";
 export const ApiUrl = "https://nests.v0l.io";
 
@@ -26,3 +29,18 @@ export const ColorPalette = [
   "gradient-10",
   "gradient-11",
 ] as const;
+
+/**
+ * Nests room event kind
+ */
+export const ROOM_KIND = 30_312 as EventKind;
+
+/**
+ * Room presence event kind
+ */
+export const ROOM_PRESENCE = 10_312 as EventKind;
+
+/**
+ * Live chat kind
+ */
+export const LIVE_CHAT = 1311 as EventKind;

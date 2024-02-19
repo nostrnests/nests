@@ -2,7 +2,6 @@ import { NostrEvent, NostrLink } from "@snort/system";
 import ListenerCount from "./listener-count";
 import Avatar from "./avatar";
 import { useUserProfile } from "@snort/system-react";
-import { hexToBech32 } from "@snort/shared";
 import { Link, useNavigate } from "react-router-dom";
 import { AvatarStack } from "./avatar-stack";
 import classNames from "classnames";
@@ -16,6 +15,8 @@ import Modal from "./modal";
 import EditRoom from "./edit-room";
 import { useLogin } from "../login";
 import { useNostrRoom } from "../hooks/nostr-room-context";
+import { FormattedMessage } from "react-intl";
+import DisplayName from "./display-name";
 
 export default function RoomCard({
   event,
@@ -110,7 +111,12 @@ export default function RoomCard({
         {!inRoom && (
           <div className="flex gap-2 items-center">
             <Avatar pubkey={event.pubkey} outline={2} size={32} link={true} />
-            Hosted by {profile?.display_name ?? profile?.name ?? hexToBech32("npub", event.pubkey)}
+            <FormattedMessage
+              defaultMessage="Hosted by {name}"
+              values={{
+                name: <DisplayName pubkey={event.pubkey} profile={profile} />,
+              }}
+            />
           </div>
         )}
         {editRoom && (

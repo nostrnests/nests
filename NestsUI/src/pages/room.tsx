@@ -20,6 +20,7 @@ import Flyout from "../element/flyout";
 import { NostrRoomContext } from "../hooks/nostr-room-context";
 import { NestsApi, RoomInfo } from "../api";
 import { ApiUrl } from "../const";
+import { FormattedMessage } from "react-intl";
 
 interface RoomState {
   event: NostrEvent;
@@ -59,12 +60,14 @@ export default function Room() {
       {login.type === "none" && !confirmGuest && (
         <Modal id="join-as-guest">
           <div className="flex flex-col gap-4 items-center">
-            <h2>Join Room</h2>
+            <h2>
+              <FormattedMessage defaultMessage="Join Room" />
+            </h2>
             <Button className="rounded-full bg-foreground-2 w-full" onClick={() => setConfirmGuest(true)}>
-              Continue as Guest
+              <FormattedMessage defaultMessage="Continue as Guest" />
             </Button>
             <Link to="/sign-up" className="text-highlight">
-              Create a nostr account
+              <FormattedMessage defaultMessage="Create a nostr account" />
             </Link>
           </div>
         </Modal>
@@ -79,7 +82,7 @@ function ParticipantsPannel({ room }: { room: RoomState }) {
     <div className={`lg:w-[calc(100vw-${ChatWidth}px)] max-lg:w-screen`}>
       <div className="px-4 py-6 flex gap-2 items-center text-highlight cursor-pointer" onClick={() => navigate("/")}>
         <Icon name="chevron" />
-        Lobby
+        <FormattedMessage defaultMessage="Lobby" />
       </div>
       <div className="flex flex-col gap-8 mx-auto lg:w-[35rem] max-lg:px-4">
         <RoomCard event={room.event} inRoom={true} link={false} />
@@ -117,7 +120,9 @@ function ChatPannel({ link }: { link: NostrLink }) {
         })}
         onClick={() => setExpanded((s) => !s)}
       ></div>
-      <div className={classNames("px-6 py-4 text-xl font-semibold backdrop-blur-sm max-lg:hidden")}>Chat</div>
+      <div className={classNames("px-6 py-4 text-xl font-semibold backdrop-blur-sm max-lg:hidden")}>
+        <FormattedMessage defaultMessage="Chat" />
+      </div>
       <div className={classNames("overflow-y-scroll", hiddenWhenCollapsed)}>
         <ChatMessages link={link} />
       </div>
@@ -153,7 +158,7 @@ function JoinRoom() {
       <Logo />
       <RoomCard event={event} className="lg:w-[35rem] cursor-default" link={false} />
       <PrimaryButton className="px-6 py-4 w-40 text-lg" onClick={joinRoom}>
-        Join
+        <FormattedMessage defaultMessage="Join" />
       </PrimaryButton>
     </div>
   );

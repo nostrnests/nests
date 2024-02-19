@@ -5,6 +5,7 @@ import useEventBuilder from "../hooks/useEventBuilder";
 import { unixNow } from "@snort/shared";
 import { useNavigate } from "react-router-dom";
 import BannerEditor from "./banner-editor";
+import { FormattedMessage, useIntl } from "react-intl";
 
 export default function EditRoom({ event, onClose }: { event: NostrEvent; onClose: () => void }) {
   const [name, setName] = useState(event.tags.find((a) => a[0] === "title")?.[1] ?? "");
@@ -13,28 +14,42 @@ export default function EditRoom({ event, onClose }: { event: NostrEvent; onClos
   const [image, setImage] = useState(event.tags.find((a) => a[0] === "image")?.[1]);
   const { system, signer } = useEventBuilder();
   const navigate = useNavigate();
+  const { formatMessage } = useIntl();
 
   return (
     <div className="flex flex-col gap-4">
-      <h2>Room Settings</h2>
+      <h2>
+        <FormattedMessage defaultMessage="Room Settings" />
+      </h2>
       <div>
-        <div className="font-medium mb-2">Room name</div>
+        <div className="font-medium mb-2">
+          <FormattedMessage defaultMessage="Room name" />
+        </div>
         <input
           type="text"
-          placeholder="Insert cool name here"
+          placeholder={formatMessage({
+            defaultMessage: "Insert cool name here",
+            description: "Placeholder text for room name",
+          })}
           value={name}
           onChange={(e) => setName(e.target.value)}
           className="w-full"
         />
       </div>
       <div>
-        <div className="font-medium mb-2">Room Description (Optional 140 chars)</div>
+        <div className="font-medium mb-2">
+          <FormattedMessage defaultMessage="Room Description (Optional 140 chars)" />
+        </div>
         <input
           type="text"
-          placeholder="Discussing macro and other boring stuff"
+          placeholder={formatMessage({
+            defaultMessage: "Short description about the room",
+            description: "Placeholder text for room description",
+          })}
           value={desc}
           onChange={(e) => setDesc(e.target.value)}
           className="w-full"
+          maxLength={140}
         />
       </div>
       <BannerEditor onImage={setImage} onColor={setColor} initialColor={color} initialImage={image} />
@@ -63,10 +78,10 @@ export default function EditRoom({ event, onClose }: { event: NostrEvent; onClos
           }
         }}
       >
-        Save
+        <FormattedMessage defaultMessage="Save" />
       </PrimaryButton>
       <Button className="bg-foreground-2 rounded-full" onClick={onClose}>
-        Cancel
+        <FormattedMessage defaultMessage="Cancel" />
       </Button>
       <hr />
       <Button
@@ -86,7 +101,7 @@ export default function EditRoom({ event, onClose }: { event: NostrEvent; onClos
           }
         }}
       >
-        Close Room
+        <FormattedMessage defaultMessage="Close Room" />
       </Button>
     </div>
   );

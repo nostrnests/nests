@@ -1,8 +1,9 @@
-import { EventKind, NostrLink, RequestBuilder } from "@snort/system";
+import { NostrLink, RequestBuilder } from "@snort/system";
 import { useRequestBuilder } from "@snort/system-react";
 import { useEffect, useMemo } from "react";
 import usePresence from "./usePresence";
 import { useNostrRoom } from "./nostr-room-context";
+import { ROOM_PRESENCE } from "../const";
 
 export default function useRoomPresence(link: NostrLink | undefined, inRoom: boolean) {
   const subPresence = useMemo(() => {
@@ -10,7 +11,7 @@ export default function useRoomPresence(link: NostrLink | undefined, inRoom: boo
     const rb = new RequestBuilder(`presence:${link.id}`);
     rb.withOptions({ leaveOpen: true })
       .withFilter()
-      .kinds([10312 as EventKind])
+      .kinds([ROOM_PRESENCE])
       .tag("a", [`${link.kind}:${link.author}:${link.id}`]);
 
     return rb;
