@@ -80,9 +80,11 @@ function ParticipantsPannel({ room }: { room: RoomState }) {
   const navigate = useNavigate();
   return (
     <div className={`lg:w-[calc(100vw-${ChatWidth}px)] max-lg:w-screen`}>
-      <div className="px-4 py-6 flex gap-2 items-center text-highlight cursor-pointer" onClick={() => navigate("/")}>
-        <Icon name="chevron" />
-        <FormattedMessage defaultMessage="Lobby" />
+      <div className="px-4 py-6">
+        <button className="flex gap-2 items-center text-highlight cursor-pointer" onClick={() => navigate("/")}>
+          <Icon name="chevron" />
+          <FormattedMessage defaultMessage="Lobby" />
+        </button>
       </div>
       <div className="flex flex-col gap-8 mx-auto lg:w-[35rem] max-lg:px-4">
         <RoomCard event={room.event} inRoom={true} link={false} />
