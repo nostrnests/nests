@@ -4,6 +4,7 @@ import { useEffect, useMemo } from "react";
 import usePresence from "./usePresence";
 import { useNostrRoom } from "./nostr-room-context";
 import { ROOM_PRESENCE } from "../const";
+import { unixNow } from "@snort/shared";
 
 export default function useRoomPresence(link: NostrLink | undefined, inRoom: boolean) {
   const subPresence = useMemo(() => {
@@ -34,7 +35,7 @@ export default function useRoomPresence(link: NostrLink | undefined, inRoom: boo
   }, [inRoom, hand]);
 
   const presenceEvents = useRequestBuilder(subPresence);
-  return presenceEvents.filter((a) => link?.referencesThis(a));
+  return presenceEvents.filter((a) => link?.referencesThis(a) && a.created_at > unixNow() - interval);
 }
 
 export function useUserPresence(pk: string) {

@@ -1,8 +1,8 @@
-import { unixNow } from "@snort/shared";
-import { EventBuilder, EventKind, NostrLink } from "@snort/system";
+import { EventBuilder, NostrLink } from "@snort/system";
 import useEventBuilder from "./useEventBuilder";
 import { useLogin } from "../login";
 import { useCallback } from "react";
+import { ROOM_PRESENCE } from "../const";
 
 export default function usePresence(link?: NostrLink) {
   const { signer, system } = useEventBuilder();
@@ -14,16 +14,15 @@ export default function usePresence(link?: NostrLink) {
     if (!signer || !link) return;
     const builder = new EventBuilder();
     builder
-      .kind(10312 as EventKind)
-      .tag(link.toEventTag()!)
-      .tag(["expiration", String(unixNow() + interval)]);
+      .kind(ROOM_PRESENCE)
+      .tag(link.toEventTag()!);
 
     if (hand) {
       builder.tag(["hand", hand ? "1" : "0"]);
     }
     const ev = await builder.buildAndSign(signer);
     await system.BroadcastEvent(ev);
-  }, [signer, link, interval, hand, system]);
+  }, [signer, link, hand, system]);
 
   return { sendPresence, interval, hand };
 }

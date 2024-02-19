@@ -47,7 +47,7 @@ export function RoomListList({
 
   const eventsWithPresence = useMemo(() => {
     return events.map((a) => {
-      const pres = roomPresence.filter((a) => NostrLink.fromEvent(a).isReplyToThis(a));
+      const pres = roomPresence.filter((b) => NostrLink.fromEvent(a).isReplyToThis(b));
       return {
         event: a,
         presence: pres,
