@@ -57,7 +57,7 @@ export function ProfilePageContent({ link }: { link: NostrLink }) {
       </div>
       <p>{meta?.about}</p>
       <hr />
-      <RoomListList events={events} showCreateWhenEmpty={false} />
+      <RoomListList events={events} showCreateWhenEmpty={false} showEmptyRooms={true} />
     </div>
   );
 }

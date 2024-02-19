@@ -1,10 +1,10 @@
-import { NostrEvent, RequestBuilder } from "@snort/system";
+import { NostrEvent, NostrLink, RequestBuilder } from "@snort/system";
 import { useRequestBuilder } from "@snort/system-react";
 import { useMemo } from "react";
 import RoomCard from "../element/room-card";
 import { PrimaryButton } from "../element/button";
 import { Link } from "react-router-dom";
-import { ROOM_KIND } from "../const";
+import { ROOM_KIND, ROOM_PRESENCE } from "../const";
 import { FormattedMessage } from "react-intl";
 
 export default function RoomList() {
@@ -27,16 +27,42 @@ export default function RoomList() {
 export function RoomListList({
   events,
   showCreateWhenEmpty,
+  showEmptyRooms,
 }: {
   events: Array<NostrEvent>;
   showCreateWhenEmpty: boolean;
+  showEmptyRooms?: boolean
 }) {
-  const liveRooms = events.filter((a) => {
-    const status = a.tags.find((a) => a[0] === "status")?.[1];
-    return status === "live";
+  const subPresence = useMemo(() => {
+    if (events.length > 0) {
+      const rb = new RequestBuilder("presence:room-list");
+      const fx = rb.withOptions({ leaveOpen: false })
+        .withFilter()
+        .kinds([ROOM_PRESENCE]);
+      fx.replyToLink(events.map(a => NostrLink.fromEvent(a)));
+
+      return rb;
+    }
+  }, [events]);
+
+  const roomPresence = useRequestBuilder(subPresence);
+
+  const eventsWithPresence = useMemo(() => {
+    return events.map(a => {
+      const pres = roomPresence.filter(a => NostrLink.fromEvent(a).isReplyToThis(a));
+      return {
+        event: a,
+        presence: pres
+      };
+    })
+  }, [events, roomPresence]);
+
+  const liveRooms = eventsWithPresence.filter((a) => {
+    const status = a.event.tags.find((a) => a[0] === "status")?.[1];
+    return status === "live" && (showEmptyRooms || a.presence.length > 0);
   });
-  const plannedRooms = events.filter((a) => {
-    const status = a.tags.find((a) => a[0] === "status")?.[1];
+  const plannedRooms = eventsWithPresence.filter((a) => {
+    const status = a.event.tags.find((a) => a[0] === "status")?.[1];
     return status === "planned";
   });
   return (
@@ -48,7 +74,7 @@ export function RoomListList({
       )}
       <div className="flex flex-col gap-6">
         {liveRooms.map((a) => (
-          <RoomCard event={a} key={a.id} join={true} />
+          <RoomCard event={a.event} key={a.event.id} join={true} presenceEvents={a.presence} />
         ))}
         {liveRooms.length === 0 && showCreateWhenEmpty && (
           <div className="px-6 py-4 rounded-3xl flex flex-col gap-3 bg-foreground flex flex-col gap-2">
@@ -68,7 +94,7 @@ export function RoomListList({
       )}
       <div className="flex flex-col gap-6">
         {plannedRooms.map((a) => (
-          <RoomCard event={a} key={a.id} join={true} />
+          <RoomCard event={a.event} key={a.event.id} join={true} presenceEvents={a.presence} />
         ))}
         {plannedRooms.length === 0 && showCreateWhenEmpty && (
           <div className="px-6 py-4 rounded-3xl flex flex-col gap-3 bg-foreground flex flex-col gap-2">

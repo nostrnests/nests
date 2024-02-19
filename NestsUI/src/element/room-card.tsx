@@ -24,12 +24,14 @@ export default function RoomCard({
   className,
   link,
   join,
+  presenceEvents,
 }: {
   event: NostrEvent;
   inRoom?: boolean;
   className?: string;
   link?: boolean;
   join?: boolean;
+  presenceEvents?: Array<NostrEvent>
 }) {
   const profile = useUserProfile(event.pubkey);
   const title = event.tags.find((a) => a[0] === "title")?.[1];
@@ -43,7 +45,8 @@ export default function RoomCard({
   const login = useLogin();
 
   const eventLink = NostrLink.fromEvent(event);
-  const presence = useRoomPresence(eventLink, false);
+  const loadedPresence = useRoomPresence(presenceEvents === undefined ? eventLink : undefined, false);
+  const presence = presenceEvents ?? loadedPresence;
   const roomContext = useNostrRoom();
 
   async function joinRoom() {
