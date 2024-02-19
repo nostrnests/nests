@@ -48,7 +48,9 @@ export default function WriteMessage({ link, className }: { link: NostrLink; cla
             }
           }}
         />
-        <PrimaryButton onClick={sendMessage} loading={sending}>Send</PrimaryButton>
+        <PrimaryButton onClick={sendMessage} loading={sending}>
+          Send
+        </PrimaryButton>
       </div>
     </>
   );
@@ -137,29 +139,29 @@ function ReactionsButton({ link, fromRef }: { link: NostrLink; fromRef: RefObjec
 
   const px = open
     ? createPortal(
-      <div
-        className="absolute bg-foreground-2 p-3 grid grid-cols-6 gap-4 text-3xl rounded-2xl select-none"
-        style={{
-          bottom: window.innerHeight - (pos?.top ?? 0) + 5,
-          left: pos?.left,
-          width: pos?.width,
-        }}
-      >
-        <ReactIcon content="🤙" />
-        <ReactIcon content="💯" />
-        <ReactIcon content="😂" />
-        <ReactIcon content="😅" />
-        <ReactIcon content="😳" />
-        <ReactIcon content="🤔" />
-        <ReactIcon content="🔥" />
-        <ReactIcon content="🤡" />
-        <ReactIcon content="🤩" />
-        <ReactIcon content="😱" />
-        <ReactIcon content="🤣" />
-        <ReactIcon content="🤯" />
-      </div>,
-      document.body,
-    )
+        <div
+          className="absolute bg-foreground-2 p-3 grid grid-cols-6 gap-4 text-3xl rounded-2xl select-none"
+          style={{
+            bottom: window.innerHeight - (pos?.top ?? 0) + 5,
+            left: pos?.left,
+            width: pos?.width,
+          }}
+        >
+          <ReactIcon content="🤙" />
+          <ReactIcon content="💯" />
+          <ReactIcon content="😂" />
+          <ReactIcon content="😅" />
+          <ReactIcon content="😳" />
+          <ReactIcon content="🤔" />
+          <ReactIcon content="🔥" />
+          <ReactIcon content="🤡" />
+          <ReactIcon content="🤩" />
+          <ReactIcon content="😱" />
+          <ReactIcon content="🤣" />
+          <ReactIcon content="🤯" />
+        </div>,
+        document.body,
+      )
     : undefined;
   return (
     <>

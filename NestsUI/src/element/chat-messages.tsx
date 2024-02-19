@@ -58,7 +58,12 @@ function ChatZap({ event }: { event: NostrEvent }) {
   return (
     <div className="rounded-2xl px-3 py-4 bg-foreground-2">
       <div className="flex gap-2 items-center">
-        <Avatar pubkey={zap.sender ?? event.pubkey} link={false} size={32} className="outline outline-2 outline-bitcoin" />
+        <Avatar
+          pubkey={zap.sender ?? event.pubkey}
+          link={false}
+          size={32}
+          className="outline outline-2 outline-bitcoin"
+        />
         <Icon name="zap" className="text-bitcoin" />
         <span>
           <DisplayName pubkey={zap.sender ?? event.pubkey} profile={senderProfile} className="text-bitcoin font-bold" />

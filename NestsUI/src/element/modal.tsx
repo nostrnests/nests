@@ -83,10 +83,15 @@ export default function Modal(props: ModalProps) {
         }}
       >
         <div className="absolute right-4 top-4">
-          <IconButton name="x" onClick={e => {
-            e.stopPropagation();
-            props.onClose?.(e);
-          }} className="rounded-full aspect-square" size={10} />
+          <IconButton
+            name="x"
+            onClick={(e) => {
+              e.stopPropagation();
+              props.onClose?.(e);
+            }}
+            className="rounded-full aspect-square"
+            size={10}
+          />
         </div>
         {props.children}
       </div>

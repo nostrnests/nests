@@ -89,10 +89,12 @@ export default function RoomCard({
         <div className="flex justify-between">
           <div className="flex gap-4 items-center">
             {status === "live" ? <ListenerCount n={presence.length} /> : <StartTime n={Number(starts)} />}
-            {inRoom && roomContext.info?.recording === true && <div className="px-2 py-1 flex gap-1 items-center bg-white rounded-full text-delete font-semibold text-sm">
-              <span className="rounded-full w-4 h-4 bg-delete animate-pulse"></span>
-              REC
-            </div>}
+            {inRoom && roomContext.info?.recording === true && (
+              <div className="px-2 py-1 flex gap-1 items-center bg-white rounded-full text-delete font-semibold text-sm">
+                <span className="rounded-full w-4 h-4 bg-delete animate-pulse"></span>
+                REC
+              </div>
+            )}
           </div>
           {!inRoom && (
             <div>

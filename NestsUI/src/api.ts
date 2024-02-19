@@ -6,21 +6,21 @@ export interface RoomInfo {
   speakers: Array<string>;
   admins: Array<string>;
   link: string;
-  recording: boolean
+  recording: boolean;
 }
 
 export interface RoomRecording {
   id: string;
   started: number;
   stopped?: number;
-  url: string
+  url: string;
 }
 
 export class NestsApi {
   constructor(
     readonly url: string,
     readonly signer?: EventSigner,
-  ) { }
+  ) {}
 
   async createRoom(): Promise<CreateRoomResponse> {
     return await this.#fetch<CreateRoomResponse>("GET", true, "/api/v1/nests");
@@ -41,14 +41,18 @@ export class NestsApi {
    * @param canPublish
    * @returns
    */
-  async updatePermissions(room: string, identity: string, req: { can_publish?: boolean, mute_microphone?: boolean, is_admin?: boolean }) {
+  async updatePermissions(
+    room: string,
+    identity: string,
+    req: { can_publish?: boolean; mute_microphone?: boolean; is_admin?: boolean },
+  ) {
     return await this.#fetchNoReturn(
       "POST",
       true,
       `/api/v1/nests/${room}/permissions`,
       JSON.stringify({
         participant: identity,
-        ...req
+        ...req,
       }),
     );
   }
@@ -78,7 +82,7 @@ export class NestsApi {
     const headers: HeadersInit = {
       accept: "application/json",
       "content-type": "application/json",
-      "authorization": await this.#nip96("GET", url)
+      authorization: await this.#nip96("GET", url),
     };
     const rsp = await fetch(url, {
       headers,
@@ -111,7 +115,12 @@ export class NestsApi {
     throw new Error(await rsp.text());
   }
 
-  async #fetchNoReturn(method: "GET" | "PUT" | "POST" | "PATCH" | "DELETE", auth: boolean, path: string, body?: BodyInit): Promise<void> {
+  async #fetchNoReturn(
+    method: "GET" | "PUT" | "POST" | "PATCH" | "DELETE",
+    auth: boolean,
+    path: string,
+    body?: BodyInit,
+  ): Promise<void> {
     const url = `${this.url}${path}`;
     const headers: HeadersInit = {
       accept: "application/json",
@@ -138,7 +147,7 @@ export class NestsApi {
     builder.tag(["u", url]);
     builder.tag(["method", method]);
     builder.kind(EventKind.HttpAuthentication);
-    const ev = JSON.stringify(await builder.buildAndSign(this.signer))
+    const ev = JSON.stringify(await builder.buildAndSign(this.signer));
     return `Nostr ${base64.encode(new TextEncoder().encode(ev))}`;
   }
 }

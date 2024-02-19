@@ -47,25 +47,36 @@ export default function ProfileCard({
       {menuItem("eye", "View Profile", () => {
         nostrRoom.setFlyout(<ProfilePageContent link={new NostrLink(NostrPrefix.PublicKey, pubkey)} />);
       })}
-      {menuItem("user-plus", "Follow", () => { })}
+      {menuItem("user-plus", "Follow", () => {})}
       {isLoginAdmin && (
         <>
-          {menuItem(isSpeaker ? "exit" : "enter", !isSpeaker ? "Add to stage" : isSelf ? "Leave stage" : "Remove from stage", async () => {
-            await api.updatePermissions(room.name, pubkey, { can_publish: !isSpeaker });
-          })}
-          {!isMuted && menuItem("mic-off", "Mute", async () => {
-            await api.updatePermissions(room.name, pubkey, { mute_microphone: true });
-          })}
-          {!thisIsAdmin && !thisIsHost && menuItem("admin", "Make admin", async () => {
-            await api.updatePermissions(room.name, pubkey, { is_admin: true });
-          })}
-          {thisIsAdmin && !thisIsHost && menuItem("admin", "Remove admin", async () => {
-            await api.updatePermissions(room.name, pubkey, { is_admin: false });
-          })}
-          {!isSelf && !thisIsHost && <>
-            <hr className="mx-4 border-foreground" />
-            {menuItem("minus-circle", "Ban user", () => { }, "text-delete hover:text-delete")}
-          </>}
+          {menuItem(
+            isSpeaker ? "exit" : "enter",
+            !isSpeaker ? "Add to stage" : isSelf ? "Leave stage" : "Remove from stage",
+            async () => {
+              await api.updatePermissions(room.name, pubkey, { can_publish: !isSpeaker });
+            },
+          )}
+          {!isMuted &&
+            menuItem("mic-off", "Mute", async () => {
+              await api.updatePermissions(room.name, pubkey, { mute_microphone: true });
+            })}
+          {!thisIsAdmin &&
+            !thisIsHost &&
+            menuItem("admin", "Make admin", async () => {
+              await api.updatePermissions(room.name, pubkey, { is_admin: true });
+            })}
+          {thisIsAdmin &&
+            !thisIsHost &&
+            menuItem("admin", "Remove admin", async () => {
+              await api.updatePermissions(room.name, pubkey, { is_admin: false });
+            })}
+          {!isSelf && !thisIsHost && (
+            <>
+              <hr className="mx-4 border-foreground" />
+              {menuItem("minus-circle", "Ban user", () => {}, "text-delete hover:text-delete")}
+            </>
+          )}
         </>
       )}
     </div>

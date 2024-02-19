@@ -31,7 +31,7 @@ export default function ZapFlow({ targets, onClose }: { targets: Array<ZapTarget
 
   useEffect(() => {
     if (customAmount !== undefined) {
-      setAmount((customAmount - (customAmount % inc)));
+      setAmount(customAmount - (customAmount % inc));
     }
   }, [customAmount]);
 
@@ -56,7 +56,9 @@ export default function ZapFlow({ targets, onClose }: { targets: Array<ZapTarget
                 onClick={() => setAmount((v) => Math.max(inc, v - inc))}
               />
               <div className="text-center">
-                <div className="text-3xl font-semibold">{customAmount ? (customAmount.toLocaleString()) : formatAmount(amount)}</div>
+                <div className="text-3xl font-semibold">
+                  {customAmount ? customAmount.toLocaleString() : formatAmount(amount)}
+                </div>
                 <div className="text-sm">Sats</div>
               </div>
               <IconButton
@@ -65,7 +67,12 @@ export default function ZapFlow({ targets, onClose }: { targets: Array<ZapTarget
                 onClick={() => setAmount((v) => Math.min(1_000_000, v + inc))}
               />
             </div>
-            <input placeholder="Custom amount" type="number" value={customAmount} onChange={e => setCustomAmount(e.target.value ? Number(e.target.value) : undefined)} />
+            <input
+              placeholder="Custom amount"
+              type="number"
+              value={customAmount}
+              onChange={(e) => setCustomAmount(e.target.value ? Number(e.target.value) : undefined)}
+            />
             <textarea placeholder="Personal note" value={comment} onChange={(e) => setComment(e.target.value)} />
             <PrimaryButton
               onClick={async () => {
