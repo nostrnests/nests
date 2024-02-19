@@ -7,6 +7,9 @@ import Header from "../element/header";
 import { useMemo } from "react";
 import { RoomListList } from "./room-list";
 import { ROOM_KIND } from "../const";
+import { FormattedMessage } from "react-intl";
+import { logout, useLogin } from "../login";
+import { useNavigate } from "react-router-dom";
 
 export default function ProfilePage({ link, header }: { link: NostrLink; header: boolean }) {
   return (
@@ -21,6 +24,8 @@ export default function ProfilePage({ link, header }: { link: NostrLink; header:
 
 export function ProfilePageContent({ link }: { link: NostrLink }) {
   const meta = useUserProfile(link.id);
+  const navigate = useNavigate();
+  const login = useLogin();
   const sub = useMemo(() => {
     const rb = new RequestBuilder(`rooms:${link.id.slice(0, 12)}`);
     rb.withFilter().kinds([ROOM_KIND]).authors([link.id]);
@@ -39,7 +44,16 @@ export function ProfilePageContent({ link }: { link: NostrLink }) {
             <DisplayName pubkey={link.id} profile={meta} />
           </h3>
         </div>
-        <PrimaryButton>Follow</PrimaryButton>
+        {login.pubkey === link.id ?
+          <PrimaryButton onClick={() => {
+            logout();
+            navigate("/");
+          }}>
+            <FormattedMessage defaultMessage="Logout" />
+          </PrimaryButton> :
+          <PrimaryButton>
+            <FormattedMessage defaultMessage="Follow" />
+          </PrimaryButton>}
       </div>
       <p>{meta?.about}</p>
       <hr />

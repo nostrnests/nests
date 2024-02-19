@@ -87,6 +87,15 @@ class LoginStore extends ExternalStore<LoginSession> {
     }
   }
 
+  logout() {
+    this.#session = {
+      type: "none",
+      handMap: [],
+      locale: "en-US",
+    };
+    this.notifyChange();
+  }
+
   takeSnapshot(): LoginSession {
     return { ...this.#session };
   }
@@ -131,4 +140,8 @@ export function useHand(link: NostrLink) {
     },
     active: presence.hand,
   };
+}
+
+export function logout() {
+  LoginSystem.logout();
 }
