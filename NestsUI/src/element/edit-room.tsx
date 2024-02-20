@@ -134,9 +134,10 @@ function EditRoomDetails({ event, onClose }: { event: NostrEvent; onClose: () =>
           if (status[1] !== "ended") {
             status[1] = "ended";
             event.tags.push(["ends", unixNow().toString()]);
-            event.id = EventExt.createId(event);
             event.created_at = unixNow();
+            event.id = EventExt.createId(event);
             const signed = await signer?.sign(event);
+            console.debug(signed);
             if (signed) {
               await system.BroadcastEvent(signed);
               navigate("/");
