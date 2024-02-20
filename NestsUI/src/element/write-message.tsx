@@ -4,7 +4,7 @@ import { RefObject, useRef, useState } from "react";
 import useEventBuilder from "../hooks/useEventBuilder";
 import IconButton from "./icon-button";
 import { useLocalParticipant, useRoomContext } from "@livekit/components-react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useHand, useLogin } from "../login";
 import { createPortal } from "react-dom";
 import classNames from "classnames";
@@ -33,16 +33,24 @@ export default function WriteMessage({ link, className }: { link: NostrLink; cla
     setSending(false);
   }
 
+  const mainClasses = "flex bg-foreground-2 rounded-full py-1 px-2 pl-4 items-center";
   if (login.type === "none")
     return (
-      <div>
-        <FormattedMessage defaultMessage="Please login to chat" />
+      <div className={classNames(mainClasses, className, "justify-between")}>
+        <div className="font-semibold">
+          <FormattedMessage defaultMessage="Please login to chat" />
+        </div>
+        <Link to={"/login"}>
+          <PrimaryButton>
+            <FormattedMessage defaultMessage="Login" />
+          </PrimaryButton>
+        </Link>
       </div>
     );
   return (
     <>
       <MenuBar link={link} />
-      <div className={classNames("flex bg-foreground-2 rounded-full py-1 px-2 pl-4 items-center", className)}>
+      <div className={classNames(mainClasses, className)}>
         <input
           type="text"
           className="grow bg-foreground-2 text-white"
@@ -153,29 +161,29 @@ function ReactionsButton({ link, fromRef }: { link: NostrLink; fromRef: RefObjec
 
   const px = open
     ? createPortal(
-        <div
-          className="absolute bg-foreground-2 p-3 grid grid-cols-6 gap-4 text-3xl rounded-2xl select-none"
-          style={{
-            bottom: window.innerHeight - (pos?.top ?? 0) + 5,
-            left: pos?.left,
-            width: pos?.width,
-          }}
-        >
-          <ReactIcon content="🤙" />
-          <ReactIcon content="💯" />
-          <ReactIcon content="😂" />
-          <ReactIcon content="😅" />
-          <ReactIcon content="😳" />
-          <ReactIcon content="🤔" />
-          <ReactIcon content="🔥" />
-          <ReactIcon content="🤡" />
-          <ReactIcon content="🤩" />
-          <ReactIcon content="😱" />
-          <ReactIcon content="🤣" />
-          <ReactIcon content="🤯" />
-        </div>,
-        document.body,
-      )
+      <div
+        className="absolute bg-foreground-2 p-3 grid grid-cols-6 gap-4 text-3xl rounded-2xl select-none"
+        style={{
+          bottom: window.innerHeight - (pos?.top ?? 0) + 5,
+          left: pos?.left,
+          width: pos?.width,
+        }}
+      >
+        <ReactIcon content="🤙" />
+        <ReactIcon content="💯" />
+        <ReactIcon content="😂" />
+        <ReactIcon content="😅" />
+        <ReactIcon content="😳" />
+        <ReactIcon content="🤔" />
+        <ReactIcon content="🔥" />
+        <ReactIcon content="🤡" />
+        <ReactIcon content="🤩" />
+        <ReactIcon content="😱" />
+        <ReactIcon content="🤣" />
+        <ReactIcon content="🤯" />
+      </div>,
+      document.body,
+    )
     : undefined;
   return (
     <>

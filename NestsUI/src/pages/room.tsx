@@ -1,4 +1,4 @@
-import { LiveKitRoom, RoomAudioRenderer, useEnsureRoom, useRoomContext } from "@livekit/components-react";
+import { LiveKitRoom, RoomAudioRenderer, useRoomContext } from "@livekit/components-react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import NostrParticipants from "../element/participants";
 import { NostrEvent, NostrLink, parseNostrLink } from "@snort/system";
@@ -13,7 +13,7 @@ import WriteMessage from "../element/write-message";
 import useRoomPresence, { useSendPresence } from "../hooks/useRoomPresence";
 import { useLogin } from "../login";
 import Modal from "../element/modal";
-import { ReactNode, useContext, useEffect, useMemo, useState } from "react";
+import { CSSProperties, ReactNode, useContext, useEffect, useMemo, useState } from "react";
 import { useRoomReactions } from "../hooks/useRoomReactions";
 import classNames from "classnames";
 import Flyout from "../element/flyout";
@@ -112,10 +112,12 @@ function ParticipantsPannel({ room }: { room: RoomState }) {
 
 function ChatPannel({ link }: { link: NostrLink }) {
   const [expanded, setExpanded] = useState(false);
+  const login = useLogin();
+  const cardHeight = login.type === "none" ? 4 : 10;
   const mobileStyles = [
     {
       "max-lg:translate-y-[20dvh] max-lg:h-[80dvh]": expanded,
-      "max-lg:translate-y-[90dvh] max-lg:h-[10dvh]": !expanded,
+      "max-lg:translate-y-[calc(100dvh-var(--card-height))] max-lg:h-[--card-height]": !expanded,
     },
     "max-lg:fixed",
     "max-lg:top-0",
@@ -127,7 +129,9 @@ function ChatPannel({ link }: { link: NostrLink }) {
 
   const hiddenWhenCollapsed = { "max-lg:hidden": !expanded };
   return (
-    <div className={classNames(mobileStyles, "lg:h-[100dvh] bg-foreground overflow-hidden flex flex-col w-chat")}>
+    <div className={classNames(mobileStyles, "lg:h-[100dvh] bg-foreground overflow-hidden flex flex-col w-chat")} style={{
+      ["--card-height"]: `${cardHeight}dvh`
+    } as CSSProperties}>
       <div
         className={classNames("h-3 min-h-3 bg-foreground-2 w-40 rounded-full mt-2 mx-auto cursor-pointer lg:hidden", {
           "mb-3": expanded,
