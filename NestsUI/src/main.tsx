@@ -7,8 +7,8 @@ import { RouteObject, RouterProvider, createBrowserRouter } from "react-router-d
 import Layout, { BackLayout } from "./pages/layout";
 import { SnortContext } from "@snort/system-react";
 import { NostrSystem } from "@snort/system";
+import { removeUndefined, sanitizeRelayUrl } from "@snort/shared";
 import { setLogLevel } from "livekit-client";
-import { DefaultRelays } from "./const";
 import RoomList from "./pages/room-list";
 import NewRoom from "./pages/new-room";
 import SignUp from "./element/sign-up";
@@ -92,8 +92,8 @@ const router = createBrowserRouter(routes);
 
 const snortSystem = new NostrSystem({
   optimizer: hasWasm ? WasmOptimizer : undefined,
+  automaticOutboxModel: false,
 });
-DefaultRelays.forEach((r) => snortSystem.ConnectToRelay(r, { read: true, write: true }));
 
 setLogLevel("debug");
 
@@ -106,3 +106,13 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     </SnortContext.Provider>
   </React.StrictMode>,
 );
+
+export function updateRelays(relays: Array<string>) {
+  relays = removeUndefined(relays.map(a => sanitizeRelayUrl(a)));
+  console.debug("Connecting to relays for room", relays);
+  relays.forEach(a => snortSystem.ConnectToRelay(a, { read: true, write: true }));
+
+  const removing = [...snortSystem.pool].filter(([k,]) => !relays.some(b => b === k)).map(([k,]) => k);
+  console.debug("Disconnecting relays for room", removing);
+  removing.forEach(a => snortSystem.DisconnectRelay(a));
+}

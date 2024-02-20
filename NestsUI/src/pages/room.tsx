@@ -5,7 +5,7 @@ import { NostrEvent, NostrLink, parseNostrLink } from "@snort/system";
 import { useNestsApi } from "../hooks/useNestsApi";
 import Logo from "../element/logo";
 import RoomCard from "../element/room-card";
-import { useEventFeed } from "@snort/system-react";
+import { SnortContext, useEventFeed } from "@snort/system-react";
 import { PrimaryButton, SecondaryButton } from "../element/button";
 import Icon from "../icon";
 import ChatMessages from "../element/chat-messages";
@@ -13,7 +13,7 @@ import WriteMessage from "../element/write-message";
 import useRoomPresence from "../hooks/useRoomPresence";
 import { useLogin } from "../login";
 import Modal from "../element/modal";
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useContext, useEffect, useState } from "react";
 import { useRoomReactions } from "../hooks/useRoomReactions";
 import classNames from "classnames";
 import Flyout from "../element/flyout";
@@ -21,6 +21,8 @@ import { NostrRoomContext } from "../hooks/nostr-room-context";
 import { NestsApi, RoomInfo } from "../api";
 import { ApiUrl } from "../const";
 import { FormattedMessage } from "react-intl";
+import { removeUndefined, sanitizeRelayUrl } from "@snort/shared";
+import { updateRelays } from "../main";
 
 interface RoomState {
   event: NostrEvent;
@@ -35,6 +37,17 @@ export default function Room() {
   const [confirmGuest, setConfirmGuest] = useState(false);
   const room = location.state as RoomState | undefined;
   const link = room ? NostrLink.fromEvent(room.event) : undefined;
+  const system = useContext(SnortContext);
+
+  useEffect(() => {
+    if (room?.event) {
+      const relays = removeUndefined(room?.event.tags.find(a => a[0] === "relays")?.slice(1).map(a => sanitizeRelayUrl(a)) ?? []);
+      if (relays.length > 0) {
+        updateRelays(relays);
+      }
+    }
+  }, [room?.event, system]);
+
   if (!room?.token || !link) return <JoinRoom />;
 
   const livekitUrl = room.event.tags.find(
@@ -117,7 +130,7 @@ function ChatPannel({ link }: { link: NostrLink }) {
       )}
     >
       <div
-        className={classNames("h-3 bg-foreground-2 w-40 rounded-full mt-2 mx-auto cursor-pointer lg:hidden", {
+        className={classNames("h-3 min-h-3 bg-foreground-2 w-40 rounded-full mt-2 mx-auto cursor-pointer lg:hidden", {
           "mb-3": expanded,
         })}
         onClick={() => setExpanded((s) => !s)}

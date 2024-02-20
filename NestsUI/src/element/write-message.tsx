@@ -27,7 +27,7 @@ export default function WriteMessage({ link, className }: { link: NostrLink; cla
     const builder = new EventBuilder();
     builder.content(msg).kind(LIVE_CHAT).tag(link.toEventTag()!);
 
-    const ev = await builder.buildAndSign(signer);
+    const ev = await builder.processContent().buildAndSign(signer);
     setMsg("");
     await system.BroadcastEvent(ev);
     setSending(false);

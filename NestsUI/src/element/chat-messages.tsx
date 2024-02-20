@@ -2,7 +2,6 @@ import { EventKind, NostrEvent, NostrLink, ParsedFragment, RequestBuilder, parse
 import { useRequestBuilder, useUserProfile } from "@snort/system-react";
 import { useMemo } from "react";
 import Avatar from "./avatar";
-import { hexToBech32 } from "@snort/shared";
 import DisplayName from "./display-name";
 import Icon from "../icon";
 import { LIVE_CHAT } from "../const";
@@ -14,14 +13,13 @@ export default function ChatMessages({ link, className }: { link: NostrLink, cla
   const sub = useMemo(() => {
     const rb = new RequestBuilder(`chat-messages:${link.id}`);
     rb.withOptions({ leaveOpen: true }).withFilter().kinds([LIVE_CHAT, EventKind.ZapReceipt]).replyToLink([link]);
-
     return rb;
   }, [link]);
 
   const messages = useRequestBuilder(sub);
 
   return (
-    <div className={classNames("overflow-y-auto flex flex-col-reverse gap-3 px-5", className)} >
+    <div className={classNames("overflow-y-auto flex flex-col-reverse gap-3 px-5 grow", className)} >
       {messages.map((a) => {
         switch (a.kind) {
           case EventKind.ZapReceipt: {
@@ -57,7 +55,7 @@ function ChatMessage({ event }: { event: NostrEvent }) {
       <Avatar pubkey={event.pubkey} size={32} link={true} />
       <div className="flex flex-col text-sm text-wrap overflow-wrap overflow-hidden">
         <div className="text-medium leading-8">
-          {profile?.display_name ?? profile?.name ?? hexToBech32("nput", event.pubkey).slice(0, 12)}
+          <DisplayName pubkey={event.pubkey} profile={profile} />
         </div>
         {frags.map(renderFrag)}
       </div>

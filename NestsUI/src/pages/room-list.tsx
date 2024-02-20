@@ -4,8 +4,11 @@ import { useMemo } from "react";
 import RoomCard from "../element/room-card";
 import { PrimaryButton } from "../element/button";
 import { Link } from "react-router-dom";
-import { ROOM_KIND, ROOM_PRESENCE } from "../const";
+import { DefaultRelays, ROOM_KIND, ROOM_PRESENCE } from "../const";
 import { FormattedMessage } from "react-intl";
+import { unixNow } from "@snort/shared";
+import { PRESENCE_TIME } from "../hooks/usePresence";
+import { updateRelays } from "../main";
 
 export default function RoomList() {
   const sub = useMemo(() => {
@@ -16,6 +19,7 @@ export default function RoomList() {
   }, []);
 
   const events = useRequestBuilder(sub);
+  updateRelays(DefaultRelays);
 
   return (
     <div className="lg:mx-auto max-lg:px-4 lg:w-[35rem] flex flex-col gap-8">
@@ -36,7 +40,7 @@ export function RoomListList({
   const subPresence = useMemo(() => {
     if (events.length > 0) {
       const rb = new RequestBuilder("presence:room-list");
-      const fx = rb.withOptions({ leaveOpen: false }).withFilter().kinds([ROOM_PRESENCE]);
+      const fx = rb.withOptions({ leaveOpen: false }).withFilter().kinds([ROOM_PRESENCE]).since(unixNow() - PRESENCE_TIME);
       fx.replyToLink(events.map((a) => NostrLink.fromEvent(a)));
 
       return rb;
@@ -61,7 +65,8 @@ export function RoomListList({
   });
   const plannedRooms = eventsWithPresence.filter((a) => {
     const status = a.event.tags.find((a) => a[0] === "status")?.[1];
-    return status === "planned";
+    const starts = Number(a.event.tags.find((a) => a[0] === "starts")?.[1]);
+    return status === "planned" && starts + (60 * 60) > unixNow();
   });
   return (
     <>

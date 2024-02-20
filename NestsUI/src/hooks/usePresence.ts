@@ -4,10 +4,10 @@ import { useLogin } from "../login";
 import { useCallback } from "react";
 import { ROOM_PRESENCE } from "../const";
 
+export const PRESENCE_TIME = 60 * 2;
 export default function usePresence(link?: NostrLink) {
   const { signer, system } = useEventBuilder();
   const login = useLogin();
-  const interval = 60 * 2;
   const hand = login.handMap.includes(link?.id ?? "");
 
   const sendPresence = useCallback(async () => {
@@ -24,5 +24,5 @@ export default function usePresence(link?: NostrLink) {
     await system.BroadcastEvent(ev);
   }, [signer, link, hand, system]);
 
-  return { sendPresence, interval, hand };
+  return { sendPresence, interval: PRESENCE_TIME, hand };
 }

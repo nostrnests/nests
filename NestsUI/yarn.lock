@@ -982,14 +982,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@snort/system-react@npm:^1.2.8":
-  version: 1.2.8
-  resolution: "@snort/system-react@npm:1.2.8"
+"@snort/system-react@npm:^1.2.9":
+  version: 1.2.9
+  resolution: "@snort/system-react@npm:1.2.9"
   dependencies:
     "@snort/shared": "npm:^1.0.13"
-    "@snort/system": "npm:^1.2.8"
+    "@snort/system": "npm:^1.2.9"
     react: "npm:^18.2.0"
-  checksum: 3c5632c29209135424e66d54c88ba2574170bc93e3b7e0f0695596934fa0af93d30ddd3d3dda75bfdfd961b288335a95dacb403664b97029c1bc5aa700e7e362
+  checksum: a2cdcbdc509825309933bf3fdb044e9b05dd88aebe05983bf28c2443380639095ea83d7ca43806e03ae66364af6381bcd3ae96a818c510158171df4633335577
   languageName: node
   linkType: hard
 
@@ -1000,9 +1000,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@snort/system@npm:^1.2.8":
-  version: 1.2.8
-  resolution: "@snort/system@npm:1.2.8"
+"@snort/system@npm:^1.2.9":
+  version: 1.2.9
+  resolution: "@snort/system@npm:1.2.9"
   dependencies:
     "@noble/curves": "npm:^1.2.0"
     "@noble/hashes": "npm:^1.3.2"
@@ -1016,7 +1016,7 @@ __metadata:
     lru-cache: "npm:^10.2.0"
     uuid: "npm:^9.0.0"
     ws: "npm:^8.14.0"
-  checksum: c70a0b9ab71e674ad4b5903d065e5b4b1e6678caed500471229b9aab03f42c5b80092d376333c6c5da28614eeded9cdc5cb12478bfd133d6b30f455392079480
+  checksum: a584bdf0102f0ecd9e1d3c31eddc6c5a21369c088435cd0d6fc63eb4d42d012bf67c8e018bacec656591b4e2b9b5d9d8a99cc98f7923d3a57e3d48ec7ea9bed6
   languageName: node
   linkType: hard
 
@@ -3142,8 +3142,8 @@ __metadata:
     "@livekit/components-styles": "npm:^1.0.9"
     "@scure/base": "npm:^1.1.5"
     "@snort/shared": "npm:^1.0.13"
-    "@snort/system": "npm:^1.2.8"
-    "@snort/system-react": "npm:^1.2.8"
+    "@snort/system": "npm:^1.2.9"
+    "@snort/system-react": "npm:^1.2.9"
     "@snort/system-wasm": "npm:^1.0.2"
     "@types/react": "npm:^18.2.48"
     "@types/react-dom": "npm:^18.2.17"

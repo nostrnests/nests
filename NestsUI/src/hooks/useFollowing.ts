@@ -31,7 +31,6 @@ export default function useFollowing() {
     useEffect(() => {
         if (contacts.length > 0) {
             const pTags = contacts[0].tags.filter(a => a[0] === "p");
-            console.debug(contacts);
             setFollows(pTags as Array<[string, string]>);
         }
     }, [contacts]);

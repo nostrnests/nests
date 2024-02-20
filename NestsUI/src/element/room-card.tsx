@@ -114,12 +114,14 @@ export default function RoomCard({
         {!inRoom && (
           <div className="flex gap-2 items-center">
             <Avatar pubkey={event.pubkey} outline={2} size={32} link={true} />
-            <FormattedMessage
-              defaultMessage="Hosted by {name}"
-              values={{
-                name: <DisplayName pubkey={event.pubkey} profile={profile} />,
-              }}
-            />
+            <span>
+              <FormattedMessage
+                defaultMessage="Hosted by {name}"
+                values={{
+                  name: <DisplayName pubkey={event.pubkey} profile={profile} />,
+                }}
+              />
+            </span>
           </div>
         )}
         {editRoom && (
