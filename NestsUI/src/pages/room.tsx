@@ -64,8 +64,10 @@ export default function Room() {
     >
       <RoomAudioRenderer />
       <NostrRoomContextProvider event={room.event} >
-        <ParticipantsPannel room={room} />
-        <ChatPannel link={link} />
+        <div className="flex">
+          <ParticipantsPannel room={room} />
+          <ChatPannel link={link} />
+        </div>
       </NostrRoomContextProvider>
       {login.type === "none" && !confirmGuest && (
         <Modal id="join-as-guest">
@@ -111,7 +113,7 @@ function ChatPannel({ link }: { link: NostrLink }) {
       "max-lg:translate-y-[20dvh] max-lg:h-[80dvh]": expanded,
       "max-lg:translate-y-[90dvh] max-lg:h-[10dvh]": !expanded,
     },
-    "max-lg:fixed",
+    "max-lg:absolute",
     "max-lg:top-0",
     "max-lg:left-0",
     "max-lg:w-screen",
