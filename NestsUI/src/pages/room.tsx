@@ -113,7 +113,7 @@ function ChatPannel({ link }: { link: NostrLink }) {
       "max-lg:translate-y-[20dvh] max-lg:h-[80dvh]": expanded,
       "max-lg:translate-y-[90dvh] max-lg:h-[10dvh]": !expanded,
     },
-    "max-lg:absolute",
+    "max-lg:fixed",
     "max-lg:top-0",
     "max-lg:left-0",
     "max-lg:w-screen",
