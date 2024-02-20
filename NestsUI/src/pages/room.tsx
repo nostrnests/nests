@@ -64,7 +64,7 @@ export default function Room() {
     >
       <RoomAudioRenderer />
       <NostrRoomContextProvider event={room.event} >
-        <div className="flex">
+        <div className="flex overflow-hidden h-[100dvh]">
           <ParticipantsPannel room={room} />
           <ChatPannel link={link} />
         </div>
@@ -91,14 +91,14 @@ export default function Room() {
 function ParticipantsPannel({ room }: { room: RoomState }) {
   const navigate = useNavigate();
   return (
-    <div className={`lg:w-[calc(100vw-${ChatWidth}px)] max-lg:w-screen`}>
+    <div className={`lg:w-[calc(100vw-${ChatWidth}px)] max-lg:w-screen overflow-y-auto`}>
       <div className="px-4 py-6">
         <button className="flex gap-2 items-center text-highlight cursor-pointer" onClick={() => navigate("/")}>
           <Icon name="chevron" />
           <FormattedMessage defaultMessage="Lobby" />
         </button>
       </div>
-      <div className="flex flex-col gap-8 mx-auto lg:w-[35rem] max-lg:px-4 max-lg:overflow-y-auto max-lg:mb-[20dvh]">
+      <div className="flex flex-col gap-8 mx-auto lg:w-[35rem] max-lg:px-4 overflow-x-hidden max-lg:overflow-y-auto mb-[20dvh]">
         <RoomCard event={room.event} inRoom={true} link={false} />
         <NostrParticipants event={room.event} />
       </div>

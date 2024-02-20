@@ -45,6 +45,12 @@ function ChatMessage({ event }: { event: NostrEvent }) {
       case "link": return <a href={frag.content} rel="noreferer" target="_blank" className="text-highlight">
         {frag.content}
       </a>
+      case "media": {
+        if (frag.mimeType?.startsWith("image/")) {
+          return <img src={frag.content} />
+        }
+        return frag.content;
+      }
       case "mention": return <Mention link={parseNostrLink(frag.content)} />
       default: return frag.content;
     }
