@@ -6,13 +6,15 @@ import { PrimaryButton } from "../element/button";
 import Header from "../element/header";
 import { useMemo } from "react";
 import { RoomListList } from "./room-list";
-import { ROOM_KIND } from "../const";
+import { DefaultRelays, ROOM_KIND } from "../const";
 import { FormattedMessage } from "react-intl";
 import { logout, useLogin } from "../login";
 import { useNavigate } from "react-router-dom";
 import FollowButton from "../element/follow-button";
+import { updateRelays } from "../utils";
 
 export default function ProfilePage({ link, header }: { link: NostrLink; header: boolean }) {
+  updateRelays(DefaultRelays);
   return (
     <>
       {header && <Header />}

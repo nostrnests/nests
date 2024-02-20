@@ -8,7 +8,7 @@ import { DefaultRelays, ROOM_KIND, ROOM_PRESENCE } from "../const";
 import { FormattedMessage } from "react-intl";
 import { unixNow } from "@snort/shared";
 import { PRESENCE_TIME } from "../hooks/usePresence";
-import { updateRelays } from "../main";
+import { updateRelays } from "../utils";
 
 export default function RoomList() {
   const sub = useMemo(() => {

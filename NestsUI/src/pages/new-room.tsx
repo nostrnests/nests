@@ -4,20 +4,26 @@ import { Link, Navigate, useNavigate } from "react-router-dom";
 import { NestsApi } from "../api";
 import { ApiUrl, DefaultRelays, ROOM_KIND } from "../const";
 import { EventBuilder, NostrLink } from "@snort/system";
-import { unixNow } from "@snort/shared";
+import { sanitizeRelayUrl, unixNow } from "@snort/shared";
 import { SnortContext } from "@snort/system-react";
 import RoomCard from "../element/room-card";
 import { useLogin } from "../login";
 import BannerEditor from "../element/banner-editor";
 import { FormattedMessage, useIntl } from "react-intl";
+import { updateRelays } from "../utils";
+import Icon from "../icon";
 
 export default function NewRoom() {
+  updateRelays(DefaultRelays);
   const system = useContext(SnortContext);
   const [name, setName] = useState("");
   const [desc, setDesc] = useState("");
   const [time, setTime] = useState<string>();
   const [color, setColor] = useState<string>();
   const [image, setImage] = useState<string>();
+  const [relayInput, setRelayInput] = useState("");
+  const [relays, setRelays] = useState<Array<string>>([...DefaultRelays]);
+  const [customRelays, setCustomRelays] = useState(false);
   const navigate = useNavigate();
   const login = useLogin();
   const { formatMessage } = useIntl();
@@ -35,11 +41,11 @@ export default function NewRoom() {
         .tag(["image", image ?? ""])
         .tag(["status", time ? "planned" : "live"])
         .tag(["starts", time ? String(Math.floor(new Date(time).getTime() / 1000)) : String(unixNow())])
-        .tag(["relays", ...DefaultRelays]);
+        .tag(["relays", ...relays]);
 
       return eb;
     },
-    [login.pubkey, name, desc, color, time, image],
+    [login.pubkey, name, desc, color, time, image, relays],
   );
 
   const dmeoRoom = useMemo(() => {
@@ -117,6 +123,35 @@ export default function NewRoom() {
         />
       </div>
       <BannerEditor onImage={setImage} onColor={setColor} />
+      <div>
+        <div className="flex gap-2 items-center font-medium mb-2 cursor-pointer" onClick={() => setCustomRelays(s => !s)}>
+          <FormattedMessage defaultMessage="Custom Relays (Optional)" />
+          <Icon name="chevron" className={`${customRelays ? "rotate-90" : "-rotate-90"} transition`} size={16} />
+        </div>
+        {customRelays && <div className="flex flex-col gap-2">
+          <p className="text-off-white">
+            <FormattedMessage defaultMessage="If you'd like to broadcast only to specific relays, you can add those here." />
+          </p>
+          <div className="flex gap-2 items-center">
+            <input className="grow" type="text" placeholder="wss://example.com" value={relayInput} onChange={e => setRelayInput(e.target.value)} />
+            <SecondaryButton onClick={() => {
+              const cleaned = sanitizeRelayUrl(relayInput);
+              if (cleaned && (cleaned.startsWith("ws://") || cleaned.startsWith("wss://"))) {
+                setRelays([...relays, cleaned]);
+                setRelayInput("");
+              }
+            }}>
+              <FormattedMessage defaultMessage="Add" />
+            </SecondaryButton>
+          </div>
+          {relays.map(a => <div key={a} className="flex gap-2 items-center">
+            <div className="bg-foreground px-4 py-3 rounded-xl select-none grow text-off-white">{a}</div>
+            <SecondaryButton className="text-delete" onClick={() => setRelays(s => s.filter(b => b !== a))}>
+              <FormattedMessage defaultMessage="Remove" />
+            </SecondaryButton>
+          </div>)}
+        </div>}
+      </div>
       <RoomCard event={dmeoRoom} />
       <div className="flex gap-2 justify-center">
         <Link to="/">

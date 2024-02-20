@@ -22,7 +22,7 @@ import { NestsApi, RoomInfo } from "../api";
 import { ApiUrl } from "../const";
 import { FormattedMessage } from "react-intl";
 import { removeUndefined, sanitizeRelayUrl } from "@snort/shared";
-import { updateRelays } from "../main";
+import { updateRelays } from "../utils";
 
 interface RoomState {
   event: NostrEvent;
