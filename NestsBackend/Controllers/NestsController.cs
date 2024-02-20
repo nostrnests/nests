@@ -266,7 +266,7 @@ public class NestsController : Controller
                     }
                 });
             }
-            catch
+            finally
             {
                 await UpdateRoomInfo(room.Id);
             }
