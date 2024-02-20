@@ -18,7 +18,7 @@ export default function Flyout({
 
   return createPortal(
     <div className={`absolute z-20 top-0 right-0 w-chat overflow-hidden ${show ? "" : "pointer-events-none"}`}>
-      <div className="bg-foreground h-screen px-3 py-4" style={styles}>
+      <div className="bg-foreground h-[100dvh] px-3 py-4" style={styles}>
         <IconButton name="x" className="rounded-xl w-10 h-10 mb-6" size={16} onClick={onClose} />
         {children}
       </div>

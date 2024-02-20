@@ -21,7 +21,7 @@ export default function NostrParticipants({ event }: { event: NostrEvent }) {
 
   return (
     <>
-      <div className="grid grid-cols-4 gap-4 content-evenly">
+      <div className="grid lg:grid-cols-4 max-lg:grid-cols-3 gap-4 content-evenly">
         {participants
           .filter((a) => a.audioTracks.size > 0)
           .map((a) => {
@@ -29,7 +29,7 @@ export default function NostrParticipants({ event }: { event: NostrEvent }) {
           })}
       </div>
       <div className="h-[1px] bg-foreground w-full"></div>
-      <div className="grid grid-cols-4 gap-4 content-evenly">
+      <div className="grid lg:grid-cols-4 max-lg:grid-cols-3 gap-4 content-evenly">
         {participants
           .filter((a) => a.audioTracks.size === 0)
           .map((a) => {

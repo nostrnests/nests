@@ -46,7 +46,7 @@ const routes = [
       {
         path: "/sign-up",
         element: (
-          <div className="flex flex-col items-center justify-center mt-[20vh]">
+          <div className="flex flex-col items-center justify-center mt-[20dvh]">
             <div className="modal-body">
               <SignUp />
             </div>
@@ -56,7 +56,7 @@ const routes = [
       {
         path: "/login",
         element: (
-          <div className="flex flex-col items-center justify-center mt-[20vh]">
+          <div className="flex flex-col items-center justify-center mt-[20dvh]">
             <div className="modal-body">
               <Login />
             </div>

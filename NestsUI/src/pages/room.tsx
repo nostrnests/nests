@@ -61,14 +61,11 @@ export default function Room() {
       audio={{
         autoGainControl: false,
       }}
-      className="overflow-hidden"
     >
       <RoomAudioRenderer />
       <NostrRoomContextProvider event={room.event} >
-        <div className="w-screen flex overflow-hidden h-screen">
-          <ParticipantsPannel room={room} />
-          <ChatPannel link={link} />
-        </div>
+        <ParticipantsPannel room={room} />
+        <ChatPannel link={link} />
       </NostrRoomContextProvider>
       {login.type === "none" && !confirmGuest && (
         <Modal id="join-as-guest">
@@ -99,7 +96,7 @@ function ParticipantsPannel({ room }: { room: RoomState }) {
           <FormattedMessage defaultMessage="Lobby" />
         </button>
       </div>
-      <div className="flex flex-col gap-8 mx-auto lg:w-[35rem] max-lg:px-4">
+      <div className="flex flex-col gap-8 mx-auto lg:w-[35rem] max-lg:px-4 max-lg:overflow-y-auto max-lg:mb-[20dvh]">
         <RoomCard event={room.event} inRoom={true} link={false} />
         <NostrParticipants event={room.event} />
       </div>
@@ -111,10 +108,11 @@ function ChatPannel({ link }: { link: NostrLink }) {
   const [expanded, setExpanded] = useState(false);
   const mobileStyles = [
     {
-      "max-lg:translate-y-[20vh] max-lg:h-[80vh]": expanded,
-      "max-lg:translate-y-[90vh] max-lg:h-[10vh]": !expanded,
+      "max-lg:translate-y-[20dvh] max-lg:h-[80dvh]": expanded,
+      "max-lg:translate-y-[90dvh] max-lg:h-[10dvh]": !expanded,
     },
-    "max-lg:absolute",
+    "max-lg:fixed",
+    "max-lg:top-0",
     "max-lg:left-0",
     "max-lg:w-screen",
     "max-lg:rounded-t-3xl",
@@ -126,7 +124,7 @@ function ChatPannel({ link }: { link: NostrLink }) {
     <div
       className={classNames(
         mobileStyles,
-        "lg:h-screen bg-foreground overflow-hidden flex flex-col w-chat",
+        "lg:h-[100dvh] bg-foreground overflow-hidden flex flex-col w-chat",
       )}
     >
       <div
@@ -167,7 +165,7 @@ function JoinRoom() {
 
   if (!event) return;
   return (
-    <div className="w-screen h-screen flex-col flex items-center justify-center gap-[10vh]">
+    <div className="w-screen h-[100dvh] flex-col flex items-center justify-center gap-[10dvh]">
       <Logo />
       <RoomCard event={event} className="lg:w-[35rem] cursor-default" link={false} />
       <PrimaryButton className="px-6 py-4 w-40 text-lg" onClick={joinRoom}>

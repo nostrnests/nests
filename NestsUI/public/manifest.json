@@ -1,0 +1,28 @@
+{
+    "short_name": "NostrNests",
+    "name": "NostrNests",
+    "description": "NostrNests",
+    "id": "/",
+    "icons": [
+        {
+            "src": "logo_256.png",
+            "type": "image/png",
+            "sizes": "256x256"
+        },
+        {
+            "src": "logo_512.png",
+            "type": "image/png",
+            "sizes": "512x512"
+        }
+    ],
+    "start_url": "/",
+    "display": "standalone",
+    "theme_color": "#000000",
+    "background_color": "#1b1f29",
+    "protocol_handlers": [],
+    "screenshots": [],
+    "display_override": [
+        "fullscreen"
+    ],
+    "related_applications": []
+}
