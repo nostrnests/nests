@@ -19,6 +19,7 @@
     "@snort/system": "^1.2.9",
     "@snort/system-react": "^1.2.9",
     "@snort/system-wasm": "^1.0.2",
+    "@snort/system-web": "^1.0.4",
     "babel-plugin-formatjs": "^10.5.13",
     "classnames": "^2.5.1",
     "dayjs": "^1.11.10",

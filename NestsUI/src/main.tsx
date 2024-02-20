@@ -6,6 +6,7 @@ import ReactDOM from "react-dom/client";
 import { RouteObject, RouterProvider, createBrowserRouter } from "react-router-dom";
 import Layout, { BackLayout } from "./pages/layout";
 import { SnortContext } from "@snort/system-react";
+import { SnortSystemDb } from "@snort/system-web";
 import { NostrSystem } from "@snort/system";
 import { setLogLevel } from "livekit-client";
 import RoomList from "./pages/room-list";
@@ -20,6 +21,7 @@ import localizedFormat from "dayjs/plugin/localizedFormat";
 import relativeTime from "dayjs/plugin/relativeTime";
 import dayjs from "dayjs";
 import IntlContext from "./intl";
+
 dayjs.extend(localizedFormat);
 dayjs.extend(relativeTime);
 
@@ -92,6 +94,7 @@ const router = createBrowserRouter(routes);
 export const snortSystem = new NostrSystem({
   optimizer: hasWasm ? WasmOptimizer : undefined,
   automaticOutboxModel: false,
+  db: new SnortSystemDb(),
 });
 
 setLogLevel("debug");

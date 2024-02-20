@@ -19,7 +19,6 @@ export const useCopy = (timeout = 2000) => {
   return { error, copied, copy };
 };
 
-
 export async function copy(text: string) {
   if (navigator.clipboard && window.isSecureContext) {
     await navigator.clipboard.writeText(text);

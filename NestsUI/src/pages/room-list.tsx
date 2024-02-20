@@ -40,7 +40,7 @@ export function RoomListList({
   const subPresence = useMemo(() => {
     if (events.length > 0) {
       const rb = new RequestBuilder("presence:room-list");
-      const fx = rb.withOptions({ leaveOpen: false }).withFilter().kinds([ROOM_PRESENCE]).since(unixNow() - PRESENCE_TIME);
+      const fx = rb.withOptions({ leaveOpen: true }).withFilter().kinds([ROOM_PRESENCE]);
       fx.replyToLink(events.map((a) => NostrLink.fromEvent(a)));
 
       return rb;
@@ -50,13 +50,16 @@ export function RoomListList({
   const roomPresence = useRequestBuilder(subPresence);
 
   const eventsWithPresence = useMemo(() => {
-    return events.map((a) => {
-      const pres = roomPresence.filter((b) => NostrLink.fromEvent(a).isReplyToThis(b));
-      return {
-        event: a,
-        presence: pres,
-      };
-    });
+    return events
+      .map((a) => {
+        const aLink = NostrLink.fromEvent(a);
+        const pres = roomPresence.filter((b) => aLink.isReplyToThis(b));
+        return {
+          event: a,
+          presence: pres.filter((a) => a.created_at >= unixNow() - PRESENCE_TIME * 1.2),
+        };
+      })
+      .sort((a, b) => (a.presence.length > b.presence.length ? -1 : 1));
   }, [events, roomPresence]);
 
   const liveRooms = eventsWithPresence.filter((a) => {
@@ -66,7 +69,7 @@ export function RoomListList({
   const plannedRooms = eventsWithPresence.filter((a) => {
     const status = a.event.tags.find((a) => a[0] === "status")?.[1];
     const starts = Number(a.event.tags.find((a) => a[0] === "starts")?.[1]);
-    return status === "planned" && starts + (60 * 60) > unixNow();
+    return status === "planned" && starts + 60 * 60 > unixNow();
   });
   return (
     <>
@@ -77,7 +80,7 @@ export function RoomListList({
       )}
       <div className="flex flex-col gap-6">
         {liveRooms.map((a) => (
-          <RoomCard event={a.event} key={a.event.id} join={true} presenceEvents={a.presence} />
+          <RoomCard event={a.event} key={a.event.id} join={true} presenceEvents={a.presence} inRoom={false} />
         ))}
         {liveRooms.length === 0 && showCreateWhenEmpty && (
           <div className="px-6 py-4 rounded-3xl flex flex-col gap-3 bg-foreground flex flex-col gap-2">
@@ -97,7 +100,7 @@ export function RoomListList({
       )}
       <div className="flex flex-col gap-6">
         {plannedRooms.map((a) => (
-          <RoomCard event={a.event} key={a.event.id} join={true} presenceEvents={a.presence} />
+          <RoomCard event={a.event} key={a.event.id} join={true} presenceEvents={a.presence} inRoom={false} />
         ))}
         {plannedRooms.length === 0 && showCreateWhenEmpty && (
           <div className="px-6 py-4 rounded-3xl flex flex-col gap-3 bg-foreground flex flex-col gap-2">

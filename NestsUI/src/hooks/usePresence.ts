@@ -13,9 +13,7 @@ export default function usePresence(link?: NostrLink) {
   const sendPresence = useCallback(async () => {
     if (!signer || !link) return;
     const builder = new EventBuilder();
-    builder
-      .kind(ROOM_PRESENCE)
-      .tag(link.toEventTag()!);
+    builder.kind(ROOM_PRESENCE).tag(link.toEventTag()!);
 
     if (hand) {
       builder.tag(["hand", hand ? "1" : "0"]);

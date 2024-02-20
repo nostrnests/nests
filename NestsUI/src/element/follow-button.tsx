@@ -3,16 +3,20 @@ import { PrimaryButton } from "./button";
 import useFollowing from "../hooks/useFollowing";
 
 export default function FollowButton({ pubkey }: { pubkey: string }) {
-    const { isFollowing, follow, unfollow } = useFollowing();
+  const { isFollowing, follow, unfollow } = useFollowing();
 
-    const is = isFollowing(pubkey);
-    return <PrimaryButton onClick={async () => {
+  const is = isFollowing(pubkey);
+  return (
+    <PrimaryButton
+      onClick={async () => {
         if (is) {
-            await unfollow(pubkey);
+          await unfollow(pubkey);
         } else {
-            await follow(pubkey);
+          await follow(pubkey);
         }
-    }}>
-        {is ? <FormattedMessage defaultMessage="Unfollow" /> : <FormattedMessage defaultMessage="Follow" />}
+      }}
+    >
+      {is ? <FormattedMessage defaultMessage="Unfollow" /> : <FormattedMessage defaultMessage="Follow" />}
     </PrimaryButton>
+  );
 }

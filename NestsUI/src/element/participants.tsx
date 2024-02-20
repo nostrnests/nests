@@ -1,6 +1,6 @@
 import { useParticipantPermissions, useParticipants } from "@livekit/components-react";
 import { useUserProfile } from "@snort/system-react";
-import { LocalParticipant, RemoteParticipant, Track } from "livekit-client";
+import { LocalParticipant, RemoteParticipant, RoomEvent, Track } from "livekit-client";
 import Icon from "../icon";
 import Avatar from "./avatar";
 import { unixNow } from "@snort/shared";
@@ -17,13 +17,23 @@ import DisplayName from "./display-name";
 import VuBar from "./vu";
 
 export default function NostrParticipants({ event }: { event: NostrEvent }) {
-  const participants = useParticipants();
+  const participants = useParticipants({
+    updateOnlyOn: [
+      RoomEvent.ParticipantConnected,
+      RoomEvent.ParticipantDisconnected,
+      RoomEvent.ParticipantPermissionsChanged,
+      RoomEvent.TrackMuted,
+      RoomEvent.TrackPublished,
+      RoomEvent.TrackUnmuted,
+      RoomEvent.TrackUnmuted,
+    ],
+  });
 
   return (
     <>
       <div className="grid lg:grid-cols-4 max-lg:grid-cols-3 gap-4 content-evenly">
         {participants
-          .filter((a) => a.audioTracks.size > 0)
+          .filter((a) => a.permissions?.canPublish)
           .map((a) => {
             return <NostrParticipant p={a} key={a.sid} event={event} />;
           })}
@@ -31,7 +41,7 @@ export default function NostrParticipants({ event }: { event: NostrEvent }) {
       <div className="h-[1px] bg-foreground w-full"></div>
       <div className="grid lg:grid-cols-4 max-lg:grid-cols-3 gap-4 content-evenly">
         {participants
-          .filter((a) => a.audioTracks.size === 0)
+          .filter((a) => !a.permissions?.canPublish)
           .map((a) => {
             return <NostrParticipant p={a} key={a.sid} event={event} />;
           })}
@@ -63,7 +73,7 @@ function NostrParticipant({ p, event }: { p: RemoteParticipant | LocalParticipan
   const room = useNostrRoom();
 
   const isHandRaised = Boolean(presence?.tags.find((a) => a[0] === "hand")?.[1]);
-  const isSpeaker = p.tracks.size > 0;
+  const isSpeaker = p.permissions?.canPublish;
   const isHost = event.pubkey === p.identity;
   const isAdmin = room.info?.admins.includes(p.identity);
   const reaction = reactions
@@ -121,22 +131,22 @@ function NostrParticipant({ p, event }: { p: RemoteParticipant | LocalParticipan
                     track={p.getTrack(Track.Source.Microphone)?.audioTrack?.mediaStreamTrack}
                     height={40}
                     width={40}
-                    className="absolute top-0 left-0 w-full h-full z-10" />
+                    className="absolute top-0 left-0 w-full h-full z-10"
+                  />
                 </div>
               </div>
             </div>
           )}
-          <Avatar
-            pubkey={p.identity}
-            size={72}
-            className={""}
-            link={false}
-          />
+          <Avatar pubkey={p.identity} size={72} className={""} link={false} />
           {isHovering && !isGuest && <ProfileCard participant={p} pubkey={p.identity} />}
         </div>
         <div className={`text-center ${isHost ? "text-primary" : ""}`}>
           {isGuest ? (
-            isMe ? <FormattedMessage defaultMessage="Guest (me)" /> : <FormattedMessage defaultMessage="Guest" />
+            isMe ? (
+              <FormattedMessage defaultMessage="Guest (me)" />
+            ) : (
+              <FormattedMessage defaultMessage="Guest" />
+            )
           ) : (
             <DisplayName pubkey={p.identity} profile={profile} />
           )}

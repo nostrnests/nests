@@ -2121,7 +2121,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@snort/shared@npm:^1.0.13":
+"@snort/shared@npm:^1.0.11, @snort/shared@npm:^1.0.13":
   version: 1.0.13
   resolution: "@snort/shared@npm:1.0.13"
   dependencies:
@@ -2153,7 +2153,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@snort/system@npm:^1.2.9":
+"@snort/system-web@npm:^1.0.4":
+  version: 1.0.4
+  resolution: "@snort/system-web@npm:1.0.4"
+  dependencies:
+    "@snort/shared": "npm:^1.0.11"
+    "@snort/system": "npm:^1.2.0"
+    dexie: "npm:^3.2.4"
+  checksum: e9abf3bec27b98d14197874257038ac2fb70fe09de7995af46a436c14875c454be5a7fd520207014781bc3191c4d5cfa1c18207f2ae7cb888038de4b74430aac
+  languageName: node
+  linkType: hard
+
+"@snort/system@npm:^1.2.0, @snort/system@npm:^1.2.9":
   version: 1.2.9
   resolution: "@snort/system@npm:1.2.9"
   dependencies:
@@ -3195,6 +3206,15 @@ __metadata:
     has-property-descriptors: "npm:^1.0.0"
     object-keys: "npm:^1.1.1"
   checksum: 88a152319ffe1396ccc6ded510a3896e77efac7a1bfbaa174a7b00414a1747377e0bb525d303794a47cf30e805c2ec84e575758512c6e44a993076d29fd4e6c3
+  languageName: node
+  linkType: hard
+
+"dexie@npm:^3.2.4":
+  version: 3.2.6
+  resolution: "dexie@npm:3.2.6"
+  dependencies:
+    karma-safari-launcher: "npm:^1.0.0"
+  checksum: 9d2ffd14552845dddcbbdf94d7cbdf12ab9890d25a9f1d6dac7f16de1fd7ba109860b4b35a1862e13b3478aeef8cdf3f5dd901213ee2dffbc28e669e8b4615d8
   languageName: node
   linkType: hard
 
@@ -4604,6 +4624,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"karma-safari-launcher@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "karma-safari-launcher@npm:1.0.0"
+  peerDependencies:
+    karma: ">=0.9"
+  checksum: 7e8a005b01b19db6c1bc6019dc724a335c1bd47df9d63a2ae18caa200149409f210f85b67b3efec3894994d6506bcd186280dbc470c96d7d61e4afa18036d50c
+  languageName: node
+  linkType: hard
+
 "keyv@npm:^4.5.3":
   version: 4.5.4
   resolution: "keyv@npm:4.5.4"
@@ -5002,6 +5031,7 @@ __metadata:
     "@snort/system": "npm:^1.2.9"
     "@snort/system-react": "npm:^1.2.9"
     "@snort/system-wasm": "npm:^1.0.2"
+    "@snort/system-web": "npm:^1.0.4"
     "@types/react": "npm:^18.2.48"
     "@types/react-dom": "npm:^18.2.17"
     "@typescript-eslint/eslint-plugin": "npm:^6.14.0"

@@ -9,7 +9,7 @@ import { useNestsApi } from "../hooks/useNestsApi";
 import useRoomPresence from "../hooks/useRoomPresence";
 import { ColorPalette } from "../const";
 import StartTime from "./start-time";
-import { CSSProperties, useState } from "react";
+import { CSSProperties, useMemo, useState } from "react";
 import IconButton from "./icon-button";
 import Modal from "./modal";
 import EditRoom from "./edit-room";
@@ -44,8 +44,8 @@ export default function RoomCard({
   const api = useNestsApi();
   const login = useLogin();
 
-  const eventLink = NostrLink.fromEvent(event);
-  const loadedPresence = useRoomPresence(presenceEvents === undefined ? eventLink : undefined, false);
+  const eventLink = useMemo(() => NostrLink.fromEvent(event), [event]);
+  const loadedPresence = useRoomPresence(presenceEvents === undefined ? eventLink : undefined);
   const presence = presenceEvents ?? loadedPresence;
   const roomContext = useNostrRoom();
 
@@ -101,9 +101,9 @@ export default function RoomCard({
             )}
           </div>
           {!inRoom && (
-            <div>
+            <div className="flex items-center gap-2">
               <AvatarStack>
-                {presence.map((a) => (
+                {presence.slice(0, 6).map((a) => (
                   <Avatar pubkey={a.pubkey} outline={2} size={32} link={false} />
                 ))}
               </AvatarStack>

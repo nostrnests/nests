@@ -14,6 +14,6 @@ export default function DisplayName({
       return profile?.name;
     }
     return hexToBech32("npub", pubkey).slice(0, 12);
-  }
+  };
   return <span {...props}>{getName()}</span>;
 }

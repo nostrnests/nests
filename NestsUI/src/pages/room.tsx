@@ -1,4 +1,4 @@
-import { LiveKitRoom, RoomAudioRenderer, useEnsureRoom, useParticipants } from "@livekit/components-react";
+import { LiveKitRoom, RoomAudioRenderer, useEnsureRoom, useRoomContext } from "@livekit/components-react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import NostrParticipants from "../element/participants";
 import { NostrEvent, NostrLink, parseNostrLink } from "@snort/system";
@@ -10,16 +10,15 @@ import { PrimaryButton, SecondaryButton } from "../element/button";
 import Icon from "../icon";
 import ChatMessages from "../element/chat-messages";
 import WriteMessage from "../element/write-message";
-import useRoomPresence from "../hooks/useRoomPresence";
+import useRoomPresence, { useSendPresence } from "../hooks/useRoomPresence";
 import { useLogin } from "../login";
 import Modal from "../element/modal";
-import { ReactNode, useContext, useEffect, useState } from "react";
+import { ReactNode, useContext, useEffect, useMemo, useState } from "react";
 import { useRoomReactions } from "../hooks/useRoomReactions";
 import classNames from "classnames";
 import Flyout from "../element/flyout";
 import { NostrRoomContext } from "../hooks/nostr-room-context";
-import { NestsApi, RoomInfo } from "../api";
-import { ApiUrl } from "../const";
+import { RoomInfo } from "../api";
 import { FormattedMessage } from "react-intl";
 import { removeUndefined, sanitizeRelayUrl } from "@snort/shared";
 import { updateRelays } from "../utils";
@@ -36,12 +35,17 @@ export default function Room() {
   const login = useLogin();
   const [confirmGuest, setConfirmGuest] = useState(false);
   const room = location.state as RoomState | undefined;
-  const link = room ? NostrLink.fromEvent(room.event) : undefined;
+  const link = useMemo(() => (room ? NostrLink.fromEvent(room.event) : undefined), [room]);
   const system = useContext(SnortContext);
 
   useEffect(() => {
     if (room?.event) {
-      const relays = removeUndefined(room?.event.tags.find(a => a[0] === "relays")?.slice(1).map(a => sanitizeRelayUrl(a)) ?? []);
+      const relays = removeUndefined(
+        room?.event.tags
+          .find((a) => a[0] === "relays")
+          ?.slice(1)
+          .map((a) => sanitizeRelayUrl(a)) ?? [],
+      );
       if (relays.length > 0) {
         updateRelays(relays);
       }
@@ -63,7 +67,7 @@ export default function Room() {
       }}
     >
       <RoomAudioRenderer />
-      <NostrRoomContextProvider event={room.event} >
+      <NostrRoomContextProvider event={room.event}>
         <div className="flex overflow-hidden h-[100dvh]">
           <ParticipantsPannel room={room} />
           <ChatPannel link={link} />
@@ -98,7 +102,7 @@ function ParticipantsPannel({ room }: { room: RoomState }) {
           <FormattedMessage defaultMessage="Lobby" />
         </button>
       </div>
-      <div className="flex flex-col gap-8 mx-auto lg:w-[35rem] max-lg:px-4 overflow-x-hidden max-lg:overflow-y-auto mb-[20dvh]">
+      <div className="flex flex-col gap-8 mx-auto lg:w-[35rem] max-lg:px-4 mb-[30dvh]">
         <RoomCard event={room.event} inRoom={true} link={false} />
         <NostrParticipants event={room.event} />
       </div>
@@ -123,12 +127,7 @@ function ChatPannel({ link }: { link: NostrLink }) {
 
   const hiddenWhenCollapsed = { "max-lg:hidden": !expanded };
   return (
-    <div
-      className={classNames(
-        mobileStyles,
-        "lg:h-[100dvh] bg-foreground overflow-hidden flex flex-col w-chat",
-      )}
-    >
+    <div className={classNames(mobileStyles, "lg:h-[100dvh] bg-foreground overflow-hidden flex flex-col w-chat")}>
       <div
         className={classNames("h-3 min-h-3 bg-foreground-2 w-40 rounded-full mt-2 mx-auto cursor-pointer lg:hidden", {
           "mb-3": expanded,
@@ -177,26 +176,36 @@ function JoinRoom() {
   );
 }
 
-function NostrRoomContextProvider({ event, children }: { event: NostrEvent, children?: ReactNode }) {
+function NostrRoomContextProvider({ event, children }: { event: NostrEvent; children?: ReactNode }) {
   const [flyout, setFlyout] = useState<ReactNode>();
   const [roomInfo, setRoomInfo] = useState<RoomInfo>();
-  const link = NostrLink.fromEvent(event);
-  const presence = useRoomPresence(link, true);
+  const link = useMemo(() => NostrLink.fromEvent(event), [event]);
+  const presence = useRoomPresence(link);
   const reactions = useRoomReactions(link);
-  const participants = useParticipants();
-  const room = useEnsureRoom();
+  const room = useRoomContext();
+  const api = useNestsApi();
+  useSendPresence(link);
 
   useEffect(() => {
-    const api = new NestsApi(ApiUrl);
-    api.getRoomInfo(link.id).then(setRoomInfo);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(participants.map((a) => a.permissions))]);
+    const handler = (m?: string) => {
+      if (m) {
+        const info = JSON.parse(m) as RoomInfo;
+        console.debug("setting metadata", info);
+        setRoomInfo(info);
+      }
+    };
+    room.on("roomMetadataChanged", handler);
+    return () => {
+      room.off("roomMetadataChanged", handler);
+    };
+  }, [room]);
 
   useEffect(() => {
-    if (room.metadata) {
-      setRoomInfo(JSON.parse(room.metadata) as RoomInfo);
-    }
-  }, [room.metadata]);
+    api.getRoomInfo(link.id).then((m) => {
+      console.debug("setting metadata", m);
+      setRoomInfo(m);
+    });
+  }, [link.id, api]);
 
   return (
     <NostrRoomContext.Provider value={{ event, reactions, presence, flyout, setFlyout, info: roomInfo }}>

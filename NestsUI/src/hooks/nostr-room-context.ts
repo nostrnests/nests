@@ -15,7 +15,7 @@ export const NostrRoomContext = createContext<RoomState>({
   event: {} as NostrEvent,
   reactions: [],
   presence: [],
-  setFlyout: () => { },
+  setFlyout: () => {},
 });
 
 export function useNostrRoom() {

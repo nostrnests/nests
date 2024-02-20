@@ -53,7 +53,7 @@ export default function Login() {
       });
       await bunker.init();
       loginWith("nip46", bunker);
-      navigate(-1);
+      navigate("/");
     } catch (e) {
       if (e instanceof Error) {
         setError(e.message);
@@ -82,7 +82,7 @@ export default function Login() {
       <PrimaryButton
         onClick={async () => {
           await loginWith("nip7");
-          navigate(-1);
+          navigate("/");
         }}
       >
         <FormattedMessage defaultMessage="Sign in with extension" />

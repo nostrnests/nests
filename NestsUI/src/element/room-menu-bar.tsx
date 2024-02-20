@@ -92,7 +92,7 @@ export function RoomOptionsButton({ link }: { link: NostrLink }) {
                 await api.updatePermissions(link.id, login.pubkey!, { can_publish: false });
                 setOpen(false);
               })}
-            {isAdmin && menuItem("audio", <FormattedMessage defaultMessage="Stream Audio" />, () => { })}
+            {isAdmin && menuItem("audio", <FormattedMessage defaultMessage="Stream Audio" />, () => {})}
             {isAdmin &&
               roomContext.info?.recording === false &&
               menuItem("rec", <FormattedMessage defaultMessage="Start Recording" />, async () => {
@@ -162,9 +162,11 @@ export function RoomOptionsButton({ link }: { link: NostrLink }) {
           </div>
         </Modal>
       )}
-      {share && <Modal id="share-room" onClose={() => setShare(false)}>
-        <ShareModal event={roomContext.event} />
-      </Modal>}
+      {share && (
+        <Modal id="share-room" onClose={() => setShare(false)}>
+          <ShareModal event={roomContext.event} />
+        </Modal>
+      )}
     </>
   );
 }

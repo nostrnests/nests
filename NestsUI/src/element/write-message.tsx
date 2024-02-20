@@ -111,7 +111,8 @@ function MenuBar({ link }: { link: NostrLink }) {
               track={room.localParticipant.getTrack(Track.Source.Microphone)?.audioTrack?.mediaStreamTrack}
               height={40}
               width={40}
-              className="absolute top-0 left-0 w-full h-full opacity-20" />
+              className="absolute top-0 left-0 w-full h-full opacity-20"
+            />
           </IconButton>
         )}
         <ReactionsButton link={link} fromRef={refMenu} />
@@ -152,29 +153,29 @@ function ReactionsButton({ link, fromRef }: { link: NostrLink; fromRef: RefObjec
 
   const px = open
     ? createPortal(
-      <div
-        className="absolute bg-foreground-2 p-3 grid grid-cols-6 gap-4 text-3xl rounded-2xl select-none"
-        style={{
-          bottom: window.innerHeight - (pos?.top ?? 0) + 5,
-          left: pos?.left,
-          width: pos?.width,
-        }}
-      >
-        <ReactIcon content="🤙" />
-        <ReactIcon content="💯" />
-        <ReactIcon content="😂" />
-        <ReactIcon content="😅" />
-        <ReactIcon content="😳" />
-        <ReactIcon content="🤔" />
-        <ReactIcon content="🔥" />
-        <ReactIcon content="🤡" />
-        <ReactIcon content="🤩" />
-        <ReactIcon content="😱" />
-        <ReactIcon content="🤣" />
-        <ReactIcon content="🤯" />
-      </div>,
-      document.body,
-    )
+        <div
+          className="absolute bg-foreground-2 p-3 grid grid-cols-6 gap-4 text-3xl rounded-2xl select-none"
+          style={{
+            bottom: window.innerHeight - (pos?.top ?? 0) + 5,
+            left: pos?.left,
+            width: pos?.width,
+          }}
+        >
+          <ReactIcon content="🤙" />
+          <ReactIcon content="💯" />
+          <ReactIcon content="😂" />
+          <ReactIcon content="😅" />
+          <ReactIcon content="😳" />
+          <ReactIcon content="🤔" />
+          <ReactIcon content="🔥" />
+          <ReactIcon content="🤡" />
+          <ReactIcon content="🤩" />
+          <ReactIcon content="😱" />
+          <ReactIcon content="🤣" />
+          <ReactIcon content="🤯" />
+        </div>,
+        document.body,
+      )
     : undefined;
   return (
     <>

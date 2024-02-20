@@ -1,4 +1,13 @@
-import { EventKind, NostrEvent, NostrLink, ParsedFragment, RequestBuilder, parseNostrLink, parseZap, transformText } from "@snort/system";
+import {
+  EventKind,
+  NostrEvent,
+  NostrLink,
+  ParsedFragment,
+  RequestBuilder,
+  parseNostrLink,
+  parseZap,
+  transformText,
+} from "@snort/system";
 import { useRequestBuilder, useUserProfile } from "@snort/system-react";
 import { useMemo } from "react";
 import Avatar from "./avatar";
@@ -9,7 +18,7 @@ import { FormattedMessage, FormattedNumber } from "react-intl";
 import classNames from "classnames";
 import Mention from "./mention";
 
-export default function ChatMessages({ link, className }: { link: NostrLink, className?: string }) {
+export default function ChatMessages({ link, className }: { link: NostrLink; className?: string }) {
   const sub = useMemo(() => {
     const rb = new RequestBuilder(`chat-messages:${link.id}`);
     rb.withOptions({ leaveOpen: true }).withFilter().kinds([LIVE_CHAT, EventKind.ZapReceipt]).replyToLink([link]);
@@ -19,7 +28,7 @@ export default function ChatMessages({ link, className }: { link: NostrLink, cla
   const messages = useRequestBuilder(sub);
 
   return (
-    <div className={classNames("overflow-y-auto flex flex-col-reverse gap-3 px-5 grow", className)} >
+    <div className={classNames("overflow-y-auto flex flex-col-reverse gap-3 px-5 grow", className)}>
       {messages.map((a) => {
         switch (a.kind) {
           case EventKind.ZapReceipt: {
@@ -42,17 +51,22 @@ function ChatMessage({ event }: { event: NostrEvent }) {
 
   function renderFrag(frag: ParsedFragment) {
     switch (frag.type) {
-      case "link": return <a href={frag.content} rel="noreferer" target="_blank" className="text-highlight">
-        {frag.content}
-      </a>
+      case "link":
+        return (
+          <a href={frag.content} rel="noreferer" target="_blank" className="text-highlight">
+            {frag.content}
+          </a>
+        );
       case "media": {
         if (frag.mimeType?.startsWith("image/")) {
-          return <img src={frag.content} />
+          return <img src={frag.content} />;
         }
         return frag.content;
       }
-      case "mention": return <Mention link={parseNostrLink(frag.content)} />
-      default: return frag.content;
+      case "mention":
+        return <Mention link={parseNostrLink(frag.content)} />;
+      default:
+        return frag.content;
     }
   }
 
