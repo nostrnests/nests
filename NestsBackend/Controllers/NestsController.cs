@@ -253,16 +253,24 @@ public class NestsController : Controller
         if (changes)
         {
             await _db.SaveChangesAsync();
-            await _liveKit.UpdateParticipant(new()
+            try
             {
-                Room = room.Id.ToString(),
-                Identity = participant.Pubkey,
-                Permission = new()
+                await _liveKit.UpdateParticipant(new()
                 {
-                    CanPublish = participant.IsSpeaker,
-                    CanSubscribe = true
-                }
-            });
+                    Room = room.Id.ToString(),
+                    Identity = participant.Pubkey,
+                    Permission = new()
+                    {
+                        CanPublish = participant.IsSpeaker,
+                        CanSubscribe = true
+                    }
+                });
+            }
+            catch
+            {
+                await UpdateRoomInfo(room.Id);
+            }
+
             return Accepted();
         }
 

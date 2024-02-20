@@ -8,18 +8,14 @@ namespace NestsBackend.Services;
 public class LiveKitApi
 {
     private readonly HttpClient _client;
-    private readonly ILogger<LiveKitApi> _logger;
-    private readonly Config _config;
     private readonly LiveKitJwt _jwt;
 
-    public LiveKitApi(HttpClient client, ILogger<LiveKitApi> logger, Config config, LiveKitJwt jwt)
+    public LiveKitApi(HttpClient client, Config config, LiveKitJwt jwt)
     {
         _client = client;
-        _logger = logger;
-        _config = config;
         _jwt = jwt;
 
-        _client.BaseAddress = _config.LiveKitApi;
+        _client.BaseAddress = config.LiveKitApi;
     }
 
     public async Task<Room> CreateRoom(CreateRoomRequest req)
