@@ -66,7 +66,6 @@ export default function Room() {
         autoGainControl: false,
       }}
     >
-      <RoomAudioRenderer />
       <NostrRoomContextProvider event={room.event}>
         <div className="flex overflow-hidden h-[100dvh]">
           <ParticipantsPannel room={room} />
@@ -103,7 +102,7 @@ function ParticipantsPannel({ room }: { room: RoomState }) {
         </button>
       </div>
       <div className="flex flex-col gap-8 mx-auto lg:w-[35rem] max-lg:px-4 mb-[30dvh]">
-        <RoomCard event={room.event} inRoom={true} link={false} />
+        <RoomCard event={room.event} inRoom={true} link={false} showDescription={true} />
         <NostrParticipants event={room.event} />
       </div>
     </div>
@@ -129,9 +128,14 @@ function ChatPannel({ link }: { link: NostrLink }) {
 
   const hiddenWhenCollapsed = { "max-lg:hidden": !expanded };
   return (
-    <div className={classNames(mobileStyles, "lg:h-[100dvh] bg-foreground overflow-hidden flex flex-col w-chat")} style={{
-      ["--card-height"]: `${cardHeight}dvh`
-    } as CSSProperties}>
+    <div
+      className={classNames(mobileStyles, "lg:h-[100dvh] bg-foreground overflow-hidden flex flex-col w-chat")}
+      style={
+        {
+          ["--card-height"]: `${cardHeight}dvh`,
+        } as CSSProperties
+      }
+    >
       <div
         className={classNames("h-3 min-h-3 bg-foreground-2 w-40 rounded-full mt-2 mx-auto cursor-pointer lg:hidden", {
           "mb-3": expanded,
@@ -156,6 +160,20 @@ function JoinRoom() {
   const event = useEventFeed(link);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    if (event) {
+      const relays = removeUndefined(
+        event.tags
+          .find((a) => a[0] === "relays")
+          ?.slice(1)
+          .map((a) => sanitizeRelayUrl(a)) ?? [],
+      );
+      if (relays.length > 0) {
+        updateRelays(relays);
+      }
+    }
+  }, [event]);
+
   async function joinRoom() {
     if (!api) return;
     const { token } = await api.joinRoom(link.id);
@@ -172,7 +190,7 @@ function JoinRoom() {
   return (
     <div className="w-screen h-[100dvh] flex-col flex items-center justify-center gap-[10dvh]">
       <Logo />
-      <RoomCard event={event} className="lg:w-[35rem] cursor-default" link={false} />
+      <RoomCard event={event} className="lg:w-[35rem] cursor-default" link={false} showDescription={true} />
       <PrimaryButton className="px-6 py-4 w-40 text-lg" onClick={joinRoom}>
         <FormattedMessage defaultMessage="Join" />
       </PrimaryButton>
@@ -182,6 +200,7 @@ function JoinRoom() {
 
 function NostrRoomContextProvider({ event, children }: { event: NostrEvent; children?: ReactNode }) {
   const [flyout, setFlyout] = useState<ReactNode>();
+  const [volume, setVolume] = useState(1);
   const [roomInfo, setRoomInfo] = useState<RoomInfo>();
   const link = useMemo(() => NostrLink.fromEvent(event), [event]);
   const presence = useRoomPresence(link);
@@ -212,7 +231,19 @@ function NostrRoomContextProvider({ event, children }: { event: NostrEvent; chil
   }, [link.id, api]);
 
   return (
-    <NostrRoomContext.Provider value={{ event, reactions, presence, flyout, setFlyout, info: roomInfo }}>
+    <NostrRoomContext.Provider
+      value={{
+        event,
+        reactions,
+        presence,
+        flyout,
+        setFlyout,
+        info: roomInfo,
+        volume,
+        setVolume,
+      }}
+    >
+      <RoomAudioRenderer volume={volume} />
       <Flyout show={flyout !== undefined} onClose={() => setFlyout(undefined)}>
         {flyout}
       </Flyout>

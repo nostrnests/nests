@@ -48,7 +48,7 @@ export default function ProfileCard({
       {menuItem("eye", <FormattedMessage defaultMessage="View Profile" />, () => {
         nostrRoom.setFlyout(<ProfilePageContent link={new NostrLink(NostrPrefix.PublicKey, pubkey)} />);
       })}
-      {menuItem("user-plus", <FormattedMessage defaultMessage="Follow" />, () => {})}
+      {!isSelf && menuItem("user-plus", <FormattedMessage defaultMessage="Follow" />, () => {})}
       {isLoginAdmin && (
         <>
           {menuItem(

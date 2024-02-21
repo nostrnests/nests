@@ -12,7 +12,7 @@
 }
 
 .modal-body {
-  background-color: var(--foreground);
+  background-color: rgb(var(--foreground));
   padding: 33px 36px;
   border-radius: 24px;
   margin-top: auto;
@@ -28,14 +28,14 @@
 }
 @media (max-width: 460px) {
   .modal-body {
-    width: calc(100% - 4px);
-    padding: 32px 24px;
+    width: calc(100% - 20px);
+    padding: 32px 18px;
   }
 }
 
 .modal-body input,
 .modal-body textarea {
-  background-color: var(--foreground-2);
+  background-color: rgb(var(--foreground-2));
 }
 
 .modal-body p {

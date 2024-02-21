@@ -1,6 +1,6 @@
 import { useParticipantPermissions, useParticipants } from "@livekit/components-react";
 import { useUserProfile } from "@snort/system-react";
-import { LocalParticipant, RemoteParticipant, RoomEvent, Track } from "livekit-client";
+import { LocalParticipant, LocalTrackPublication, RemoteParticipant, RoomEvent, Track } from "livekit-client";
 import Icon from "../icon";
 import Avatar from "./avatar";
 import { unixNow } from "@snort/shared";
@@ -9,7 +9,7 @@ import { NostrEvent, NostrLink } from "@snort/system";
 import ProfileCard from "./profile-card";
 import useHoverMenu from "../hooks/useHoverMenu";
 import { useUserRoomReactions } from "../hooks/useRoomReactions";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ZapFlow from "./zap-modal";
 import { useNostrRoom } from "../hooks/nostr-room-context";
 import { FormattedMessage } from "react-intl";
@@ -60,15 +60,21 @@ function NostrParticipant({ p, event }: { p: RemoteParticipant | LocalParticipan
   const permissions = useParticipantPermissions({
     participant: p,
   });
-  if (permissions && p instanceof LocalParticipant) {
-    if (permissions.canPublish && p.audioTracks.size === 0) {
-      console.debug("Sending mic track");
-      p.setMicrophoneEnabled(true);
-    } else if (!permissions.canPublish && p.audioTracks.size > 0) {
-      console.debug("Turning off mic");
-      p.setMicrophoneEnabled(false);
+  useEffect(() => {
+    if (permissions && p instanceof LocalParticipant) {
+      const handler = (lt: LocalTrackPublication) => {
+        lt.mute();
+      };
+      p.on("localTrackPublished", handler);
+      if (permissions.canPublish && p.audioTracks.size === 0) {
+        p.setMicrophoneEnabled(true);
+      }
+      return () => {
+        p.off("localTrackPublished", handler);
+      };
     }
-  }
+  }, [p, permissions]);
+
   const { handleMouseEnter, handleMouseLeave, isHovering } = useHoverMenu();
   const room = useNostrRoom();
 
@@ -79,6 +85,29 @@ function NostrParticipant({ p, event }: { p: RemoteParticipant | LocalParticipan
   const reaction = reactions
     ?.filter((a) => a.created_at > unixNow() - 10)
     ?.sort((a, b) => (a.created_at > b.created_at ? -1 : 1))?.[0];
+
+  function getRole() {
+    if (isHost) {
+      return (
+        <div className="text-primary">
+          <FormattedMessage defaultMessage="Host" />
+        </div>
+      );
+    } else if (isAdmin) {
+      return (
+        <div className="text-primary">
+          <FormattedMessage defaultMessage="Moderator" />
+        </div>
+      );
+    } else if (isSpeaker) {
+      return (
+        <div>
+          <FormattedMessage defaultMessage="Speaker" />
+        </div>
+      );
+    }
+  }
+
   return (
     <>
       {zapping && (
@@ -150,22 +179,8 @@ function NostrParticipant({ p, event }: { p: RemoteParticipant | LocalParticipan
           ) : (
             <DisplayName pubkey={p.identity} profile={profile} />
           )}
+          {getRole()}
         </div>
-        {isHost && (
-          <div className="text-primary">
-            <FormattedMessage defaultMessage="Host" />
-          </div>
-        )}
-        {!isHost && isAdmin && (
-          <div className="text-primary">
-            <FormattedMessage defaultMessage="Moderator" />
-          </div>
-        )}
-        {!isHost && !isAdmin && isSpeaker && (
-          <div>
-            <FormattedMessage defaultMessage="Speaker" />
-          </div>
-        )}
       </div>
     </>
   );

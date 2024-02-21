@@ -15,7 +15,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         {...props}
         ref={ref}
         type="button"
-        className={classNames("py-2 px-3 hover:opacity-80 relative font-semibold leading-7 select-none", className)}
+        className={classNames("py-2 px-3 relative font-semibold leading-7 select-none", className)}
         onClick={async (e) => {
           try {
             setLoading(true);
@@ -37,10 +37,18 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 );
 
 const PrimaryButton = forwardRef<HTMLButtonElement, ButtonProps>(({ className, ...props }: ButtonProps, ref) => {
-  return <Button {...props} className={classNames("rounded-full bg-primary", className)} ref={ref} />;
+  return (
+    <Button {...props} className={classNames("rounded-full bg-primary hover:bg-primary/90", className)} ref={ref} />
+  );
 });
 const SecondaryButton = forwardRef<HTMLButtonElement, ButtonProps>(({ className, ...props }: ButtonProps, ref) => {
-  return <Button {...props} className={classNames("rounded-full bg-foreground-2", className)} ref={ref} />;
+  return (
+    <Button
+      {...props}
+      className={classNames("rounded-full bg-foreground-2 hover:bg-foreground-2/90", className)}
+      ref={ref}
+    />
+  );
 });
 export { PrimaryButton, SecondaryButton };
 export default Button;

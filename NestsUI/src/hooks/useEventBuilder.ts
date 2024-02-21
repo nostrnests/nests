@@ -11,6 +11,6 @@ export default function useEventBuilder() {
     system,
     signer: login.signer,
     pubkey: login.pubkey,
-    publisher: login.signer && login.pubkey ? new EventPublisher(login.signer, login.pubkey) : undefined
+    publisher: login.signer && login.pubkey ? new EventPublisher(login.signer, login.pubkey) : undefined,
   };
 }

@@ -7,7 +7,7 @@ import Icon from "../icon";
 import useEventBuilder from "../hooks/useEventBuilder";
 import { useState } from "react";
 
-export default function ShareModal({ event }: { event: NostrEvent }) {
+export default function ShareModal({ event, onClose }: { event: NostrEvent; onClose: () => void }) {
   const link = NostrLink.fromEvent(event);
   const { formatMessage } = useIntl();
   const roomContext = useNostrRoom();
@@ -16,14 +16,14 @@ export default function ShareModal({ event }: { event: NostrEvent }) {
 
   const url = `${window.location.protocol}//${window.location.host}/${link.encode()}`;
 
-  const msg = formatMessage(
+  const formattedDefaultMsg = formatMessage(
     { defaultMessage: '"{room_name}" nest is live! Come join 🤗\n{url}' },
     {
       room_name: roomContext.event.tags.find((a) => a[0] === "title")?.[1],
       url,
     },
   );
-  const [note, setNote] = useState(msg);
+  const [note, setNote] = useState(formattedDefaultMsg);
 
   return (
     <>
@@ -37,9 +37,10 @@ export default function ShareModal({ event }: { event: NostrEvent }) {
             if (!signer || !pubkey) return;
 
             const eb = new EventPublisher(signer, pubkey);
-            const ev = await eb.note(msg);
+            const ev = await eb.note(note);
 
             await system.BroadcastEvent(ev);
+            onClose();
           }}
         >
           <FormattedMessage defaultMessage="Broadcast to Nostr" />

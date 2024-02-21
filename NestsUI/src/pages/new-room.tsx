@@ -61,7 +61,7 @@ export default function NewRoom() {
     room.endpoints.forEach((e) => eb.tag(["streaming", e]));
 
     const ev = await eb.buildAndSign(login.signer);
-    await system.BroadcastEvent(ev);
+    await Promise.all(relays.map((r) => system.pool.broadcastTo(r, ev)));
 
     const link = NostrLink.fromEvent(ev);
     navigate(`/${link.encode()}`, {
@@ -167,7 +167,7 @@ export default function NewRoom() {
           </div>
         )}
       </div>
-      <RoomCard event={dmeoRoom} />
+      <RoomCard event={dmeoRoom} showDescription={true} />
       <div className="flex gap-2 justify-center">
         <Link to="/">
           <SecondaryButton>

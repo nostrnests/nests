@@ -9,6 +9,8 @@ export interface RoomState {
   flyout?: ReactNode;
   info?: RoomInfo;
   setFlyout: (n?: ReactNode) => void;
+  volume: number;
+  setVolume: (n: number) => void;
 }
 
 export const NostrRoomContext = createContext<RoomState>({
@@ -16,6 +18,8 @@ export const NostrRoomContext = createContext<RoomState>({
   reactions: [],
   presence: [],
   setFlyout: () => {},
+  setVolume: () => {},
+  volume: 1.0,
 });
 
 export function useNostrRoom() {

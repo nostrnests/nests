@@ -4,7 +4,7 @@ export const useCopy = (timeout = 2000) => {
   const [error, setError] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  const copy = async (text: string) => {
+  const copyInternal = async (text: string) => {
     setError(false);
     try {
       await copy(text);
@@ -16,20 +16,34 @@ export const useCopy = (timeout = 2000) => {
     setTimeout(() => setCopied(false), timeout);
   };
 
-  return { error, copied, copy };
+  return { error, copied, copy: copyInternal };
 };
 
 export async function copy(text: string) {
-  if (navigator.clipboard && window.isSecureContext) {
-    await navigator.clipboard.writeText(text);
-  } else {
+  const fallbackCopy = async () => {
+    console.debug("Trying fallback copy");
     const textArea = document.createElement("textarea");
     textArea.value = text;
     textArea.style.position = "absolute";
     textArea.style.opacity = "0";
     document.body.appendChild(textArea);
     textArea.select();
-    document.execCommand("copy");
+    await document.execCommand("copy");
     textArea.remove();
+  };
+
+  try {
+    const allowed = await navigator.permissions.query({
+      name: "clipboard-write" as PermissionName,
+    });
+    console.debug(allowed);
+    if (allowed.state === "granted" || allowed.state === "prompt") {
+      await navigator.clipboard.writeText(text);
+    } else {
+      await fallbackCopy();
+    }
+  } catch (e) {
+    console.error(e);
+    await fallbackCopy();
   }
 }

@@ -150,10 +150,7 @@ function ReactionsButton({ link, fromRef }: { link: NostrLink; fromRef: RefObjec
 
   function ReactIcon({ content }: { content: string }) {
     return (
-      <Button
-        className="hover:bg-foreground transition cursor-pointer rounded-full aspect-square flex items-center justify-center"
-        onClick={async () => await sendReactions(content)}
-      >
+      <Button className="cursor-pointer" onClick={async () => await sendReactions(content)}>
         {content}
       </Button>
     );
@@ -161,29 +158,29 @@ function ReactionsButton({ link, fromRef }: { link: NostrLink; fromRef: RefObjec
 
   const px = open
     ? createPortal(
-      <div
-        className="absolute bg-foreground-2 p-3 grid grid-cols-6 gap-4 text-3xl rounded-2xl select-none"
-        style={{
-          bottom: window.innerHeight - (pos?.top ?? 0) + 5,
-          left: pos?.left,
-          width: pos?.width,
-        }}
-      >
-        <ReactIcon content="🤙" />
-        <ReactIcon content="💯" />
-        <ReactIcon content="😂" />
-        <ReactIcon content="😅" />
-        <ReactIcon content="😳" />
-        <ReactIcon content="🤔" />
-        <ReactIcon content="🔥" />
-        <ReactIcon content="🤡" />
-        <ReactIcon content="🤩" />
-        <ReactIcon content="😱" />
-        <ReactIcon content="🤣" />
-        <ReactIcon content="🤯" />
-      </div>,
-      document.body,
-    )
+        <div
+          className="absolute bg-foreground-2 p-3 grid grid-cols-6 text-2xl rounded-2xl select-none w-[20rem] max-lg:mb-[4dvh] lg:mb-2"
+          style={{
+            bottom: window.innerHeight - (pos?.top ?? 0),
+            left: pos?.left,
+            width: pos?.width,
+          }}
+        >
+          <ReactIcon content="🤙" />
+          <ReactIcon content="💯" />
+          <ReactIcon content="😂" />
+          <ReactIcon content="😅" />
+          <ReactIcon content="😳" />
+          <ReactIcon content="🤔" />
+          <ReactIcon content="🔥" />
+          <ReactIcon content="🤡" />
+          <ReactIcon content="🤩" />
+          <ReactIcon content="😱" />
+          <ReactIcon content="🤣" />
+          <ReactIcon content="🤯" />
+        </div>,
+        document.body,
+      )
     : undefined;
   return (
     <>

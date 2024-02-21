@@ -11,7 +11,6 @@ export function updateRelays(relays: Array<string>) {
   removing.forEach((a) => snortSystem.DisconnectRelay(a));
 }
 
-
 export function debounce(time: number, fn: () => void): () => void {
   const t = setTimeout(fn, time);
   return () => clearTimeout(t);

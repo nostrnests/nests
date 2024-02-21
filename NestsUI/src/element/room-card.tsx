@@ -25,6 +25,7 @@ export default function RoomCard({
   link,
   join,
   presenceEvents,
+  showDescription,
 }: {
   event: NostrEvent;
   inRoom?: boolean;
@@ -32,9 +33,11 @@ export default function RoomCard({
   link?: boolean;
   join?: boolean;
   presenceEvents?: Array<NostrEvent>;
+  showDescription?: boolean;
 }) {
   const profile = useUserProfile(event.pubkey);
   const title = event.tags.find((a) => a[0] === "title")?.[1];
+  const summary = event.tags.find((a) => a[0] === "summary")?.[1];
   const color = event.tags.find((a) => a[0] === "color")?.[1] ?? ColorPalette[0];
   const status = event.tags.find((a) => a[0] === "status")?.[1];
   const starts = event.tags.find((a) => a[0] === "starts")?.[1];
@@ -75,7 +78,7 @@ export default function RoomCard({
         className={classNames(
           "relative px-6 py-4 rounded-3xl flex flex-col gap-3",
           image ? "" : `bg-${color}`,
-          { "pt-20": inRoom, "cursor-pointer": (link ?? true) || join },
+          { "cursor-pointer": (link ?? true) || join },
           className,
         )}
         onClick={() => {
@@ -87,7 +90,11 @@ export default function RoomCard({
       >
         {inRoom && event.pubkey === login.pubkey && (
           <div className="absolute right-2 top-2">
-            <IconButton name="gear" className="rounded-2xl aspect-square" onClick={() => setEditRoom(true)} />
+            <IconButton
+              name="gear"
+              className="rounded-2xl aspect-square !bg-white/10 hover:!bg-white/20"
+              onClick={() => setEditRoom(true)}
+            />
           </div>
         )}
         <div className="flex justify-between">
@@ -111,6 +118,7 @@ export default function RoomCard({
           )}
         </div>
         <div className="text-2xl font-semibold">{title}</div>
+        {showDescription && <div className="text-sm">{summary}</div>}
         {!inRoom && (
           <div className="flex gap-2 items-center">
             <Avatar pubkey={event.pubkey} outline={2} size={32} link={true} />

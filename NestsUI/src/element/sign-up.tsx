@@ -38,16 +38,17 @@ export default function SignUp() {
       <h1 className="text-center">
         <FormattedMessage defaultMessage="Create an account" />
       </h1>
-      <div className="flex gap-2 items-center bg-foreground-2 rounded-xl">
-        <input type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} />@
-        {Bunker}
+      <div className="flex items-center bg-foreground-2 rounded-xl">
+        <input type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} />
+        <div className="opacity-50 px-2">@{Bunker}</div>
       </div>
       <input type="text" placeholder="Recovery email" value={email} onChange={(e) => setEmail(e.target.value)} />
       <PrimaryButton onClick={createAccount}>
         <FormattedMessage defaultMessage="Create account" />
       </PrimaryButton>
       <p className="text-center">
-        <FormattedMessage defaultMessage="Already have an account" />
+        <FormattedMessage defaultMessage="Already have an account?" />
+        &nbsp;
         <Link to="/login" className="text-highlight">
           <FormattedMessage defaultMessage="Sign in" />
         </Link>

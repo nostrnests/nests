@@ -18,7 +18,7 @@ export default function ProfilePage({ link, header }: { link: NostrLink; header:
   return (
     <>
       {header && <Header />}
-      <div className="lg:w-[35rem] mx-auto">
+      <div className="lg:w-[35rem] mx-auto max-lg:px-4">
         <ProfilePageContent link={link} />
       </div>
     </>
