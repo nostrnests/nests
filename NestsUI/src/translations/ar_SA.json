@@ -1,0 +1,295 @@
+{
+  "+0zv6g": {
+    "defaultMessage": "صورة"
+  },
+  "+t+11k": {
+    "defaultMessage": "إغلاق الغرفة"
+  },
+  "/8ACb2": {
+    "defaultMessage": "إضافة إلى المرحلة"
+  },
+  "/jswUE": {
+    "defaultMessage": "مرحلة الإجازة"
+  },
+  "01iNut": {
+    "defaultMessage": "عنوان Nostr لا ينتمي إليك"
+  },
+  "0vL5u1": {
+    "defaultMessage": "إنشاء حساب"
+  },
+  "1FTExG": {
+    "defaultMessage": "<lg>{n}</lg> <sm>Sats</sm>"
+  },
+  "1t2eph": {
+    "defaultMessage": "إزالة المشرف"
+  },
+  "2/2yg+": {
+    "defaultMessage": "إضافة"
+  },
+  "2jp98l": {
+    "defaultMessage": "مبلغ مخصص",
+    "description": "Custom amount for zaps"
+  },
+  "3s2cxm": {
+    "defaultMessage": "الردهة"
+  },
+  "47FYwb": {
+    "defaultMessage": "إلغاء"
+  },
+  "5q3qC0": {
+    "defaultMessage": "تنزيل"
+  },
+  "5vMmmR": {
+    "defaultMessage": "أسماء المستخدمين ليست فريدة على Nostr. عنوان النف هو عنوانك الفريد القابل للقراءة للإنسان والذي هو فريد لك عند التسجيل."
+  },
+  "6jRTzo": {
+    "defaultMessage": "عنوان غير صالح"
+  },
+  "6sGucA": {
+    "defaultMessage": "غرفة جديدة"
+  },
+  "6xQg6j": {
+    "defaultMessage": "حظر المستخدم"
+  },
+  "7vwVDQ": {
+    "defaultMessage": "لم يتم العثور على عنوان النور"
+  },
+  "9Xmefb": {
+    "defaultMessage": "وصف قصير للغرفة",
+    "description": "Placeholder text for room description"
+  },
+  "9gg+Ph": {
+    "defaultMessage": "إدراج اسم رائع هنا",
+    "description": "Placeholder text for room name"
+  },
+  "9pMqYs": {
+    "defaultMessage": "عنوان Nostr"
+  },
+  "AGHEaD": {
+    "defaultMessage": "لا توجد تسجيلات"
+  },
+  "AyGauy": {
+    "defaultMessage": "تسجيل الدخول"
+  },
+  "B5pZ3p": {
+    "defaultMessage": "مشاركة الغرفة"
+  },
+  "C81/uG": {
+    "defaultMessage": "تسجيل الخروج"
+  },
+  "CE79Az": {
+    "defaultMessage": "لا توجد غرف نشطة حتى الآن."
+  },
+  "D5Li4U": {
+    "defaultMessage": "بدء غرفة جديدة"
+  },
+  "G+OGl/": {
+    "defaultMessage": "البث إلى نوستر"
+  },
+  "G/yZLu": {
+    "defaultMessage": "إزالة"
+  },
+  "GSye7T": {
+    "defaultMessage": "عنوان البرق"
+  },
+  "GcozGF": {
+    "defaultMessage": "عنوان البرق غير صالح"
+  },
+  "H5DrhC": {
+    "defaultMessage": "{sender} zapped {receiver} {amount} sats"
+  },
+  "HAlOn1": {
+    "defaultMessage": "الاسم"
+  },
+  "HSEDrc": {
+    "defaultMessage": "إذا كنت ترغب في البث فقط لمرحلات محددة، يمكنك إضافة تلك هنا."
+  },
+  "IbE9GF": {
+    "defaultMessage": "الوقت المجدول (اختياري)"
+  },
+  "Iul/hR": {
+    "defaultMessage": "غرف نشطة"
+  },
+  "JVshdm": {
+    "defaultMessage": "إنشاء مشرف"
+  },
+  "JkLHGw": {
+    "defaultMessage": "الموقع"
+  },
+  "Jkxa7F": {
+    "defaultMessage": "عرض الملف الشخصي"
+  },
+  "Lv0zJu": {
+    "defaultMessage": "التفاصيل"
+  },
+  "MKDHEa": {
+    "defaultMessage": "الانضمام إلى الغرفة"
+  },
+  "MU0ket": {
+    "defaultMessage": "مكبر"
+  },
+  "OKhRC6": {
+    "defaultMessage": "مشاركة"
+  },
+  "Og+vtv": {
+    "defaultMessage": "الاستمرار كضيف"
+  },
+  "P6PLpi": {
+    "defaultMessage": "الانضمام"
+  },
+  "P8QaSQ": {
+    "defaultMessage": "نسخ الرابط"
+  },
+  "QQkNag": {
+    "defaultMessage": "يستضيفها {name}"
+  },
+  "QtFGiO": {
+    "defaultMessage": "المضيف"
+  },
+  "RXjNVY": {
+    "defaultMessage": "إنشاء حساب نوفي"
+  },
+  "SFuk1v": {
+    "defaultMessage": "الأذونات"
+  },
+  "SQJto2": {
+    "defaultMessage": "تسجيل الدخول"
+  },
+  "ST6+Xe": {
+    "defaultMessage": "ضيف (لي)"
+  },
+  "Sl9epY": {
+    "defaultMessage": "إزالة من المرحلة"
+  },
+  "T4lB1e": {
+    "defaultMessage": "مغادرة المرحلة"
+  },
+  "U/VWC2": {
+    "defaultMessage": "صوت البث"
+  },
+  "Uo/DWG": {
+    "defaultMessage": "حول طويل جداً"
+  },
+  "VvvK+z": {
+    "defaultMessage": "تسجيل الدخول مع ملحق"
+  },
+  "VzzYJk": {
+    "defaultMessage": "إنشاء"
+  },
+  "WTrOy3": {
+    "defaultMessage": "الدردشة"
+  },
+  "aUuFuf": {
+    "defaultMessage": "\"{room_name}\" العش حي ! تعال انضم إلى 🤗 {url}"
+  },
+  "btNUvb": {
+    "defaultMessage": "اسم الغرفة"
+  },
+  "cXAlMR": {
+    "defaultMessage": "مجدولة"
+  },
+  "cyR7Kh": {
+    "defaultMessage": "الرجوع"
+  },
+  "dM9S71": {
+    "defaultMessage": "جدولة غرفة"
+  },
+  "e7PVtu": {
+    "defaultMessage": "لون أو صورة البانر"
+  },
+  "fBI91o": {
+    "defaultMessage": "Zap"
+  },
+  "fZupOJ": {
+    "defaultMessage": "تعليق",
+    "description": "Placeholder for writing comment"
+  },
+  "fzgxCV": {
+    "defaultMessage": "الرجاء تسجيل الدخول للمحادثة"
+  },
+  "g5pX+a": {
+    "defaultMessage": "حول"
+  },
+  "huqKGl": {
+    "defaultMessage": "إنشاء حساب"
+  },
+  "hvEgD/": {
+    "defaultMessage": "تسجيلات الغرفة"
+  },
+  "ieGrWo": {
+    "defaultMessage": "اتبع"
+  },
+  "itPgxd": {
+    "defaultMessage": "الملف الشخصي"
+  },
+  "izWS4J": {
+    "defaultMessage": "إلغاء المتابعة"
+  },
+  "jvo0vs": {
+    "defaultMessage": "حفظ"
+  },
+  "kEseyR": {
+    "defaultMessage": "إرسال",
+    "description": "Send message button text"
+  },
+  "kc5EOy": {
+    "defaultMessage": "اسم المستخدم طويل جداً"
+  },
+  "mBMl8U": {
+    "defaultMessage": "وصف الغرفة (140 حرف اختياري)"
+  },
+  "mBUsTH": {
+    "defaultMessage": "حدد صورة",
+    "description": "Select an image to upload as room banner image"
+  },
+  "oM1Qdm": {
+    "defaultMessage": "المتكلمون"
+  },
+  "omWbg5": {
+    "defaultMessage": "العلاقات المخصصة (اختياري)"
+  },
+  "pXFAd/": {
+    "defaultMessage": "إيقاف التسجيل"
+  },
+  "st17aP": {
+    "defaultMessage": "لا توجد غرف مقررة الآن."
+  },
+  "tarxmH": {
+    "defaultMessage": "العنوان ليس مخزن نوعي"
+  },
+  "uCk8r+": {
+    "defaultMessage": "لديك حساب بالفعل؟"
+  },
+  "uMhpKe": {
+    "defaultMessage": "اللون"
+  },
+  "wEQDC6": {
+    "defaultMessage": "تحرير"
+  },
+  "wTwfnv": {
+    "defaultMessage": "عنوان النف غير صالح"
+  },
+  "x82IOl": {
+    "defaultMessage": "كتم"
+  },
+  "xbQgN4": {
+    "defaultMessage": "بدء التسجيل"
+  },
+  "yAaNQA": {
+    "defaultMessage": "المشرفين"
+  },
+  "zA95/o": {
+    "defaultMessage": "المشرف"
+  },
+  "zCUH3/": {
+    "defaultMessage": "إعدادات الغرفة"
+  },
+  "zF7Cth": {
+    "defaultMessage": "ضيف"
+  },
+  "zHj+Ut": {
+    "defaultMessage": "الوقت",
+    "description": "Date time input placeholder text"
+  }
+}
+

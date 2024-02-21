@@ -9,7 +9,7 @@ export type SupportedLocales = "en-US";
 export interface LoginData {
   type: LoginTypes;
   pubkey?: string;
-  locale: SupportedLocales;
+  locale?: SupportedLocales;
   privateKey?: string;
   signerRelay?: Array<string>;
 }
@@ -23,7 +23,6 @@ class LoginStore extends ExternalStore<LoginSession> {
   #session: LoginSession = {
     type: "none",
     handMap: [],
-    locale: "en-US",
   };
 
   constructor() {
@@ -91,7 +90,6 @@ class LoginStore extends ExternalStore<LoginSession> {
     this.#session = {
       type: "none",
       handMap: [],
-      locale: "en-US",
     };
     this.notifyChange();
   }

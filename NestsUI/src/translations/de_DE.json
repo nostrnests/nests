@@ -1,0 +1,295 @@
+{
+  "+0zv6g": {
+    "defaultMessage": "Bild"
+  },
+  "+t+11k": {
+    "defaultMessage": "Raum schließen"
+  },
+  "/8ACb2": {
+    "defaultMessage": "Zur Stufe hinzufügen"
+  },
+  "/jswUE": {
+    "defaultMessage": "Phase verlassen"
+  },
+  "01iNut": {
+    "defaultMessage": "Nostr-Adresse gehört nicht zu dir"
+  },
+  "0vL5u1": {
+    "defaultMessage": "Ein Konto erstellen"
+  },
+  "1FTExG": {
+    "defaultMessage": "<lg>{n}</lg> <sm>Sats</sm>"
+  },
+  "1t2eph": {
+    "defaultMessage": "Admin entfernen"
+  },
+  "2/2yg+": {
+    "defaultMessage": "Neu"
+  },
+  "2jp98l": {
+    "defaultMessage": "Eigener Betrag",
+    "description": "Custom amount for zaps"
+  },
+  "3s2cxm": {
+    "defaultMessage": "Lobby"
+  },
+  "47FYwb": {
+    "defaultMessage": "Abbrechen"
+  },
+  "5q3qC0": {
+    "defaultMessage": "Download"
+  },
+  "5vMmmR": {
+    "defaultMessage": "Die Nostr-Adresse ist Ihre eigene, menschenlesbare Adresse, die Sie bei der Registrierung nur erhalten können."
+  },
+  "6jRTzo": {
+    "defaultMessage": "Keine gültige Nostr-Adresse"
+  },
+  "6sGucA": {
+    "defaultMessage": "Neuer Raum"
+  },
+  "6xQg6j": {
+    "defaultMessage": "Benutzer sperren"
+  },
+  "7vwVDQ": {
+    "defaultMessage": "Nostr-Adresse nicht gefunden"
+  },
+  "9Xmefb": {
+    "defaultMessage": "Kurze Beschreibung des Raumes",
+    "description": "Placeholder text for room description"
+  },
+  "9gg+Ph": {
+    "defaultMessage": "Cooler Name hier einfügen",
+    "description": "Placeholder text for room name"
+  },
+  "9pMqYs": {
+    "defaultMessage": "Nostr Adresse"
+  },
+  "AGHEaD": {
+    "defaultMessage": "Keine Aufnahmen"
+  },
+  "AyGauy": {
+    "defaultMessage": "Anmelden"
+  },
+  "B5pZ3p": {
+    "defaultMessage": "Raum teilen"
+  },
+  "C81/uG": {
+    "defaultMessage": "Abmelden"
+  },
+  "CE79Az": {
+    "defaultMessage": "Es gibt noch keine aktiven Zimmer."
+  },
+  "D5Li4U": {
+    "defaultMessage": "Neuen Raum starten"
+  },
+  "G+OGl/": {
+    "defaultMessage": "An Nostr senden"
+  },
+  "G/yZLu": {
+    "defaultMessage": "Entfernen"
+  },
+  "GSye7T": {
+    "defaultMessage": "Blitzadresse"
+  },
+  "GcozGF": {
+    "defaultMessage": "Ungültige Blitzadresse"
+  },
+  "H5DrhC": {
+    "defaultMessage": "{sender} zapped {receiver} {amount} sats"
+  },
+  "HAlOn1": {
+    "defaultMessage": "Name"
+  },
+  "HSEDrc": {
+    "defaultMessage": "Wenn du nur bestimmte Relais übertragen möchtest, kannst du diese hier hinzufügen."
+  },
+  "IbE9GF": {
+    "defaultMessage": "Geplante Zeit (optional)"
+  },
+  "Iul/hR": {
+    "defaultMessage": "Aktive Räume"
+  },
+  "JVshdm": {
+    "defaultMessage": "Admin machen"
+  },
+  "JkLHGw": {
+    "defaultMessage": "Webseite"
+  },
+  "Jkxa7F": {
+    "defaultMessage": "Profil anzeigen"
+  },
+  "Lv0zJu": {
+    "defaultMessage": "Details"
+  },
+  "MKDHEa": {
+    "defaultMessage": "Raum beitreten"
+  },
+  "MU0ket": {
+    "defaultMessage": "Sprecher"
+  },
+  "OKhRC6": {
+    "defaultMessage": "Teilen"
+  },
+  "Og+vtv": {
+    "defaultMessage": "Als Gast fortfahren"
+  },
+  "P6PLpi": {
+    "defaultMessage": "Beitreten"
+  },
+  "P8QaSQ": {
+    "defaultMessage": "URL kopieren"
+  },
+  "QQkNag": {
+    "defaultMessage": "Gehostet von {name}"
+  },
+  "QtFGiO": {
+    "defaultMessage": "Host"
+  },
+  "RXjNVY": {
+    "defaultMessage": "Nostr Konto erstellen"
+  },
+  "SFuk1v": {
+    "defaultMessage": "Berechtigungen"
+  },
+  "SQJto2": {
+    "defaultMessage": "Anmelden"
+  },
+  "ST6+Xe": {
+    "defaultMessage": "Gast (ich)"
+  },
+  "Sl9epY": {
+    "defaultMessage": "Von Stufe entfernen"
+  },
+  "T4lB1e": {
+    "defaultMessage": "Stufe verlassen"
+  },
+  "U/VWC2": {
+    "defaultMessage": "Stream Audio"
+  },
+  "Uo/DWG": {
+    "defaultMessage": "Ungefähr zu lang"
+  },
+  "VvvK+z": {
+    "defaultMessage": "Mit Erweiterung anmelden"
+  },
+  "VzzYJk": {
+    "defaultMessage": "Anlegen"
+  },
+  "WTrOy3": {
+    "defaultMessage": "Chat"
+  },
+  "aUuFuf": {
+    "defaultMessage": "\"{room_name}\" Nest ist live! Komm bei 🤗 {url}"
+  },
+  "btNUvb": {
+    "defaultMessage": "Raumname"
+  },
+  "cXAlMR": {
+    "defaultMessage": "Geplant"
+  },
+  "cyR7Kh": {
+    "defaultMessage": "Zurück"
+  },
+  "dM9S71": {
+    "defaultMessage": "Raum planen"
+  },
+  "e7PVtu": {
+    "defaultMessage": "Banner Farbe oder Bild"
+  },
+  "fBI91o": {
+    "defaultMessage": "Zap"
+  },
+  "fZupOJ": {
+    "defaultMessage": "Kommentar",
+    "description": "Placeholder for writing comment"
+  },
+  "fzgxCV": {
+    "defaultMessage": "Bitte einloggen um zu chatten"
+  },
+  "g5pX+a": {
+    "defaultMessage": "Über"
+  },
+  "huqKGl": {
+    "defaultMessage": "Konto erstellen"
+  },
+  "hvEgD/": {
+    "defaultMessage": "Raumaufnahmen"
+  },
+  "ieGrWo": {
+    "defaultMessage": "Folgen"
+  },
+  "itPgxd": {
+    "defaultMessage": "Profil"
+  },
+  "izWS4J": {
+    "defaultMessage": "Entfolgen"
+  },
+  "jvo0vs": {
+    "defaultMessage": "Speichern"
+  },
+  "kEseyR": {
+    "defaultMessage": "Senden",
+    "description": "Send message button text"
+  },
+  "kc5EOy": {
+    "defaultMessage": "Benutzername ist zu lang"
+  },
+  "mBMl8U": {
+    "defaultMessage": "Zimmerbeschreibung (optionale 140 Zeichen)"
+  },
+  "mBUsTH": {
+    "defaultMessage": "Bild auswählen",
+    "description": "Select an image to upload as room banner image"
+  },
+  "oM1Qdm": {
+    "defaultMessage": "Lautsprecher"
+  },
+  "omWbg5": {
+    "defaultMessage": "Eigene Relais (optional)"
+  },
+  "pXFAd/": {
+    "defaultMessage": "Aufnahme stoppen"
+  },
+  "st17aP": {
+    "defaultMessage": "Derzeit gibt es keine geplanten Räume."
+  },
+  "tarxmH": {
+    "defaultMessage": "Adresse ist kein Nostr-Bunker"
+  },
+  "uCk8r+": {
+    "defaultMessage": "Haben Sie bereits ein Konto?"
+  },
+  "uMhpKe": {
+    "defaultMessage": "Farbe"
+  },
+  "wEQDC6": {
+    "defaultMessage": "Bearbeiten"
+  },
+  "wTwfnv": {
+    "defaultMessage": "Ungültige Nostr-Adresse"
+  },
+  "x82IOl": {
+    "defaultMessage": "Stumm"
+  },
+  "xbQgN4": {
+    "defaultMessage": "Aufnahme starten"
+  },
+  "yAaNQA": {
+    "defaultMessage": "Admins"
+  },
+  "zA95/o": {
+    "defaultMessage": "Moderator"
+  },
+  "zCUH3/": {
+    "defaultMessage": "Raumeinstellungen"
+  },
+  "zF7Cth": {
+    "defaultMessage": "Gast"
+  },
+  "zHj+Ut": {
+    "defaultMessage": "Zeit",
+    "description": "Date time input placeholder text"
+  }
+}
+

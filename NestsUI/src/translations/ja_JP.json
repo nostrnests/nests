@@ -1,0 +1,295 @@
+{
+  "+0zv6g": {
+    "defaultMessage": "画像"
+  },
+  "+t+11k": {
+    "defaultMessage": "部屋を閉じる"
+  },
+  "/8ACb2": {
+    "defaultMessage": "ステージに追加"
+  },
+  "/jswUE": {
+    "defaultMessage": "退場ステージ"
+  },
+  "01iNut": {
+    "defaultMessage": "Nostr address does not belong to you"
+  },
+  "0vL5u1": {
+    "defaultMessage": "アカウントを作成"
+  },
+  "1FTExG": {
+    "defaultMessage": "<lg>{n}</lg> <sm>Sats</sm>"
+  },
+  "1t2eph": {
+    "defaultMessage": "管理者を削除"
+  },
+  "2/2yg+": {
+    "defaultMessage": "追加"
+  },
+  "2jp98l": {
+    "defaultMessage": "カスタム金額",
+    "description": "Custom amount for zaps"
+  },
+  "3s2cxm": {
+    "defaultMessage": "Lobby"
+  },
+  "47FYwb": {
+    "defaultMessage": "キャンセル"
+  },
+  "5q3qC0": {
+    "defaultMessage": "ダウンロード"
+  },
+  "5vMmmR": {
+    "defaultMessage": "Nostrのユーザー名はユニークではありません。nostrアドレスは登録時にあなたに固有の人間が読めるユニークなアドレスです。"
+  },
+  "6jRTzo": {
+    "defaultMessage": "有効なnostrアドレスではありません"
+  },
+  "6sGucA": {
+    "defaultMessage": "新しい部屋"
+  },
+  "6xQg6j": {
+    "defaultMessage": "僅用於中文"
+  },
+  "7vwVDQ": {
+    "defaultMessage": "Nostr address not found"
+  },
+  "9Xmefb": {
+    "defaultMessage": "部屋についての短い説明",
+    "description": "Placeholder text for room description"
+  },
+  "9gg+Ph": {
+    "defaultMessage": "ここにクールな名前を挿入",
+    "description": "Placeholder text for room name"
+  },
+  "9pMqYs": {
+    "defaultMessage": "Nostr アドレス"
+  },
+  "AGHEaD": {
+    "defaultMessage": "録音なし"
+  },
+  "AyGauy": {
+    "defaultMessage": "ログイン"
+  },
+  "B5pZ3p": {
+    "defaultMessage": "共有ルーム"
+  },
+  "C81/uG": {
+    "defaultMessage": "ログアウト"
+  },
+  "CE79Az": {
+    "defaultMessage": "アクティブな部屋はまだありません。"
+  },
+  "D5Li4U": {
+    "defaultMessage": "新しい部屋を開始"
+  },
+  "G+OGl/": {
+    "defaultMessage": "Nostr に送る"
+  },
+  "G/yZLu": {
+    "defaultMessage": "削除"
+  },
+  "GSye7T": {
+    "defaultMessage": "Lightning アドレス"
+  },
+  "GcozGF": {
+    "defaultMessage": "無効な稲妻アドレス"
+  },
+  "H5DrhC": {
+    "defaultMessage": "{sender} zapped {receiver} {amount} sats"
+  },
+  "HAlOn1": {
+    "defaultMessage": "名前"
+  },
+  "HSEDrc": {
+    "defaultMessage": "特定のリレーにのみ配信したい場合は、こちらに追加できます。"
+  },
+  "IbE9GF": {
+    "defaultMessage": "スケジュールされた時間 (オプション)"
+  },
+  "Iul/hR": {
+    "defaultMessage": "アクティブな部屋"
+  },
+  "JVshdm": {
+    "defaultMessage": "管理者にする"
+  },
+  "JkLHGw": {
+    "defaultMessage": "ウェブサイト"
+  },
+  "Jkxa7F": {
+    "defaultMessage": "プロフィールを表示"
+  },
+  "Lv0zJu": {
+    "defaultMessage": "詳細"
+  },
+  "MKDHEa": {
+    "defaultMessage": "部屋に参加"
+  },
+  "MU0ket": {
+    "defaultMessage": "スピーカー"
+  },
+  "OKhRC6": {
+    "defaultMessage": "共有"
+  },
+  "Og+vtv": {
+    "defaultMessage": "ゲストとして続ける"
+  },
+  "P6PLpi": {
+    "defaultMessage": "参加する"
+  },
+  "P8QaSQ": {
+    "defaultMessage": "URLをコピー"
+  },
+  "QQkNag": {
+    "defaultMessage": "ホスト： {name}"
+  },
+  "QtFGiO": {
+    "defaultMessage": "ホスト"
+  },
+  "RXjNVY": {
+    "defaultMessage": "nostr アカウントを作成"
+  },
+  "SFuk1v": {
+    "defaultMessage": "アクセス許可"
+  },
+  "SQJto2": {
+    "defaultMessage": "サインイン"
+  },
+  "ST6+Xe": {
+    "defaultMessage": "ゲスト (me)"
+  },
+  "Sl9epY": {
+    "defaultMessage": "ステージから削除"
+  },
+  "T4lB1e": {
+    "defaultMessage": "ステージを出る"
+  },
+  "U/VWC2": {
+    "defaultMessage": "音声をストリーミング"
+  },
+  "Uo/DWG": {
+    "defaultMessage": "長すぎます"
+  },
+  "VvvK+z": {
+    "defaultMessage": "拡張機能でサインイン"
+  },
+  "VzzYJk": {
+    "defaultMessage": "作成"
+  },
+  "WTrOy3": {
+    "defaultMessage": "チャット"
+  },
+  "aUuFuf": {
+    "defaultMessage": "\"{room_name}\" の巣が生きています! 🤗 {url}"
+  },
+  "btNUvb": {
+    "defaultMessage": "部屋名"
+  },
+  "cXAlMR": {
+    "defaultMessage": "スケジュール済み"
+  },
+  "cyR7Kh": {
+    "defaultMessage": "戻る"
+  },
+  "dM9S71": {
+    "defaultMessage": "部屋のスケジュール"
+  },
+  "e7PVtu": {
+    "defaultMessage": "バナーの色または画像"
+  },
+  "fBI91o": {
+    "defaultMessage": "Zap"
+  },
+  "fZupOJ": {
+    "defaultMessage": "コメント",
+    "description": "Placeholder for writing comment"
+  },
+  "fzgxCV": {
+    "defaultMessage": "チャットにログインしてください"
+  },
+  "g5pX+a": {
+    "defaultMessage": "About"
+  },
+  "huqKGl": {
+    "defaultMessage": "アカウントを作成"
+  },
+  "hvEgD/": {
+    "defaultMessage": "部屋の記録"
+  },
+  "ieGrWo": {
+    "defaultMessage": "フォロー"
+  },
+  "itPgxd": {
+    "defaultMessage": "プロフィール"
+  },
+  "izWS4J": {
+    "defaultMessage": "フォローを解除"
+  },
+  "jvo0vs": {
+    "defaultMessage": "保存"
+  },
+  "kEseyR": {
+    "defaultMessage": "送信",
+    "description": "Send message button text"
+  },
+  "kc5EOy": {
+    "defaultMessage": "ユーザー名が長すぎます"
+  },
+  "mBMl8U": {
+    "defaultMessage": "Room Description (Optional 140 chars)"
+  },
+  "mBUsTH": {
+    "defaultMessage": "画像を選択",
+    "description": "Select an image to upload as room banner image"
+  },
+  "oM1Qdm": {
+    "defaultMessage": "スピーカー"
+  },
+  "omWbg5": {
+    "defaultMessage": "カスタムリレー（オプション）"
+  },
+  "pXFAd/": {
+    "defaultMessage": "録画を停止"
+  },
+  "st17aP": {
+    "defaultMessage": "現在スケジュールされた部屋はありません。"
+  },
+  "tarxmH": {
+    "defaultMessage": "住所はnostrバンカーではありません"
+  },
+  "uCk8r+": {
+    "defaultMessage": "既にアカウントをお持ちですか？"
+  },
+  "uMhpKe": {
+    "defaultMessage": "色"
+  },
+  "wEQDC6": {
+    "defaultMessage": "編集"
+  },
+  "wTwfnv": {
+    "defaultMessage": "無効なnostr アドレス"
+  },
+  "x82IOl": {
+    "defaultMessage": "ミュート"
+  },
+  "xbQgN4": {
+    "defaultMessage": "録画開始"
+  },
+  "yAaNQA": {
+    "defaultMessage": "管理者"
+  },
+  "zA95/o": {
+    "defaultMessage": "モデレーター"
+  },
+  "zCUH3/": {
+    "defaultMessage": "部屋の設定"
+  },
+  "zF7Cth": {
+    "defaultMessage": "ゲスト"
+  },
+  "zHj+Ut": {
+    "defaultMessage": "時刻",
+    "description": "Date time input placeholder text"
+  }
+}
+

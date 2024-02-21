@@ -1,0 +1,295 @@
+{
+  "+0zv6g": {
+    "defaultMessage": "Kuva"
+  },
+  "+t+11k": {
+    "defaultMessage": "Sulje Huone"
+  },
+  "/8ACb2": {
+    "defaultMessage": "Lisää vaiheeseen"
+  },
+  "/jswUE": {
+    "defaultMessage": "Lähde Vaiheesta"
+  },
+  "01iNut": {
+    "defaultMessage": "Nostr osoite ei kuulu sinulle"
+  },
+  "0vL5u1": {
+    "defaultMessage": "Luo tili"
+  },
+  "1FTExG": {
+    "defaultMessage": "<lg>{n}</lg> <sm>Sats</sm>"
+  },
+  "1t2eph": {
+    "defaultMessage": "Poista ylläpitäjä"
+  },
+  "2/2yg+": {
+    "defaultMessage": "Lisää"
+  },
+  "2jp98l": {
+    "defaultMessage": "Oma summa",
+    "description": "Custom amount for zaps"
+  },
+  "3s2cxm": {
+    "defaultMessage": "Aula"
+  },
+  "47FYwb": {
+    "defaultMessage": "Peruuta"
+  },
+  "5q3qC0": {
+    "defaultMessage": "Lataa"
+  },
+  "5vMmmR": {
+    "defaultMessage": "Käyttäjätunnukset eivät ole ainutlaatuisia Nostrissa. Nostrin osoite on ainutlaatuinen ihmisluettavissa oleva osoitteesi, joka on ainutlaatuinen sinulle rekisteröitymisen yhteydessä."
+  },
+  "6jRTzo": {
+    "defaultMessage": "Ei kelvollinen nostr osoite"
+  },
+  "6sGucA": {
+    "defaultMessage": "Uusi Huone"
+  },
+  "6xQg6j": {
+    "defaultMessage": "Estä käyttäjä"
+  },
+  "7vwVDQ": {
+    "defaultMessage": "Nostre-osoitetta ei löytynyt"
+  },
+  "9Xmefb": {
+    "defaultMessage": "Lyhyt kuvaus huoneesta",
+    "description": "Placeholder text for room description"
+  },
+  "9gg+Ph": {
+    "defaultMessage": "Lisää viileä nimi tähän",
+    "description": "Placeholder text for room name"
+  },
+  "9pMqYs": {
+    "defaultMessage": "Nostr Osoite"
+  },
+  "AGHEaD": {
+    "defaultMessage": "Ei Tallenteita"
+  },
+  "AyGauy": {
+    "defaultMessage": "Kirjaudu"
+  },
+  "B5pZ3p": {
+    "defaultMessage": "Jaa Huone"
+  },
+  "C81/uG": {
+    "defaultMessage": "Kirjaudu Ulos"
+  },
+  "CE79Az": {
+    "defaultMessage": "Aktiivisia huoneita ei vielä ole."
+  },
+  "D5Li4U": {
+    "defaultMessage": "Aloita uusi huone"
+  },
+  "G+OGl/": {
+    "defaultMessage": "Lähetys Nostriin"
+  },
+  "G/yZLu": {
+    "defaultMessage": "Poista"
+  },
+  "GSye7T": {
+    "defaultMessage": "Lightning Osoite"
+  },
+  "GcozGF": {
+    "defaultMessage": "Virheellinen salama osoite"
+  },
+  "H5DrhC": {
+    "defaultMessage": "{sender} zapped {receiver} {amount} sats"
+  },
+  "HAlOn1": {
+    "defaultMessage": "Nimi"
+  },
+  "HSEDrc": {
+    "defaultMessage": "Jos haluat lähettää vain tiettyihin releisiin, voit lisätä ne tähän."
+  },
+  "IbE9GF": {
+    "defaultMessage": "Ajastettu Aika (valinnainen)"
+  },
+  "Iul/hR": {
+    "defaultMessage": "Aktiiviset Huoneet"
+  },
+  "JVshdm": {
+    "defaultMessage": "Tee ylläpitäjä"
+  },
+  "JkLHGw": {
+    "defaultMessage": "Sivusto"
+  },
+  "Jkxa7F": {
+    "defaultMessage": "Näytä Profiili"
+  },
+  "Lv0zJu": {
+    "defaultMessage": "Yksityiskohdat"
+  },
+  "MKDHEa": {
+    "defaultMessage": "Liity Huoneeseen"
+  },
+  "MU0ket": {
+    "defaultMessage": "Kaiutin"
+  },
+  "OKhRC6": {
+    "defaultMessage": "Jaa"
+  },
+  "Og+vtv": {
+    "defaultMessage": "Jatka vieraana"
+  },
+  "P6PLpi": {
+    "defaultMessage": "Liity"
+  },
+  "P8QaSQ": {
+    "defaultMessage": "Kopioi URL"
+  },
+  "QQkNag": {
+    "defaultMessage": "Ylläpitäjä {name}"
+  },
+  "QtFGiO": {
+    "defaultMessage": "Isäntä"
+  },
+  "RXjNVY": {
+    "defaultMessage": "Luo nostr tili"
+  },
+  "SFuk1v": {
+    "defaultMessage": "Käyttöoikeudet"
+  },
+  "SQJto2": {
+    "defaultMessage": "Kirjaudu sisään"
+  },
+  "ST6+Xe": {
+    "defaultMessage": "Vieras (minä)"
+  },
+  "Sl9epY": {
+    "defaultMessage": "Poista vaiheesta"
+  },
+  "T4lB1e": {
+    "defaultMessage": "Poistu vaiheesta"
+  },
+  "U/VWC2": {
+    "defaultMessage": "Suoratoista Ääntä"
+  },
+  "Uo/DWG": {
+    "defaultMessage": "Noin liian pitkä"
+  },
+  "VvvK+z": {
+    "defaultMessage": "Kirjaudu sisään laajennuksella"
+  },
+  "VzzYJk": {
+    "defaultMessage": "Luo"
+  },
+  "WTrOy3": {
+    "defaultMessage": "Keskustelu"
+  },
+  "aUuFuf": {
+    "defaultMessage": "\"{room_name}\" nest is live! Come join 🤗 {url}"
+  },
+  "btNUvb": {
+    "defaultMessage": "Huoneen nimi"
+  },
+  "cXAlMR": {
+    "defaultMessage": "Ajoitettu"
+  },
+  "cyR7Kh": {
+    "defaultMessage": "Takaisin"
+  },
+  "dM9S71": {
+    "defaultMessage": "Ajoita huone"
+  },
+  "e7PVtu": {
+    "defaultMessage": "Bannerin väri tai kuva"
+  },
+  "fBI91o": {
+    "defaultMessage": "Zap"
+  },
+  "fZupOJ": {
+    "defaultMessage": "Kommentti",
+    "description": "Placeholder for writing comment"
+  },
+  "fzgxCV": {
+    "defaultMessage": "Ole hyvä ja kirjaudu keskusteluun"
+  },
+  "g5pX+a": {
+    "defaultMessage": "Tietoja"
+  },
+  "huqKGl": {
+    "defaultMessage": "Luo tili"
+  },
+  "hvEgD/": {
+    "defaultMessage": "Huoneen Tallennukset"
+  },
+  "ieGrWo": {
+    "defaultMessage": "Seuraa"
+  },
+  "itPgxd": {
+    "defaultMessage": "Profiili"
+  },
+  "izWS4J": {
+    "defaultMessage": "Lopeta"
+  },
+  "jvo0vs": {
+    "defaultMessage": "Tallenna"
+  },
+  "kEseyR": {
+    "defaultMessage": "Lähetä",
+    "description": "Send message button text"
+  },
+  "kc5EOy": {
+    "defaultMessage": "Käyttäjätunnus on liian pitkä"
+  },
+  "mBMl8U": {
+    "defaultMessage": "Huoneen kuvaus (valinnainen 140 merkkiä)"
+  },
+  "mBUsTH": {
+    "defaultMessage": "Valitse kuva",
+    "description": "Select an image to upload as room banner image"
+  },
+  "oM1Qdm": {
+    "defaultMessage": "Kaiuttimet"
+  },
+  "omWbg5": {
+    "defaultMessage": "Mukautetut Releet (Valinnainen)"
+  },
+  "pXFAd/": {
+    "defaultMessage": "Lopeta Tallennus"
+  },
+  "st17aP": {
+    "defaultMessage": "Ei ole ajastettuja huoneita juuri nyt."
+  },
+  "tarxmH": {
+    "defaultMessage": "Osoite ei ole nostr bunkkeri"
+  },
+  "uCk8r+": {
+    "defaultMessage": "Onko sinulla jo tili?"
+  },
+  "uMhpKe": {
+    "defaultMessage": "Väri"
+  },
+  "wEQDC6": {
+    "defaultMessage": "Muokkaa"
+  },
+  "wTwfnv": {
+    "defaultMessage": "Virheellinen nostr-osoite"
+  },
+  "x82IOl": {
+    "defaultMessage": "Mykistä"
+  },
+  "xbQgN4": {
+    "defaultMessage": "Aloita Nauhoitus"
+  },
+  "yAaNQA": {
+    "defaultMessage": "Ylläpitäjät"
+  },
+  "zA95/o": {
+    "defaultMessage": "Moderaattori"
+  },
+  "zCUH3/": {
+    "defaultMessage": "Huoneen Asetukset"
+  },
+  "zF7Cth": {
+    "defaultMessage": "Vieras"
+  },
+  "zHj+Ut": {
+    "defaultMessage": "Aika",
+    "description": "Date time input placeholder text"
+  }
+}
+

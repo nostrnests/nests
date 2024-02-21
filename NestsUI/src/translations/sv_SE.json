@@ -1,0 +1,295 @@
+{
+  "+0zv6g": {
+    "defaultMessage": "Bild"
+  },
+  "+t+11k": {
+    "defaultMessage": "Stäng rum"
+  },
+  "/8ACb2": {
+    "defaultMessage": "Lägg till i scen"
+  },
+  "/jswUE": {
+    "defaultMessage": "Lämna scenen"
+  },
+  "01iNut": {
+    "defaultMessage": "Nostr adress tillhör inte dig"
+  },
+  "0vL5u1": {
+    "defaultMessage": "Skapa ett konto"
+  },
+  "1FTExG": {
+    "defaultMessage": "<lg>{n}</lg> <sm>Sats</sm>"
+  },
+  "1t2eph": {
+    "defaultMessage": "Ta bort administratör"
+  },
+  "2/2yg+": {
+    "defaultMessage": "Lägg till"
+  },
+  "2jp98l": {
+    "defaultMessage": "Anpassat belopp",
+    "description": "Custom amount for zaps"
+  },
+  "3s2cxm": {
+    "defaultMessage": "Lobby"
+  },
+  "47FYwb": {
+    "defaultMessage": "Avbryt"
+  },
+  "5q3qC0": {
+    "defaultMessage": "Hämta"
+  },
+  "5vMmmR": {
+    "defaultMessage": "Användarnamn är inte unika på Nostr. Nostr-adressen är din unika människoläsbara adress som är unik för dig vid registrering."
+  },
+  "6jRTzo": {
+    "defaultMessage": "Inte en giltig nostr adress"
+  },
+  "6sGucA": {
+    "defaultMessage": "Nytt rum"
+  },
+  "6xQg6j": {
+    "defaultMessage": "Bannlys användare"
+  },
+  "7vwVDQ": {
+    "defaultMessage": "Nostr adress hittades inte"
+  },
+  "9Xmefb": {
+    "defaultMessage": "Kort beskrivning om rummet",
+    "description": "Placeholder text for room description"
+  },
+  "9gg+Ph": {
+    "defaultMessage": "Infoga coolt namn här",
+    "description": "Placeholder text for room name"
+  },
+  "9pMqYs": {
+    "defaultMessage": "Nostr Adress"
+  },
+  "AGHEaD": {
+    "defaultMessage": "Inga inspelningar"
+  },
+  "AyGauy": {
+    "defaultMessage": "Inloggning"
+  },
+  "B5pZ3p": {
+    "defaultMessage": "Dela rum"
+  },
+  "C81/uG": {
+    "defaultMessage": "Utloggning"
+  },
+  "CE79Az": {
+    "defaultMessage": "Det finns inga aktiva rum ännu."
+  },
+  "D5Li4U": {
+    "defaultMessage": "Starta ett nytt rum"
+  },
+  "G+OGl/": {
+    "defaultMessage": "Sänd till Nostr"
+  },
+  "G/yZLu": {
+    "defaultMessage": "Radera"
+  },
+  "GSye7T": {
+    "defaultMessage": "Lightning-adress"
+  },
+  "GcozGF": {
+    "defaultMessage": "Ogiltig blixtnedslag adress"
+  },
+  "H5DrhC": {
+    "defaultMessage": "{sender} zapped {receiver} {amount} sats"
+  },
+  "HAlOn1": {
+    "defaultMessage": "Namn"
+  },
+  "HSEDrc": {
+    "defaultMessage": "Om du bara vill sända till specifika reläer kan du lägga till dem här."
+  },
+  "IbE9GF": {
+    "defaultMessage": "Planerad tid (valfritt)"
+  },
+  "Iul/hR": {
+    "defaultMessage": "Aktiva rum"
+  },
+  "JVshdm": {
+    "defaultMessage": "Gör till administratör"
+  },
+  "JkLHGw": {
+    "defaultMessage": "Webbplats"
+  },
+  "Jkxa7F": {
+    "defaultMessage": "Visa profil"
+  },
+  "Lv0zJu": {
+    "defaultMessage": "Detaljer"
+  },
+  "MKDHEa": {
+    "defaultMessage": "Anslut till rum"
+  },
+  "MU0ket": {
+    "defaultMessage": "Högtalare"
+  },
+  "OKhRC6": {
+    "defaultMessage": "Dela"
+  },
+  "Og+vtv": {
+    "defaultMessage": "Fortsätt som gäst"
+  },
+  "P6PLpi": {
+    "defaultMessage": "Gå med"
+  },
+  "P8QaSQ": {
+    "defaultMessage": "Kopiera URL"
+  },
+  "QQkNag": {
+    "defaultMessage": "Värd för {name}"
+  },
+  "QtFGiO": {
+    "defaultMessage": "Värd"
+  },
+  "RXjNVY": {
+    "defaultMessage": "Skapa ett nostr konto"
+  },
+  "SFuk1v": {
+    "defaultMessage": "Behörigheter"
+  },
+  "SQJto2": {
+    "defaultMessage": "Logga in"
+  },
+  "ST6+Xe": {
+    "defaultMessage": "Gäst (jag)"
+  },
+  "Sl9epY": {
+    "defaultMessage": "Ta bort från scenen"
+  },
+  "T4lB1e": {
+    "defaultMessage": "Lämna scenen"
+  },
+  "U/VWC2": {
+    "defaultMessage": "Strömma ljud"
+  },
+  "Uo/DWG": {
+    "defaultMessage": "Om för lång"
+  },
+  "VvvK+z": {
+    "defaultMessage": "Logga in med tillägg"
+  },
+  "VzzYJk": {
+    "defaultMessage": "Skapa"
+  },
+  "WTrOy3": {
+    "defaultMessage": "Chatt"
+  },
+  "aUuFuf": {
+    "defaultMessage": "\"{room_name}\" bo är live! Kom och gå med i 🤗 {url}"
+  },
+  "btNUvb": {
+    "defaultMessage": "Rummets namn"
+  },
+  "cXAlMR": {
+    "defaultMessage": "Schemalagda"
+  },
+  "cyR7Kh": {
+    "defaultMessage": "Tillbaka"
+  },
+  "dM9S71": {
+    "defaultMessage": "Schemalägg ett rum"
+  },
+  "e7PVtu": {
+    "defaultMessage": "Banderoll Färg eller bild"
+  },
+  "fBI91o": {
+    "defaultMessage": "Zap"
+  },
+  "fZupOJ": {
+    "defaultMessage": "Kommentar",
+    "description": "Placeholder for writing comment"
+  },
+  "fzgxCV": {
+    "defaultMessage": "Logga in i chatten"
+  },
+  "g5pX+a": {
+    "defaultMessage": "Om"
+  },
+  "huqKGl": {
+    "defaultMessage": "Skapa konto"
+  },
+  "hvEgD/": {
+    "defaultMessage": "Rumsinspelningar"
+  },
+  "ieGrWo": {
+    "defaultMessage": "Följ"
+  },
+  "itPgxd": {
+    "defaultMessage": "Profil"
+  },
+  "izWS4J": {
+    "defaultMessage": "Sluta följa"
+  },
+  "jvo0vs": {
+    "defaultMessage": "Spara"
+  },
+  "kEseyR": {
+    "defaultMessage": "Skicka",
+    "description": "Send message button text"
+  },
+  "kc5EOy": {
+    "defaultMessage": "Användarnamnet är för långt"
+  },
+  "mBMl8U": {
+    "defaultMessage": "Rumsbeskrivning (tillval 140 tecken)"
+  },
+  "mBUsTH": {
+    "defaultMessage": "Välj bild",
+    "description": "Select an image to upload as room banner image"
+  },
+  "oM1Qdm": {
+    "defaultMessage": "Högtalare"
+  },
+  "omWbg5": {
+    "defaultMessage": "Anpassade reläer (valfritt)"
+  },
+  "pXFAd/": {
+    "defaultMessage": "Stoppa inspelning"
+  },
+  "st17aP": {
+    "defaultMessage": "Det finns inga schemalagda rum just nu."
+  },
+  "tarxmH": {
+    "defaultMessage": "Adressen är inte en nostr bunker"
+  },
+  "uCk8r+": {
+    "defaultMessage": "Har du redan ett konto?"
+  },
+  "uMhpKe": {
+    "defaultMessage": "Färg"
+  },
+  "wEQDC6": {
+    "defaultMessage": "Redigera"
+  },
+  "wTwfnv": {
+    "defaultMessage": "Ogiltig nostr adress"
+  },
+  "x82IOl": {
+    "defaultMessage": "Tysta"
+  },
+  "xbQgN4": {
+    "defaultMessage": "Starta inspelning"
+  },
+  "yAaNQA": {
+    "defaultMessage": "Administratörer"
+  },
+  "zA95/o": {
+    "defaultMessage": "Moderator"
+  },
+  "zCUH3/": {
+    "defaultMessage": "Rumsinställningar"
+  },
+  "zF7Cth": {
+    "defaultMessage": "Gäst"
+  },
+  "zHj+Ut": {
+    "defaultMessage": "Tid",
+    "description": "Date time input placeholder text"
+  }
+}
+

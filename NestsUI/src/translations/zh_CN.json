@@ -1,0 +1,295 @@
+{
+  "+0zv6g": {
+    "defaultMessage": "图片"
+  },
+  "+t+11k": {
+    "defaultMessage": "关闭房间"
+  },
+  "/8ACb2": {
+    "defaultMessage": "添加到阶段"
+  },
+  "/jswUE": {
+    "defaultMessage": "离开阶段"
+  },
+  "01iNut": {
+    "defaultMessage": "Nostr 地址不属于您"
+  },
+  "0vL5u1": {
+    "defaultMessage": "创建帐户"
+  },
+  "1FTExG": {
+    "defaultMessage": "<lg>{n}</lg> <sm>Sats</sm>"
+  },
+  "1t2eph": {
+    "defaultMessage": "删除管理员"
+  },
+  "2/2yg+": {
+    "defaultMessage": "添加"
+  },
+  "2jp98l": {
+    "defaultMessage": "自定义金额",
+    "description": "Custom amount for zaps"
+  },
+  "3s2cxm": {
+    "defaultMessage": "大厅"
+  },
+  "47FYwb": {
+    "defaultMessage": "取消"
+  },
+  "5q3qC0": {
+    "defaultMessage": "下载"
+  },
+  "5vMmmR": {
+    "defaultMessage": "用户名在Nostr上并不唯一。nostr 地址是您注册时唯一的人类读取地址。"
+  },
+  "6jRTzo": {
+    "defaultMessage": "不是一个有效的nostr 地址"
+  },
+  "6sGucA": {
+    "defaultMessage": "新建房间"
+  },
+  "6xQg6j": {
+    "defaultMessage": "封禁用户"
+  },
+  "7vwVDQ": {
+    "defaultMessage": "找不到Nostr 地址"
+  },
+  "9Xmefb": {
+    "defaultMessage": "关于房间的简短描述",
+    "description": "Placeholder text for room description"
+  },
+  "9gg+Ph": {
+    "defaultMessage": "在此插入很酷的名称",
+    "description": "Placeholder text for room name"
+  },
+  "9pMqYs": {
+    "defaultMessage": "Nostr 地址"
+  },
+  "AGHEaD": {
+    "defaultMessage": "没有录制件"
+  },
+  "AyGauy": {
+    "defaultMessage": "登录"
+  },
+  "B5pZ3p": {
+    "defaultMessage": "分享房间"
+  },
+  "C81/uG": {
+    "defaultMessage": "注销"
+  },
+  "CE79Az": {
+    "defaultMessage": "还没有活动的房间。"
+  },
+  "D5Li4U": {
+    "defaultMessage": "开始一个新房间"
+  },
+  "G+OGl/": {
+    "defaultMessage": "广播到Nostr"
+  },
+  "G/yZLu": {
+    "defaultMessage": "删除"
+  },
+  "GSye7T": {
+    "defaultMessage": "闪电地址"
+  },
+  "GcozGF": {
+    "defaultMessage": "无效的闪电地址"
+  },
+  "H5DrhC": {
+    "defaultMessage": "{sender} zapped {receiver} {amount} sats"
+  },
+  "HAlOn1": {
+    "defaultMessage": "名称"
+  },
+  "HSEDrc": {
+    "defaultMessage": "如果您只想广播到特定的中继，您可以在此添加这些内容。"
+  },
+  "IbE9GF": {
+    "defaultMessage": "预定时间(可选)"
+  },
+  "Iul/hR": {
+    "defaultMessage": "活动房间"
+  },
+  "JVshdm": {
+    "defaultMessage": "设为管理员"
+  },
+  "JkLHGw": {
+    "defaultMessage": "网址"
+  },
+  "Jkxa7F": {
+    "defaultMessage": "查看个人资料"
+  },
+  "Lv0zJu": {
+    "defaultMessage": "详细信息"
+  },
+  "MKDHEa": {
+    "defaultMessage": "加入房间"
+  },
+  "MU0ket": {
+    "defaultMessage": "扬声器"
+  },
+  "OKhRC6": {
+    "defaultMessage": "分享"
+  },
+  "Og+vtv": {
+    "defaultMessage": "以访客身份继续"
+  },
+  "P6PLpi": {
+    "defaultMessage": "加入"
+  },
+  "P8QaSQ": {
+    "defaultMessage": "复制 URL"
+  },
+  "QQkNag": {
+    "defaultMessage": "由 {name}主持"
+  },
+  "QtFGiO": {
+    "defaultMessage": "主机"
+  },
+  "RXjNVY": {
+    "defaultMessage": "创建nostr账户"
+  },
+  "SFuk1v": {
+    "defaultMessage": "权限"
+  },
+  "SQJto2": {
+    "defaultMessage": "登录"
+  },
+  "ST6+Xe": {
+    "defaultMessage": "来宾(我)"
+  },
+  "Sl9epY": {
+    "defaultMessage": "从舞台删除"
+  },
+  "T4lB1e": {
+    "defaultMessage": "离开阶段"
+  },
+  "U/VWC2": {
+    "defaultMessage": "流音频"
+  },
+  "Uo/DWG": {
+    "defaultMessage": "关于太长"
+  },
+  "VvvK+z": {
+    "defaultMessage": "使用扩展登录"
+  },
+  "VzzYJk": {
+    "defaultMessage": "创建"
+  },
+  "WTrOy3": {
+    "defaultMessage": "聊天"
+  },
+  "aUuFuf": {
+    "defaultMessage": "\"{room_name}\" nest is live! Come join 🤗 {url}"
+  },
+  "btNUvb": {
+    "defaultMessage": "房间名称"
+  },
+  "cXAlMR": {
+    "defaultMessage": "已计划的"
+  },
+  "cyR7Kh": {
+    "defaultMessage": "后退"
+  },
+  "dM9S71": {
+    "defaultMessage": "安排一个房间"
+  },
+  "e7PVtu": {
+    "defaultMessage": "横幅颜色或图像"
+  },
+  "fBI91o": {
+    "defaultMessage": "Zap"
+  },
+  "fZupOJ": {
+    "defaultMessage": "评论",
+    "description": "Placeholder for writing comment"
+  },
+  "fzgxCV": {
+    "defaultMessage": "请登录到聊天"
+  },
+  "g5pX+a": {
+    "defaultMessage": "关于"
+  },
+  "huqKGl": {
+    "defaultMessage": "创建帐户"
+  },
+  "hvEgD/": {
+    "defaultMessage": "房间录音"
+  },
+  "ieGrWo": {
+    "defaultMessage": "关注"
+  },
+  "itPgxd": {
+    "defaultMessage": "个人信息"
+  },
+  "izWS4J": {
+    "defaultMessage": "取消关注"
+  },
+  "jvo0vs": {
+    "defaultMessage": "保存"
+  },
+  "kEseyR": {
+    "defaultMessage": "发送",
+    "description": "Send message button text"
+  },
+  "kc5EOy": {
+    "defaultMessage": "用户名过长"
+  },
+  "mBMl8U": {
+    "defaultMessage": "房间描述(可选140个字符)"
+  },
+  "mBUsTH": {
+    "defaultMessage": "选择图像",
+    "description": "Select an image to upload as room banner image"
+  },
+  "oM1Qdm": {
+    "defaultMessage": "发言者："
+  },
+  "omWbg5": {
+    "defaultMessage": "自定义继电器 (可选)"
+  },
+  "pXFAd/": {
+    "defaultMessage": "停止录制"
+  },
+  "st17aP": {
+    "defaultMessage": "现在没有预定的房间。"
+  },
+  "tarxmH": {
+    "defaultMessage": "地址不是一个鼻子掩码"
+  },
+  "uCk8r+": {
+    "defaultMessage": "已经有一个帐户？"
+  },
+  "uMhpKe": {
+    "defaultMessage": "颜色"
+  },
+  "wEQDC6": {
+    "defaultMessage": "编辑"
+  },
+  "wTwfnv": {
+    "defaultMessage": "无效的nostr 地址"
+  },
+  "x82IOl": {
+    "defaultMessage": "静音"
+  },
+  "xbQgN4": {
+    "defaultMessage": "开始录制"
+  },
+  "yAaNQA": {
+    "defaultMessage": "管理员"
+  },
+  "zA95/o": {
+    "defaultMessage": "版主"
+  },
+  "zCUH3/": {
+    "defaultMessage": "房间设置"
+  },
+  "zF7Cth": {
+    "defaultMessage": "来宾"
+  },
+  "zHj+Ut": {
+    "defaultMessage": "时间",
+    "description": "Date time input placeholder text"
+  }
+}
+

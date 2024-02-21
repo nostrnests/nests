@@ -1,0 +1,295 @@
+{
+  "+0zv6g": {
+    "defaultMessage": "Изображение"
+  },
+  "+t+11k": {
+    "defaultMessage": "Закрыть комнату"
+  },
+  "/8ACb2": {
+    "defaultMessage": "Добавить в этап"
+  },
+  "/jswUE": {
+    "defaultMessage": "Покинуть этап"
+  },
+  "01iNut": {
+    "defaultMessage": "Nostr адрес не принадлежит вам"
+  },
+  "0vL5u1": {
+    "defaultMessage": "Создать аккаунт"
+  },
+  "1FTExG": {
+    "defaultMessage": "<lg>{n}</lg> <sm>Сист</sm>"
+  },
+  "1t2eph": {
+    "defaultMessage": "Удалить администратора"
+  },
+  "2/2yg+": {
+    "defaultMessage": "Добавить"
+  },
+  "2jp98l": {
+    "defaultMessage": "Особая сумма",
+    "description": "Custom amount for zaps"
+  },
+  "3s2cxm": {
+    "defaultMessage": "Лобби"
+  },
+  "47FYwb": {
+    "defaultMessage": "Отмена"
+  },
+  "5q3qC0": {
+    "defaultMessage": "Скачать"
+  },
+  "5vMmmR": {
+    "defaultMessage": "Имя пользователя не является уникальным на Nostr. Адрес nostr - это ваш уникальный человекочитаемый адрес, который уникален для вас при регистрации."
+  },
+  "6jRTzo": {
+    "defaultMessage": "Недействительный адрес nostr"
+  },
+  "6sGucA": {
+    "defaultMessage": "Новая квест"
+  },
+  "6xQg6j": {
+    "defaultMessage": "Забанить пользователя"
+  },
+  "7vwVDQ": {
+    "defaultMessage": "Nostr адрес не найден"
+  },
+  "9Xmefb": {
+    "defaultMessage": "Краткое описание комнаты",
+    "description": "Placeholder text for room description"
+  },
+  "9gg+Ph": {
+    "defaultMessage": "Вставьте здесь крутое имя",
+    "description": "Placeholder text for room name"
+  },
+  "9pMqYs": {
+    "defaultMessage": "Nostr Адрес"
+  },
+  "AGHEaD": {
+    "defaultMessage": "Нет записей"
+  },
+  "AyGauy": {
+    "defaultMessage": "Логин"
+  },
+  "B5pZ3p": {
+    "defaultMessage": "Поделиться комнатой"
+  },
+  "C81/uG": {
+    "defaultMessage": "Выйти"
+  },
+  "CE79Az": {
+    "defaultMessage": "Пока нет активных комнат."
+  },
+  "D5Li4U": {
+    "defaultMessage": "Начать новую комнату"
+  },
+  "G+OGl/": {
+    "defaultMessage": "Трансляция на Nostr"
+  },
+  "G/yZLu": {
+    "defaultMessage": "Удалить"
+  },
+  "GSye7T": {
+    "defaultMessage": "Молниеносный адрес"
+  },
+  "GcozGF": {
+    "defaultMessage": "Недопустимый адрес молнии"
+  },
+  "H5DrhC": {
+    "defaultMessage": "{sender} zapped {receiver} {amount} sats"
+  },
+  "HAlOn1": {
+    "defaultMessage": "Наименование"
+  },
+  "HSEDrc": {
+    "defaultMessage": "Если вы хотите транслировать только на определённые ретрансляции, вы можете добавить их здесь."
+  },
+  "IbE9GF": {
+    "defaultMessage": "Запланированное время (необязательно)"
+  },
+  "Iul/hR": {
+    "defaultMessage": "Активные комнаты"
+  },
+  "JVshdm": {
+    "defaultMessage": "Сделать админом"
+  },
+  "JkLHGw": {
+    "defaultMessage": "Сайт"
+  },
+  "Jkxa7F": {
+    "defaultMessage": "Просмотр профиля"
+  },
+  "Lv0zJu": {
+    "defaultMessage": "Детали"
+  },
+  "MKDHEa": {
+    "defaultMessage": "Присоединиться к комнате"
+  },
+  "MU0ket": {
+    "defaultMessage": "Динамик"
+  },
+  "OKhRC6": {
+    "defaultMessage": "Поделиться"
+  },
+  "Og+vtv": {
+    "defaultMessage": "Продолжить как гость"
+  },
+  "P6PLpi": {
+    "defaultMessage": "Присоединиться"
+  },
+  "P8QaSQ": {
+    "defaultMessage": "Копировать URL"
+  },
+  "QQkNag": {
+    "defaultMessage": "Размещено {name}"
+  },
+  "QtFGiO": {
+    "defaultMessage": "Хост"
+  },
+  "RXjNVY": {
+    "defaultMessage": "Создать аккаунт nostr"
+  },
+  "SFuk1v": {
+    "defaultMessage": "Права доступа"
+  },
+  "SQJto2": {
+    "defaultMessage": "Войти"
+  },
+  "ST6+Xe": {
+    "defaultMessage": "Гость (я)"
+  },
+  "Sl9epY": {
+    "defaultMessage": "Удалить из этапа"
+  },
+  "T4lB1e": {
+    "defaultMessage": "Покинуть этап"
+  },
+  "U/VWC2": {
+    "defaultMessage": "Трансляция аудио"
+  },
+  "Uo/DWG": {
+    "defaultMessage": "О слишком длинном"
+  },
+  "VvvK+z": {
+    "defaultMessage": "Войти с расширением"
+  },
+  "VzzYJk": {
+    "defaultMessage": "Создать"
+  },
+  "WTrOy3": {
+    "defaultMessage": "Чат"
+  },
+  "aUuFuf": {
+    "defaultMessage": "\"{room_name}\" nest is live! Присоединяйтесь 🤗 {url}"
+  },
+  "btNUvb": {
+    "defaultMessage": "Название комнаты"
+  },
+  "cXAlMR": {
+    "defaultMessage": "Запланированный"
+  },
+  "cyR7Kh": {
+    "defaultMessage": "Назад"
+  },
+  "dM9S71": {
+    "defaultMessage": "Запланировать комнату"
+  },
+  "e7PVtu": {
+    "defaultMessage": "Цвет баннера или изображение"
+  },
+  "fBI91o": {
+    "defaultMessage": "Zap"
+  },
+  "fZupOJ": {
+    "defaultMessage": "Комментарий",
+    "description": "Placeholder for writing comment"
+  },
+  "fzgxCV": {
+    "defaultMessage": "Пожалуйста, войдите в чат"
+  },
+  "g5pX+a": {
+    "defaultMessage": "О программе"
+  },
+  "huqKGl": {
+    "defaultMessage": "Создать аккаунт"
+  },
+  "hvEgD/": {
+    "defaultMessage": "Записи в комнате"
+  },
+  "ieGrWo": {
+    "defaultMessage": "Подписаться"
+  },
+  "itPgxd": {
+    "defaultMessage": "Профиль"
+  },
+  "izWS4J": {
+    "defaultMessage": "Отписаться"
+  },
+  "jvo0vs": {
+    "defaultMessage": "Сохранить"
+  },
+  "kEseyR": {
+    "defaultMessage": "Отправить",
+    "description": "Send message button text"
+  },
+  "kc5EOy": {
+    "defaultMessage": "Слишком длинное имя пользователя"
+  },
+  "mBMl8U": {
+    "defaultMessage": "Описание комнаты (опционально 140 символов)"
+  },
+  "mBUsTH": {
+    "defaultMessage": "Выбрать изображение",
+    "description": "Select an image to upload as room banner image"
+  },
+  "oM1Qdm": {
+    "defaultMessage": "Выступающие"
+  },
+  "omWbg5": {
+    "defaultMessage": "Пользовательские реле (необязательно)"
+  },
+  "pXFAd/": {
+    "defaultMessage": "Остановить запись"
+  },
+  "st17aP": {
+    "defaultMessage": "В данный момент нет запланированных номеров."
+  },
+  "tarxmH": {
+    "defaultMessage": "Адрес не является пункером"
+  },
+  "uCk8r+": {
+    "defaultMessage": "Уже зарегистрированы?"
+  },
+  "uMhpKe": {
+    "defaultMessage": "Цвет"
+  },
+  "wEQDC6": {
+    "defaultMessage": "Редактирование"
+  },
+  "wTwfnv": {
+    "defaultMessage": "Неверный адрес nostr"
+  },
+  "x82IOl": {
+    "defaultMessage": "Заглушить"
+  },
+  "xbQgN4": {
+    "defaultMessage": "Начать запись"
+  },
+  "yAaNQA": {
+    "defaultMessage": "Админы"
+  },
+  "zA95/o": {
+    "defaultMessage": "Модератор"
+  },
+  "zCUH3/": {
+    "defaultMessage": "Настройки комнаты"
+  },
+  "zF7Cth": {
+    "defaultMessage": "Гость"
+  },
+  "zHj+Ut": {
+    "defaultMessage": "Время",
+    "description": "Date time input placeholder text"
+  }
+}
+

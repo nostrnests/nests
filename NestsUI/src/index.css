@@ -36,6 +36,24 @@
   --gradient-11: linear-gradient(90deg, #f78ca0 0%, #f9748f 19%, #fd868c 60%);
 }
 
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: #1b1b1b;
+  border-radius: 100px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #333;
+  border-radius: 100px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #444;
+}
+
 h1 {
   @apply text-3xl font-semibold;
 }

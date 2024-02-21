@@ -1,0 +1,295 @@
+{
+  "+0zv6g": {
+    "defaultMessage": "Imagem:"
+  },
+  "+t+11k": {
+    "defaultMessage": "Fechar Sala"
+  },
+  "/8ACb2": {
+    "defaultMessage": "Adicionar ao estágio"
+  },
+  "/jswUE": {
+    "defaultMessage": "Deixar a etapa"
+  },
+  "01iNut": {
+    "defaultMessage": "O endereço do Nostr não pertence a você"
+  },
+  "0vL5u1": {
+    "defaultMessage": "Criar uma conta"
+  },
+  "1FTExG": {
+    "defaultMessage": "<lg>{n}</lg> <sm>Sats</sm>"
+  },
+  "1t2eph": {
+    "defaultMessage": "Remover administrador"
+  },
+  "2/2yg+": {
+    "defaultMessage": "Adicionar"
+  },
+  "2jp98l": {
+    "defaultMessage": "Montante personalizado",
+    "description": "Custom amount for zaps"
+  },
+  "3s2cxm": {
+    "defaultMessage": "Sala"
+  },
+  "47FYwb": {
+    "defaultMessage": "cancelar"
+  },
+  "5q3qC0": {
+    "defaultMessage": "BAIXAR"
+  },
+  "5vMmmR": {
+    "defaultMessage": "Nomes de usuário não são únicos no Nostr. O endereço do nostr é seu único endereço legível para ser humano que é exclusivo para você após o registro."
+  },
+  "6jRTzo": {
+    "defaultMessage": "Não é um endereço de nó válido"
+  },
+  "6sGucA": {
+    "defaultMessage": "Novo quarto"
+  },
+  "6xQg6j": {
+    "defaultMessage": "Banir usuário"
+  },
+  "7vwVDQ": {
+    "defaultMessage": "Endereço do Nostr não encontrado"
+  },
+  "9Xmefb": {
+    "defaultMessage": "Breve descrição sobre a sala",
+    "description": "Placeholder text for room description"
+  },
+  "9gg+Ph": {
+    "defaultMessage": "Insira um nome legal aqui",
+    "description": "Placeholder text for room name"
+  },
+  "9pMqYs": {
+    "defaultMessage": "Endereço do Nostr"
+  },
+  "AGHEaD": {
+    "defaultMessage": "Sem Gravações"
+  },
+  "AyGauy": {
+    "defaultMessage": "Conectar-se"
+  },
+  "B5pZ3p": {
+    "defaultMessage": "Compartilhar Sala"
+  },
+  "C81/uG": {
+    "defaultMessage": "Desconectar"
+  },
+  "CE79Az": {
+    "defaultMessage": "Ainda não há salas ativas."
+  },
+  "D5Li4U": {
+    "defaultMessage": "Começar uma nova sala"
+  },
+  "G+OGl/": {
+    "defaultMessage": "Transmitir para Nostr"
+  },
+  "G/yZLu": {
+    "defaultMessage": "Excluir"
+  },
+  "GSye7T": {
+    "defaultMessage": "Endereço Lightning"
+  },
+  "GcozGF": {
+    "defaultMessage": "Endereço lightning inválido"
+  },
+  "H5DrhC": {
+    "defaultMessage": "{sender} zapped {receiver} {amount} sats"
+  },
+  "HAlOn1": {
+    "defaultMessage": "Nome:"
+  },
+  "HSEDrc": {
+    "defaultMessage": "Se você quiser transmitir apenas para relés específicos, você pode adicioná-los aqui."
+  },
+  "IbE9GF": {
+    "defaultMessage": "Horário agendado (opcional)"
+  },
+  "Iul/hR": {
+    "defaultMessage": "Quartos ativos"
+  },
+  "JVshdm": {
+    "defaultMessage": "Tornar administrador"
+  },
+  "JkLHGw": {
+    "defaultMessage": "site"
+  },
+  "Jkxa7F": {
+    "defaultMessage": "Ver Perfil"
+  },
+  "Lv0zJu": {
+    "defaultMessage": "detalhes"
+  },
+  "MKDHEa": {
+    "defaultMessage": "Participar da sala"
+  },
+  "MU0ket": {
+    "defaultMessage": "Alto-falante"
+  },
+  "OKhRC6": {
+    "defaultMessage": "Compartilhar"
+  },
+  "Og+vtv": {
+    "defaultMessage": "Continuar como Convidado"
+  },
+  "P6PLpi": {
+    "defaultMessage": "Juntar-se"
+  },
+  "P8QaSQ": {
+    "defaultMessage": "Copiar URL"
+  },
+  "QQkNag": {
+    "defaultMessage": "Hospedado por {name}"
+  },
+  "QtFGiO": {
+    "defaultMessage": "Servidor"
+  },
+  "RXjNVY": {
+    "defaultMessage": "Criar uma conta nostr"
+  },
+  "SFuk1v": {
+    "defaultMessage": "Permissões"
+  },
+  "SQJto2": {
+    "defaultMessage": "Iniciar sessão"
+  },
+  "ST6+Xe": {
+    "defaultMessage": "Convidado (eu)"
+  },
+  "Sl9epY": {
+    "defaultMessage": "Remover da etapa"
+  },
+  "T4lB1e": {
+    "defaultMessage": "Deixar etapa"
+  },
+  "U/VWC2": {
+    "defaultMessage": "Transmitir Áudio"
+  },
+  "Uo/DWG": {
+    "defaultMessage": "Sobre muito longo"
+  },
+  "VvvK+z": {
+    "defaultMessage": "Fazer login com a extensão"
+  },
+  "VzzYJk": {
+    "defaultMessage": "Crio"
+  },
+  "WTrOy3": {
+    "defaultMessage": "Bate-papo"
+  },
+  "aUuFuf": {
+    "defaultMessage": "\"{room_name}\" está ao vivo! Venha se juntar a 🤗 {url}"
+  },
+  "btNUvb": {
+    "defaultMessage": "Nome do cômodo"
+  },
+  "cXAlMR": {
+    "defaultMessage": "Agendado"
+  },
+  "cyR7Kh": {
+    "defaultMessage": "Anterior"
+  },
+  "dM9S71": {
+    "defaultMessage": "Agende uma sala"
+  },
+  "e7PVtu": {
+    "defaultMessage": "Cor ou Imagem do Banner"
+  },
+  "fBI91o": {
+    "defaultMessage": "Zap"
+  },
+  "fZupOJ": {
+    "defaultMessage": "Comentar",
+    "description": "Placeholder for writing comment"
+  },
+  "fzgxCV": {
+    "defaultMessage": "Faça login para conversar"
+  },
+  "g5pX+a": {
+    "defaultMessage": "SOBRE"
+  },
+  "huqKGl": {
+    "defaultMessage": "Criar uma conta"
+  },
+  "hvEgD/": {
+    "defaultMessage": "Gravações de Sala"
+  },
+  "ieGrWo": {
+    "defaultMessage": "Seguir"
+  },
+  "itPgxd": {
+    "defaultMessage": "Perfil"
+  },
+  "izWS4J": {
+    "defaultMessage": "Estrela"
+  },
+  "jvo0vs": {
+    "defaultMessage": "Guardar"
+  },
+  "kEseyR": {
+    "defaultMessage": "Mandar",
+    "description": "Send message button text"
+  },
+  "kc5EOy": {
+    "defaultMessage": "Nome de usuário é muito longo"
+  },
+  "mBMl8U": {
+    "defaultMessage": "Descrição do quarto (Opcional 140 caracteres)"
+  },
+  "mBUsTH": {
+    "defaultMessage": "Selecione a imagem",
+    "description": "Select an image to upload as room banner image"
+  },
+  "oM1Qdm": {
+    "defaultMessage": "Alto-falantes"
+  },
+  "omWbg5": {
+    "defaultMessage": "Relés personalizados (opcional)"
+  },
+  "pXFAd/": {
+    "defaultMessage": "Parar Gravação"
+  },
+  "st17aP": {
+    "defaultMessage": "Atualmente não há quartos agendados."
+  },
+  "tarxmH": {
+    "defaultMessage": "Endereço não é um grupo de usuários"
+  },
+  "uCk8r+": {
+    "defaultMessage": "Já possui uma conta?"
+  },
+  "uMhpKe": {
+    "defaultMessage": "Cor"
+  },
+  "wEQDC6": {
+    "defaultMessage": "Alterar"
+  },
+  "wTwfnv": {
+    "defaultMessage": "Endereço de nó inválido"
+  },
+  "x82IOl": {
+    "defaultMessage": "Silenciar"
+  },
+  "xbQgN4": {
+    "defaultMessage": "Iniciar Gravação"
+  },
+  "yAaNQA": {
+    "defaultMessage": "Administradores"
+  },
+  "zA95/o": {
+    "defaultMessage": "Moderador(a)"
+  },
+  "zCUH3/": {
+    "defaultMessage": "Configurações de Sala"
+  },
+  "zF7Cth": {
+    "defaultMessage": "Visitante"
+  },
+  "zHj+Ut": {
+    "defaultMessage": "Horário",
+    "description": "Date time input placeholder text"
+  }
+}
+
