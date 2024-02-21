@@ -1,5 +1,5 @@
 import { ExternalStore } from "@snort/shared";
-import { EventSigner, Nip46Signer, Nip7Signer, NostrLink, PrivateKeySigner } from "@snort/system";
+import { EventKind, EventSigner, Nip46Signer, Nip7Signer, NostrLink, NostrSystem, PrivateKeySigner, RelaySettings, RequestBuilder, parseRelaysFromKind } from "@snort/system";
 import { useSyncExternalStore } from "react";
 import usePresence from "./hooks/usePresence";
 
@@ -16,14 +16,13 @@ export interface LoginData {
 export interface LoginLoaded {
   signer?: EventSigner;
   handMap: Array<string>;
+  follows: Array<[string, string]>;
+  relays: Record<string, RelaySettings>;
 }
 export type LoginSession = LoginData & LoginLoaded;
 
 class LoginStore extends ExternalStore<LoginSession> {
-  #session: LoginSession = {
-    type: "none",
-    handMap: [],
-  };
+  #session: LoginSession = LoginStore.#defaultSession();
 
   constructor() {
     super();
@@ -86,11 +85,22 @@ class LoginStore extends ExternalStore<LoginSession> {
     }
   }
 
-  logout() {
-    this.#session = {
+  updateSession(fn: (s: LoginSession) => void) {
+    fn(this.#session);
+    this.notifyChange();
+  }
+
+  static #defaultSession() {
+    return {
       type: "none",
       handMap: [],
-    };
+      follows: [],
+      relays: {},
+    } as LoginSession;
+  }
+
+  logout() {
+    this.#session = LoginStore.#defaultSession();
     this.notifyChange();
   }
 
@@ -142,4 +152,33 @@ export function useHand(link: NostrLink) {
 
 export function logout() {
   LoginSystem.logout();
+}
+
+let lastPubkey: string | undefined;
+/// Update login session with follows/relays
+export function loginHook(system: NostrSystem) {
+  const loadSessionData = async () => {
+    const session = LoginSystem.snapshot();
+    if (lastPubkey === session.pubkey) return;
+    lastPubkey = session.pubkey;
+    if (session.pubkey) {
+      const rb = new RequestBuilder(`login:${session.pubkey.slice(0, 12)}`);
+      rb.withFilter().authors([session.pubkey]).kinds([EventKind.ContactList, EventKind.Relays]);
+
+      const evs = await system.Fetch(rb);
+      if (evs.length > 0) {
+        const fromEvent = evs.reduce((acc, v) => (acc.created_at > v.created_at ? acc : v), evs[0]);
+        const relays = parseRelaysFromKind(fromEvent);
+        LoginSystem.updateSession(s => {
+          s.follows = fromEvent.tags.filter(a => a[0] === "p") as Array<[string, string]>;
+          s.relays = relays ? Object.fromEntries(relays?.map(a => [a.url, a.settings])) : {};
+        });
+      }
+    }
+  }
+
+  LoginSystem.on("change", () => {
+    loadSessionData().catch(console.error);
+  });
+  loadSessionData().catch(console.error);
 }
