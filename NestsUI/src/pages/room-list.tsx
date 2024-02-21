@@ -9,17 +9,22 @@ import { FormattedMessage } from "react-intl";
 import { unixNow } from "@snort/shared";
 import { PRESENCE_TIME } from "../hooks/usePresence";
 import { updateRelays } from "../utils";
+import { useLogin } from "../login";
 
 export default function RoomList() {
+  const login = useLogin();
   const sub = useMemo(() => {
-    const rb = new RequestBuilder("rooms");
-    rb.withFilter().kinds([ROOM_KIND]);
+    updateRelays(DefaultRelays);
+    const rb = new RequestBuilder(`rooms:${login.lobbyType}`);
+    const fx = rb.withFilter().kinds([ROOM_KIND]);
+    if (login.lobbyType === "following" && login.follows) {
+      fx.authors(login.follows.filter((a) => a[0] === "p").map((a) => a[1]));
+    }
 
     return rb;
-  }, []);
+  }, [login.follows, login.lobbyType]);
 
   const events = useRequestBuilder(sub);
-  updateRelays(DefaultRelays);
 
   return (
     <div className="lg:mx-auto max-lg:px-4 lg:w-[35rem] flex flex-col gap-8">

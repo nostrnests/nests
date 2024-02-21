@@ -15,11 +15,11 @@ export default function IntlContext({ children }: { children?: ReactNode }) {
 
     const toRecordLang = (data: Record<string, { defaultMessage: string }>) => {
       return Object.fromEntries(Object.entries(data).map(([k, v]) => [k, v.defaultMessage]));
-    }
+    };
     const loadInner = async (lx: string) => {
       const ar = (await import(`./translations/${lx}.json`)).default;
       return toRecordLang(ar);
-    }
+    };
 
     switch (locale) {
       case "ar":
@@ -74,7 +74,7 @@ export default function IntlContext({ children }: { children?: ReactNode }) {
         return await loadInner("zh_TW");
       }
     }
-  }
+  };
 
   useEffect(() => {
     load(login.locale).then(setTx);

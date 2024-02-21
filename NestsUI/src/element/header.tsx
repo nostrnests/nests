@@ -4,6 +4,8 @@ import Logo from "./logo";
 import Avatar from "./avatar";
 import { useLogin } from "../login";
 import { FormattedMessage } from "react-intl";
+import IconButton from "./icon-button";
+import Icon from "../icon";
 
 export default function Header() {
   const login = useLogin();
@@ -22,10 +24,24 @@ export default function Header() {
         )}
         {login.pubkey && (
           <>
+            <PrimaryButton
+              onClick={() => {
+                login.update?.((s) => {
+                  s.lobbyType = s.lobbyType === "all" ? "following" : "all";
+                });
+              }}
+            >
+              <div className="flex gap-2 items-center">
+                {login.lobbyType === "all" ? (
+                  <FormattedMessage defaultMessage="All rooms" />
+                ) : (
+                  <FormattedMessage defaultMessage="Following" />
+                )}
+                <Icon name="chevron" className="-rotate-90" />
+              </div>
+            </PrimaryButton>
             <Link to="/new">
-              <PrimaryButton>
-                <FormattedMessage defaultMessage="New Room" />
-              </PrimaryButton>
+              <IconButton name="plus" className="bg-primary hover:bg-primary/80 rounded-full aspect-square" />
             </Link>
             <Avatar pubkey={login.pubkey} link={true} size={40} />
           </>

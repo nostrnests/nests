@@ -28,7 +28,7 @@ export default function Avatar({
       width={size ?? 20}
       height={size ?? 20}
       className={classNames(
-        `aspect-square rounded-full object-cover`,
+        `aspect-square rounded-full object-cover bg-foreground-2`,
         className,
         outline ? `outline outline-${outline}` : undefined,
       )}

@@ -8,7 +8,7 @@ export const PRESENCE_TIME = 60 * 2;
 export default function usePresence(link?: NostrLink) {
   const { signer, system } = useEventBuilder();
   const login = useLogin();
-  const hand = login.handMap.includes(link?.id ?? "");
+  const hand = login.handMap?.includes(link?.id ?? "");
 
   const sendPresence = useCallback(async () => {
     if (!signer || !link) return;

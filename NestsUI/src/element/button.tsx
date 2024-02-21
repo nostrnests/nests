@@ -15,7 +15,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         {...props}
         ref={ref}
         type="button"
-        className={classNames("py-2 px-3 relative font-semibold leading-7 select-none", className)}
+        className={classNames("py-2 px-3 relative font-semibold leading-5 select-none", className)}
         onClick={async (e) => {
           try {
             setLoading(true);

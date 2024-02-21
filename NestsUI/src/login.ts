@@ -1,5 +1,16 @@
 import { ExternalStore } from "@snort/shared";
-import { EventKind, EventSigner, Nip46Signer, Nip7Signer, NostrLink, NostrSystem, PrivateKeySigner, RelaySettings, RequestBuilder, parseRelaysFromKind } from "@snort/system";
+import {
+  EventKind,
+  EventSigner,
+  Nip46Signer,
+  Nip7Signer,
+  NostrLink,
+  NostrSystem,
+  PrivateKeySigner,
+  RelaySettings,
+  RequestBuilder,
+  parseRelaysFromKind,
+} from "@snort/system";
 import { useSyncExternalStore } from "react";
 import usePresence from "./hooks/usePresence";
 
@@ -14,10 +25,12 @@ export interface LoginData {
   signerRelay?: Array<string>;
 }
 export interface LoginLoaded {
+  update?: (fn: (s: LoginSession) => void) => void;
   signer?: EventSigner;
-  handMap: Array<string>;
-  follows: Array<[string, string]>;
-  relays: Record<string, RelaySettings>;
+  handMap?: Array<string>;
+  follows?: Array<[string, string]>;
+  relays?: Record<string, RelaySettings>;
+  lobbyType: "all" | "following";
 }
 export type LoginSession = LoginData & LoginLoaded;
 
@@ -74,12 +87,12 @@ class LoginStore extends ExternalStore<LoginSession> {
   }
 
   toggleHand(link: NostrLink) {
-    if (this.#session.handMap.includes(link.id)) {
+    if (this.#session.handMap?.includes(link.id)) {
       this.#session.handMap = this.#session.handMap.filter((a) => a !== link.id);
       this.notifyChange();
       return false;
     } else {
-      this.#session.handMap.push(link.id);
+      this.#session.handMap?.push(link.id);
       this.notifyChange();
       return true;
     }
@@ -90,13 +103,11 @@ class LoginStore extends ExternalStore<LoginSession> {
     this.notifyChange();
   }
 
-  static #defaultSession() {
+  static #defaultSession(): LoginSession {
     return {
       type: "none",
-      handMap: [],
-      follows: [],
-      relays: {},
-    } as LoginSession;
+      lobbyType: "all",
+    };
   }
 
   logout() {
@@ -105,7 +116,11 @@ class LoginStore extends ExternalStore<LoginSession> {
   }
 
   takeSnapshot(): LoginSession {
-    return { ...this.#session };
+    const clone = { ...this.#session };
+    clone.update = (fn) => {
+      this.updateSession(fn);
+    };
+    return clone;
   }
 }
 
@@ -169,13 +184,13 @@ export function loginHook(system: NostrSystem) {
       if (evs.length > 0) {
         const fromEvent = evs.reduce((acc, v) => (acc.created_at > v.created_at ? acc : v), evs[0]);
         const relays = parseRelaysFromKind(fromEvent);
-        LoginSystem.updateSession(s => {
-          s.follows = fromEvent.tags.filter(a => a[0] === "p") as Array<[string, string]>;
-          s.relays = relays ? Object.fromEntries(relays?.map(a => [a.url, a.settings])) : {};
+        LoginSystem.updateSession((s) => {
+          s.follows = fromEvent.tags.filter((a) => a[0] === "p") as Array<[string, string]>;
+          s.relays = relays ? Object.fromEntries(relays?.map((a) => [a.url, a.settings])) : undefined;
         });
       }
     }
-  }
+  };
 
   LoginSystem.on("change", () => {
     loadSessionData().catch(console.error);

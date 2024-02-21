@@ -5,16 +5,16 @@ import Icon from "../icon";
 import Avatar from "./avatar";
 import { unixNow } from "@snort/shared";
 import { useUserPresence } from "../hooks/useRoomPresence";
-import { NostrEvent, NostrLink } from "@snort/system";
+import { NostrEvent } from "@snort/system";
 import ProfileCard from "./profile-card";
 import useHoverMenu from "../hooks/useHoverMenu";
 import { useUserRoomReactions } from "../hooks/useRoomReactions";
-import { useEffect, useState } from "react";
-import ZapFlow from "./zap-modal";
+import { useEffect } from "react";
 import { useNostrRoom } from "../hooks/nostr-room-context";
 import { FormattedMessage } from "react-intl";
 import DisplayName from "./display-name";
 import VuBar from "./vu";
+import ZapButton from "./zap-button";
 
 export default function NostrParticipants({ event }: { event: NostrEvent }) {
   const participants = useParticipants({
@@ -54,7 +54,6 @@ function NostrParticipant({ p, event }: { p: RemoteParticipant | LocalParticipan
   const isGuest = p.identity.startsWith("guest-");
   const isMe = p instanceof LocalParticipant;
   const profile = useUserProfile(isGuest ? undefined : p.identity);
-  const [zapping, setZapping] = useState(false);
   const presence = useUserPresence(p.identity);
   const reactions = useUserRoomReactions(p.identity);
   const permissions = useParticipantPermissions({
@@ -110,23 +109,6 @@ function NostrParticipant({ p, event }: { p: RemoteParticipant | LocalParticipan
 
   return (
     <>
-      {zapping && (
-        <ZapFlow
-          onClose={() => setZapping(false)}
-          targets={[
-            {
-              type: "pubkey",
-              weight: 1,
-              value: p.identity,
-              zap: {
-                pubkey: p.identity,
-                anon: false,
-                event: NostrLink.fromEvent(event),
-              },
-            },
-          ]}
-        />
-      )}
       <div className="flex items-center flex-col gap-2" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
         <div className="relative">
           {reaction && (
@@ -146,8 +128,8 @@ function NostrParticipant({ p, event }: { p: RemoteParticipant | LocalParticipan
           )}
           {(profile?.lud16 || profile?.lud06) && (
             <div className="absolute w-[72px] h-[72px] rotate-[80deg]">
-              <div className="text-primary inline-block mt-[-8px] ml-[-8px]">
-                <Icon name="zap" className="rotate-[-80deg]" size={32} onClick={() => setZapping(true)} />
+              <div className="inline-block mt-[-8px] ml-[-8px]">
+                <ZapButton pubkey={p.identity} iconClass="rotate-[-80deg]" iconSize={32} event={event} />
               </div>
             </div>
           )}

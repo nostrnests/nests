@@ -15,19 +15,29 @@ export default function useFollowing() {
   return {
     follows: login.follows,
     isFollowing: (pk: string) => {
-      return login.follows.some((a) => a[0] === "p" && a[1] === pk);
+      return login.follows?.some((a) => a[0] === "p" && a[1] === pk) ?? false;
     },
     follow: async (pk: string) => {
-      const ev = await updateFollows([...login.follows, ["p", pk]]);
+      if (!login.follows) return;
+      const newList = [...login.follows, ["p", pk]] as Array<[string, string]>;
+      const ev = await updateFollows(newList);
       if (ev) {
         await system.BroadcastEvent(ev);
       }
+      login.update?.((s) => {
+        s.follows = newList;
+      });
     },
     unfollow: async (pk: string) => {
-      const ev = await updateFollows([...login.follows.filter((a) => a[1] !== pk)]);
+      if (!login.follows) return;
+      const newList = [...login.follows.filter((a) => a[1] !== pk)] as Array<[string, string]>;
+      const ev = await updateFollows(newList);
       if (ev) {
         await system.BroadcastEvent(ev);
       }
+      login.update?.((s) => {
+        s.follows = newList;
+      });
     },
   };
 }

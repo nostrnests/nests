@@ -1,295 +1,294 @@
 {
   "+0zv6g": {
-    "defaultMessage": "Image"
+    "defaultMessage": "รูปภาพ"
   },
   "+t+11k": {
-    "defaultMessage": "Close Room"
+    "defaultMessage": "ปิดห้อง"
   },
   "/8ACb2": {
-    "defaultMessage": "Add to stage"
+    "defaultMessage": "เชิญขึ้นข้างบน"
   },
   "/jswUE": {
-    "defaultMessage": "Leave Stage"
+    "defaultMessage": "ลงจากเวที"
   },
   "01iNut": {
-    "defaultMessage": "Nostr address does not belong to you"
+    "defaultMessage": "Nostr address นี้ไม่ใช่ของคุณ"
   },
   "0vL5u1": {
-    "defaultMessage": "Create an account"
+    "defaultMessage": "สร้างบัญชี"
   },
   "1FTExG": {
     "defaultMessage": "<lg>{n}</lg> <sm>Sats</sm>"
   },
   "1t2eph": {
-    "defaultMessage": "Remove admin"
+    "defaultMessage": "ลบผู้ดูแล"
   },
   "2/2yg+": {
-    "defaultMessage": "Add"
+    "defaultMessage": "เพิ่ม"
   },
   "2jp98l": {
-    "defaultMessage": "Custom amount",
+    "defaultMessage": "เปลี่ยนจำนวนที่จะแซ่บ",
     "description": "Custom amount for zaps"
   },
   "3s2cxm": {
-    "defaultMessage": "Lobby"
+    "defaultMessage": "ห้อง"
   },
   "47FYwb": {
-    "defaultMessage": "Cancel"
+    "defaultMessage": "ยกเลิก"
   },
   "5q3qC0": {
-    "defaultMessage": "Download"
+    "defaultMessage": "ดาวน์โหลด"
   },
   "5vMmmR": {
-    "defaultMessage": "Usernames are not unique on Nostr. The nostr address is your unique human-readable address that is unique to you upon registration."
+    "defaultMessage": "ในเครือข่าย Nostr ชื่อผู้ใช้ไม่ได้กำหนดความเป็นตัวตนเหมือนกับแพลตฟอร์มอื่น ๆ สิ่งที่บ่งบอกตัวตนที่แท้จริงและไม่ซ้ำใครบน Nostr ก็คือ \"nostr address\""
   },
   "6jRTzo": {
-    "defaultMessage": "Not a valid nostr address"
+    "defaultMessage": "Nostr address ไม่ถูกต้อง"
   },
   "6sGucA": {
-    "defaultMessage": "New Room"
+    "defaultMessage": "สร้างห้องใหม่"
   },
   "6xQg6j": {
-    "defaultMessage": "Ban user"
+    "defaultMessage": "แบนผู้ใช้"
   },
   "7vwVDQ": {
-    "defaultMessage": "Nostr address not found"
+    "defaultMessage": "ไม่พบ Nostr address นี้"
   },
   "9Xmefb": {
-    "defaultMessage": "Short description about the room",
+    "defaultMessage": "รายละเอียดของห้อง",
     "description": "Placeholder text for room description"
   },
   "9gg+Ph": {
-    "defaultMessage": "Insert cool name here",
+    "defaultMessage": "ตั้งชื่อห้องเฟี้ยวๆตรงนี้เรยฮับ",
     "description": "Placeholder text for room name"
   },
   "9pMqYs": {
-    "defaultMessage": "Nostr Address"
+    "defaultMessage": "Nostr address"
   },
   "AGHEaD": {
-    "defaultMessage": "No Recordings"
+    "defaultMessage": "ไม่มีการบันทึก"
   },
   "AyGauy": {
-    "defaultMessage": "Login"
+    "defaultMessage": "ล็อคอิน"
   },
   "B5pZ3p": {
-    "defaultMessage": "Share Room"
+    "defaultMessage": "แชร์ห้องนี้"
   },
   "C81/uG": {
-    "defaultMessage": "Logout"
+    "defaultMessage": "ลงชื่อออก"
   },
   "CE79Az": {
-    "defaultMessage": "There are no active rooms yet."
+    "defaultMessage": "ยังไม่มีห้องที่ active"
   },
   "D5Li4U": {
-    "defaultMessage": "Start a new room"
+    "defaultMessage": "สร้างห้องใหม่"
   },
   "G+OGl/": {
-    "defaultMessage": "Broadcast to Nostr"
+    "defaultMessage": "โพสต์ลง Nostr"
   },
   "G/yZLu": {
-    "defaultMessage": "Remove"
+    "defaultMessage": "ลบออก"
   },
   "GSye7T": {
-    "defaultMessage": "Lightning Address"
+    "defaultMessage": "บัญชี Lightning"
   },
   "GcozGF": {
-    "defaultMessage": "Invalid lightning address"
+    "defaultMessage": "บัญชี Lightning ไม่ถูกต้อง"
   },
   "H5DrhC": {
-    "defaultMessage": "{sender} zapped {receiver} {amount} sats"
+    "defaultMessage": "{sender} ได้แซ่บ {receiver} {amount} sats"
   },
   "HAlOn1": {
-    "defaultMessage": "Name"
+    "defaultMessage": "ชื่อ"
   },
   "HSEDrc": {
-    "defaultMessage": "If you'd like to broadcast only to specific relays, you can add those here."
+    "defaultMessage": "หากต้องการ Broadcast ผ่านแค่บาง Relay สามารถใส่ชื่อ Relay ตรงนี้ได้"
   },
   "IbE9GF": {
-    "defaultMessage": "Scheduled Time (optional)"
+    "defaultMessage": "ตั้งเวลาสร้างห้อง (ไม่จำเป็น)"
   },
   "Iul/hR": {
-    "defaultMessage": "Active Rooms"
+    "defaultMessage": "ห้องที่กำลัง Active อยู่"
   },
   "JVshdm": {
-    "defaultMessage": "Make admin"
+    "defaultMessage": "สร้างดูแล"
   },
   "JkLHGw": {
-    "defaultMessage": "Website"
+    "defaultMessage": "เว็บไซต์"
   },
   "Jkxa7F": {
-    "defaultMessage": "View Profile"
+    "defaultMessage": "ดู Profile"
   },
   "Lv0zJu": {
-    "defaultMessage": "Details"
+    "defaultMessage": "รายละเอียด"
   },
   "MKDHEa": {
-    "defaultMessage": "Join Room"
+    "defaultMessage": "เข้าห้อง"
   },
   "MU0ket": {
-    "defaultMessage": "Speaker"
+    "defaultMessage": "ผู้บรรยาย"
   },
   "OKhRC6": {
-    "defaultMessage": "Share"
+    "defaultMessage": "แชร์"
   },
   "Og+vtv": {
-    "defaultMessage": "Continue as Guest"
+    "defaultMessage": "แอบฟังไปก่อน"
   },
   "P6PLpi": {
-    "defaultMessage": "Join"
+    "defaultMessage": "เข้าร่วม"
   },
   "P8QaSQ": {
-    "defaultMessage": "Copy URL"
+    "defaultMessage": "คัดลอก URL"
   },
   "QQkNag": {
-    "defaultMessage": "Hosted by {name}"
+    "defaultMessage": "ดำเนินรายการโดย {name}"
   },
   "QtFGiO": {
-    "defaultMessage": "Host"
+    "defaultMessage": "เจ้าของห้องตัวจริง"
   },
   "RXjNVY": {
-    "defaultMessage": "Create a nostr account"
+    "defaultMessage": "สร้างบัญชี Nostr ใหม่"
   },
   "SFuk1v": {
-    "defaultMessage": "Permissions"
+    "defaultMessage": "สิทธิ์"
   },
   "SQJto2": {
-    "defaultMessage": "Sign in"
+    "defaultMessage": "ลงชื่อเข้าใช้"
   },
   "ST6+Xe": {
-    "defaultMessage": "Guest (me)"
+    "defaultMessage": "มาแอบฟังคร้าบ (คุณ)"
   },
   "Sl9epY": {
-    "defaultMessage": "Remove from stage"
+    "defaultMessage": "เตะมันลงไป !!!"
   },
   "T4lB1e": {
-    "defaultMessage": "Leave stage"
+    "defaultMessage": "ออกจากเวที"
   },
   "U/VWC2": {
-    "defaultMessage": "Stream Audio"
+    "defaultMessage": "สตีมเสียง"
   },
   "Uo/DWG": {
-    "defaultMessage": "About too long"
+    "defaultMessage": "ยาวไปแล้วโว้ยย"
   },
   "VvvK+z": {
     "defaultMessage": "Sign in with extension"
   },
   "VzzYJk": {
-    "defaultMessage": "Create"
+    "defaultMessage": "สร้าง"
   },
   "WTrOy3": {
-    "defaultMessage": "Chat"
+    "defaultMessage": "แชท"
   },
   "aUuFuf": {
-    "defaultMessage": "\"{room_name}\" nest is live! Come join 🤗 {url}"
+    "defaultMessage": "{room_name} รังนกเปิดแว้ว! ตามมาจิ 🤗 {url}"
   },
   "btNUvb": {
-    "defaultMessage": "Room name"
+    "defaultMessage": "ชื่อห้อง"
   },
   "cXAlMR": {
-    "defaultMessage": "Scheduled"
+    "defaultMessage": "ตั้งเวลา"
   },
   "cyR7Kh": {
-    "defaultMessage": "Back"
+    "defaultMessage": "ย้อนกลับ"
   },
   "dM9S71": {
-    "defaultMessage": "Schedule a room"
+    "defaultMessage": "ตั้งเวลาสร้างห้อง"
   },
   "e7PVtu": {
-    "defaultMessage": "Banner Color or Image"
+    "defaultMessage": "เลือกสีหรือรูปภาพ"
   },
   "fBI91o": {
-    "defaultMessage": "Zap"
+    "defaultMessage": "แซ่บ"
   },
   "fZupOJ": {
-    "defaultMessage": "Comment",
+    "defaultMessage": "คอมเม้น",
     "description": "Placeholder for writing comment"
   },
   "fzgxCV": {
-    "defaultMessage": "Please login to chat"
+    "defaultMessage": "ไม่ให้แชทหรอก🤪 ไป login มาก่อนเด้อ"
   },
   "g5pX+a": {
-    "defaultMessage": "About"
+    "defaultMessage": "เกี่ยวกับ"
   },
   "huqKGl": {
-    "defaultMessage": "Create account"
+    "defaultMessage": "สร้างบัญชี"
   },
   "hvEgD/": {
-    "defaultMessage": "Room Recordings"
+    "defaultMessage": "ประวัติการบันทึก"
   },
   "ieGrWo": {
-    "defaultMessage": "Follow"
+    "defaultMessage": "ติดตาม"
   },
   "itPgxd": {
-    "defaultMessage": "Profile"
+    "defaultMessage": "โปรไฟล์"
   },
   "izWS4J": {
-    "defaultMessage": "Unfollow"
+    "defaultMessage": "เลิกติดตาม"
   },
   "jvo0vs": {
-    "defaultMessage": "Save"
+    "defaultMessage": "บันทึก"
   },
   "kEseyR": {
-    "defaultMessage": "Send",
+    "defaultMessage": "ส่ง",
     "description": "Send message button text"
   },
   "kc5EOy": {
-    "defaultMessage": "Username is too long"
+    "defaultMessage": "ชื่อของคุณยาวไป"
   },
   "mBMl8U": {
-    "defaultMessage": "Room Description (Optional 140 chars)"
+    "defaultMessage": "คำอธิบายห้อง(แค่ 140 อักษรพอนะ)"
   },
   "mBUsTH": {
-    "defaultMessage": "Select image",
+    "defaultMessage": "เลือกรูปภาพ",
     "description": "Select an image to upload as room banner image"
   },
   "oM1Qdm": {
-    "defaultMessage": "Speakers"
+    "defaultMessage": "ผู้พูด"
   },
   "omWbg5": {
-    "defaultMessage": "Custom Relays (Optional)"
+    "defaultMessage": "รีเลย์แบบกำหนดเอง"
   },
   "pXFAd/": {
-    "defaultMessage": "Stop Recording"
+    "defaultMessage": "หยุดการบันทึก"
   },
   "st17aP": {
-    "defaultMessage": "There are no scheduled rooms right now."
+    "defaultMessage": "ขณะนี้ไม่มีห้องไหนจองเวลา"
   },
   "tarxmH": {
-    "defaultMessage": "Address is not a nostr bunker"
+    "defaultMessage": "nostr bunker ไม่ถูกต้อง"
   },
   "uCk8r+": {
-    "defaultMessage": "Already have an account?"
+    "defaultMessage": "มีบัญชี Nostr อยู่แล้วใช่มั้ย ?"
   },
   "uMhpKe": {
-    "defaultMessage": "Color"
+    "defaultMessage": "สี"
   },
   "wEQDC6": {
-    "defaultMessage": "Edit"
+    "defaultMessage": "แก้ไข"
   },
   "wTwfnv": {
-    "defaultMessage": "Invalid nostr address"
+    "defaultMessage": "Nostr address ไม่ถูกต้อง"
   },
   "x82IOl": {
-    "defaultMessage": "Mute"
+    "defaultMessage": "ปิดเสียง"
   },
   "xbQgN4": {
-    "defaultMessage": "Start Recording"
+    "defaultMessage": "เริ่มการบันทึก"
   },
   "yAaNQA": {
-    "defaultMessage": "Admins"
+    "defaultMessage": "ผู้ดูแล"
   },
   "zA95/o": {
-    "defaultMessage": "Moderator"
+    "defaultMessage": "ผู้ดูแล"
   },
   "zCUH3/": {
-    "defaultMessage": "Room Settings"
+    "defaultMessage": "ตั้งค่าห้อง"
   },
   "zF7Cth": {
-    "defaultMessage": "Guest"
+    "defaultMessage": "ผู้มาเยือน"
   },
   "zHj+Ut": {
-    "defaultMessage": "Time",
+    "defaultMessage": "เวลา",
     "description": "Date time input placeholder text"
   }
 }
-
