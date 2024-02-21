@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { PrimaryButton } from "./button";
 import { useState } from "react";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import { Nip46Signer } from "@snort/system";
 import { fetchNostrAddress } from "@snort/shared";
 import { loginWith } from "../login";
@@ -11,6 +11,7 @@ export default function SignUp() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const navigate = useNavigate();
+  const { formatMessage } = useIntl();
 
   async function createAccount() {
     const nip5 = await fetchNostrAddress("_", Bunker);
@@ -39,10 +40,10 @@ export default function SignUp() {
         <FormattedMessage defaultMessage="Create an account" />
       </h1>
       <div className="flex items-center bg-foreground-2 rounded-xl">
-        <input type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} />
+        <input type="text" placeholder={formatMessage({ defaultMessage: "Username" })} value={username} onChange={(e) => setUsername(e.target.value)} />
         <div className="opacity-50 px-2">@{Bunker}</div>
       </div>
-      <input type="text" placeholder="Recovery email" value={email} onChange={(e) => setEmail(e.target.value)} />
+      <input type="text" placeholder={formatMessage({ defaultMessage: "Recovery email" })} value={email} onChange={(e) => setEmail(e.target.value)} />
       <PrimaryButton onClick={createAccount}>
         <FormattedMessage defaultMessage="Create account" />
       </PrimaryButton>
