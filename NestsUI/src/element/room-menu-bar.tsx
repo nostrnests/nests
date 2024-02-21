@@ -2,12 +2,10 @@ import { NostrLink } from "@snort/system";
 import { ReactNode, useEffect, useRef, useState } from "react";
 import IconButton from "./icon-button";
 import { useLocalParticipant } from "@livekit/components-react";
-import { useNavigate } from "react-router-dom";
 import { useLogin } from "../login";
 import { createPortal } from "react-dom";
 import classNames from "classnames";
 import Icon from "../icon";
-import { hexToBech32 } from "@snort/shared";
 import { useIsAdmin } from "../hooks/useIsAdmin";
 import { useNestsApi } from "../hooks/useNestsApi";
 import { useNostrRoom } from "../hooks/nostr-room-context";
@@ -17,6 +15,7 @@ import dayjs from "dayjs";
 import Async from "./async";
 import { FormattedMessage } from "react-intl";
 import ShareModal from "./share-modal";
+import { ProfileEditor } from "./profile-editor";
 
 export function RoomOptionsButton({ link }: { link: NostrLink }) {
   const [open, setOpen] = useState(false);
@@ -26,7 +25,7 @@ export function RoomOptionsButton({ link }: { link: NostrLink }) {
   const [recordings, setRecordings] = useState<Array<RoomRecording>>();
   const [share, setShare] = useState(false);
   const [w, setW] = useState(230);
-  const navigate = useNavigate();
+  const [profileEdit, setProfileEdit] = useState(false);
   const isAdmin = useIsAdmin();
   const localParticipant = useLocalParticipant();
   const api = useNestsApi();
@@ -80,7 +79,8 @@ export function RoomOptionsButton({ link }: { link: NostrLink }) {
           >
             {login.pubkey &&
               menuItem("person", <FormattedMessage defaultMessage="Profile" />, () => {
-                navigate(`/${hexToBech32("npub", login.pubkey)}`);
+                setProfileEdit(true);
+                setOpen(false);
               })}
             {menuItem("share", <FormattedMessage defaultMessage="Share" />, () => {
               setShare(true);
@@ -92,7 +92,7 @@ export function RoomOptionsButton({ link }: { link: NostrLink }) {
                 await api.updatePermissions(link.id, login.pubkey!, { can_publish: false });
                 setOpen(false);
               })}
-            {isAdmin && menuItem("audio", <FormattedMessage defaultMessage="Stream Audio" />, () => {})}
+            {isAdmin && menuItem("audio", <FormattedMessage defaultMessage="Stream Audio" />, () => { })}
             {isAdmin &&
               roomContext.info?.recording === false &&
               menuItem("rec", <FormattedMessage defaultMessage="Start Recording" />, async () => {
@@ -167,6 +167,9 @@ export function RoomOptionsButton({ link }: { link: NostrLink }) {
           <ShareModal event={roomContext.event} />
         </Modal>
       )}
+      {profileEdit && <Modal id="profile-editor" onClose={() => setProfileEdit(false)}>
+        <ProfileEditor onClose={() => setProfileEdit(false)} />
+      </Modal>}
     </>
   );
 }

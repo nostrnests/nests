@@ -10,3 +10,9 @@ export function updateRelays(relays: Array<string>) {
   console.debug("Disconnecting relays for room", removing);
   removing.forEach((a) => snortSystem.DisconnectRelay(a));
 }
+
+
+export function debounce(time: number, fn: () => void): () => void {
+  const t = setTimeout(fn, time);
+  return () => clearTimeout(t);
+}
