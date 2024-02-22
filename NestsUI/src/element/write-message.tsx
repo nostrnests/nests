@@ -20,6 +20,7 @@ export default function WriteMessage({ link, className }: { link: NostrLink; cla
   const [sending, setSending] = useState(false);
   const { system, signer } = useEventBuilder();
   const { formatMessage } = useIntl();
+  const participant = useLocalParticipant();
 
   async function sendMessage() {
     if (!signer || msg.length === 0) return;
@@ -34,6 +35,7 @@ export default function WriteMessage({ link, className }: { link: NostrLink; cla
   }
 
   const mainClasses = "flex bg-foreground-2 rounded-full py-1 px-2 pl-4 items-center";
+  if (participant.localParticipant.permissions?.recorder) return;
   if (login.type === "none")
     return (
       <div className={classNames(mainClasses, className, "justify-between")}>

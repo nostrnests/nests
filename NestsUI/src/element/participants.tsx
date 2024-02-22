@@ -106,7 +106,9 @@ function NostrParticipant({ p, event }: { p: RemoteParticipant | LocalParticipan
       );
     }
   }
-
+  if (p.permissions?.recorder) {
+    return;
+  }
   return (
     <>
       <div className="flex items-center flex-col gap-2" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>

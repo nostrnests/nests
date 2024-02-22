@@ -35,7 +35,7 @@ public class NestsController : Controller
     /// <returns>Template nostr event with tags for streaming url and d-tag</returns>
     [HttpGet]
     [Authorize(AuthenticationSchemes = NostrAuth.Scheme)]
-    public async Task<IActionResult> CreateNewRoom()
+    public async Task<IActionResult> CreateNewRoom([FromQuery] string[] relay)
     {
         var pubkey = HttpContext.GetPubKey();
         if (string.IsNullOrEmpty(pubkey)) return Unauthorized();
@@ -58,9 +58,27 @@ public class NestsController : Controller
         _db.Participants.Add(user);
         await _db.SaveChangesAsync();
 
+        var naddr = new NostrAddressIdentifier(room.Id.ToString(), pubkey, relay, NostrKind.LiveEvent);
         var liveKitReq = new CreateRoomRequest
         {
-            Name = room.Id.ToString()
+            Name = room.Id.ToString(),
+            Egress = new()
+            {
+                Room = new()
+                {
+                    RoomName = room.Id.ToString(),
+                    CustomBaseUrl = new Uri(_config.PublicUrl, $"/{naddr.ToBech32()}").ToString(),
+                    SegmentOutputs =
+                    {
+                        new SegmentedFileOutput()
+                        {
+                            Protocol = SegmentedFileProtocol.HlsProtocol,
+                            FilenamePrefix = $"{_config.EgressRecordingPath!}/live/{room.Id}/seg",
+                            LivePlaylistName = "live.m3u8"
+                        }
+                    }
+                }
+            }
         };
 
         await _liveKit.CreateRoom(liveKitReq);
@@ -79,7 +97,7 @@ public class NestsController : Controller
             RoomId = room.Id,
             Endpoints =
             {
-                new Uri(_config.EgressS3.Endpoint, $"{room.Id}/live.m3u8"),
+                new Uri(_config.PublicUrl, $"api/v1/live/{room.Id}/live.m3u8"),
                 new Uri(
                     $"{(_config.PublicUrl.Scheme == "http" ? "ws" : "wss")}+livekit://{_config.PublicUrl.Host}:{_config.PublicUrl.Port}")
             },

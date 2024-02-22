@@ -55,9 +55,9 @@ export default function NewRoom() {
   async function createRoom() {
     if (!login.signer) return;
     const api = new NestsApi(ApiUrl, login.signer);
-    const room = await api.createRoom();
-
+    const room = await api.createRoom(relays);
     const eb = buildEvent(room.roomId);
+
     room.endpoints.forEach((e) => eb.tag(["streaming", e]));
 
     const ev = await eb.buildAndSign(login.signer);

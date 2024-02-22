@@ -140,5 +140,5 @@ body {
 }
 
 .overflow-wrap {
-  overflow-wrap: break-word;
+  overflow-wrap: anywhere;
 }

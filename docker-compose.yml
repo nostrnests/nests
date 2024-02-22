@@ -1,5 +1,4 @@
 volumes:
-  minio:
   postgres:
   strfry:
   redis:
@@ -12,7 +11,6 @@ services:
       - ./compose-config/livekit.yaml:/etc/livekit.yaml
     depends_on: 
       - redis
-      - minio
     ports:
       - "7880:7880"
   livekit-egress:
@@ -24,11 +22,10 @@ services:
       - "7980:7980"
     volumes:
       - ./compose-config/egress.yaml:/etc/egress.yaml
-      - ./recordings:/recordings
+      - ./recordings:/data/recordings
     depends_on:
       - livekit
       - redis
-      - minio
   redis:
     image: redis:latest
     restart: unless-stopped
@@ -49,6 +46,8 @@ services:
   strfry:
     image: dockurr/strfry
     restart: unless-stopped
+    profiles:
+      - "dev"
     ports:
       - "7777:7777"
     volumes:

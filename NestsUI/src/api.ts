@@ -22,8 +22,12 @@ export class NestsApi {
     readonly signer?: EventSigner,
   ) {}
 
-  async createRoom(): Promise<CreateRoomResponse> {
-    return await this.#fetch<CreateRoomResponse>("GET", true, "/api/v1/nests");
+  async createRoom(relays: Array<string>): Promise<CreateRoomResponse> {
+    return await this.#fetch<CreateRoomResponse>(
+      "GET",
+      true,
+      `/api/v1/nests?${relays.map((a) => `relay=${encodeURIComponent(a)}`).join("&")}`,
+    );
   }
 
   async joinRoom(room: string) {

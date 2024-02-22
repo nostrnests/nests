@@ -79,24 +79,40 @@ export function ProfilePageContent({ link, flyout }: { link: NostrLink; flyout: 
           </Button>
         </div>
       </div>
-      {followedBy && (followedBy?.size ?? 0) > 0 && <div className="flex items-center gap-2 text-sm">
-        <AvatarStack>
-          {[...followedBy].slice(0, 3).map(a => <Avatar pubkey={a} link={false} />)}
-        </AvatarStack>
-        <div>
-          <FormattedMessage defaultMessage="Followed by {names}" values={{
-            names: <>
-              {[...followedBy].slice(0, 3).map((a, i) => <>
-                <Mention link={new NostrLink(NostrPrefix.PublicKey, a)} />
-                {i < Math.min(2, followedBy.size - 1) && ","}{" "}
-              </>)}
-            </>
-          }} />
-          {followedBy.size > 3 && <FormattedMessage defaultMessage=" & {n} others" values={{
-            n: followedBy.size - 3
-          }} />}
+      {followedBy && (followedBy?.size ?? 0) > 0 && (
+        <div className="flex items-center gap-2 text-sm">
+          <AvatarStack>
+            {[...followedBy].slice(0, 3).map((a) => (
+              <Avatar pubkey={a} link={false} />
+            ))}
+          </AvatarStack>
+          <div>
+            <FormattedMessage
+              defaultMessage="Followed by {names}"
+              values={{
+                names: (
+                  <>
+                    {[...followedBy].slice(0, 3).map((a, i) => (
+                      <>
+                        <Mention link={new NostrLink(NostrPrefix.PublicKey, a)} />
+                        {i < Math.min(2, followedBy.size - 1) && ","}{" "}
+                      </>
+                    ))}
+                  </>
+                ),
+              }}
+            />
+            {followedBy.size > 3 && (
+              <FormattedMessage
+                defaultMessage=" & {n} others"
+                values={{
+                  n: followedBy.size - 3,
+                }}
+              />
+            )}
+          </div>
         </div>
-      </div>}
+      )}
       {meta?.isNostrAddressValid && <p className="text-highlight text-sm">{meta.nip05}</p>}
       <p className="text-sm">{meta?.about}</p>
       <hr />

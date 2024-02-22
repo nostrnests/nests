@@ -29,7 +29,9 @@ dayjs.extend(relativeTime);
 async function routeInit() {
   await wasmInit();
   const session = loginHook(snortSystem);
-  const bufferList = session.pubkey ? [session.pubkey, ...(session.follows?.filter(a => a[0] === "p").map(a => a[1]) ?? [])] : undefined;
+  const bufferList = session.pubkey
+    ? [session.pubkey, ...(session.follows?.filter((a) => a[0] === "p").map((a) => a[1]) ?? [])]
+    : undefined;
   await snortSystem.Init(bufferList);
 }
 

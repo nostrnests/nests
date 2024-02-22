@@ -6,7 +6,7 @@ Following NIP-53 using `kind: 30312`
 
 ```json
 {
-  "kind": 30312,
+  "kind": 30311,
   "tags": [
     ["d", "<unique identifier>"],
     ["title", "<name of the event>"],
@@ -14,16 +14,9 @@ Following NIP-53 using `kind: 30312`
     ["image", "<preview image url>"],
     ["t", "hashtag"],
     ["streaming", "<url>"],
-    ["recording", "<url>"], // used to place the edited video once the activity is over
     ["starts", "<unix timestamp in seconds>"],
     ["ends", "<unix timestamp in seconds>"],
     ["status", "<planned, live, ended>"],
-    ["current_participants", "<number>"],
-    ["total_participants", "<number>"],
-    ["p", "aaaa", "wss://provider1.com/", "host"],
-    ["p", "bbbb", "wss://provider2.com/nostr", "speaker"],
-    ["p", "cccc", "wss://provider3.com/nostr", "speaker"],
-    ["p", "dddd", "wss://provider4.com/nostr", "speaker"],
     ["relays", "wss://one.com", "wss://two.com", ...],
     ["service", "https://nostrnests.com/api/v1/nests"],
   ],
@@ -49,7 +42,7 @@ Sames as NIP-53 `kind: 1311`, there is no reason to have another kind here as th
 {
   "kind": 1311,
   "tags": [
-    ["a", "30311:<Community event author pubkey>:<d-identifier of the community>", "<Optional relay url>", "root"],
+    ["a", "30311:<Community event author pubkey>:<d-identifier of the community>", "<Optional relay url>", "root"]
   ],
   "content": "Zaps to live streams is beautiful.",
   ...
@@ -59,7 +52,9 @@ Sames as NIP-53 `kind: 1311`, there is no reason to have another kind here as th
 ## Room Presence
 
 New `kind: 10312` provides an event which signals presence of a listener. 
-An `expiration` tag SHOULD be used to allow the natural cleanup of these events.
+
+The presence event SHOULD be updated at regular intervals and clients SHOULD filter presence events older than 
+a given time window.
 
 **This kind `10312` is a regular replaceable event, as such presence can only be indicated in one room at a time.**
 
@@ -68,7 +63,7 @@ An `expiration` tag SHOULD be used to allow the natural cleanup of these events.
   "kind": 10312,
   "tags": [
     ["a" , "<room-a-tag>", "<relay-hint>", "root"],
-    ["expiration", "<unix-timestamp>"]
+    ["hand", "1"] // hand raised flag
   ]
 }
 ```

@@ -4,14 +4,14 @@
 
 import { EventKind } from "@snort/system";
 
-//export const ApiUrl = "http://localhost:5070";
+//export const ApiUrl = "http://host.docker.internal:5070";
 export const ApiUrl = "https://nests.v0l.io";
 
 /**
  * Default relays to connect and publish to
  */
 export const DefaultRelays = ["wss://relay.snort.social", "wss://nos.lol", "wss://relay.damus.io"];
-//export const DefaultRelays = ["ws://localhost:7777"]
+//export const DefaultRelays = ["ws://host.docker.internal:7777"]
 
 /**
  * Color palette colors for room cards
@@ -33,7 +33,7 @@ export const ColorPalette = [
 /**
  * Nests room event kind
  */
-export const ROOM_KIND = 30_312 as EventKind;
+export const ROOM_KIND = 30_311 as EventKind;
 
 /**
  * Room presence event kind

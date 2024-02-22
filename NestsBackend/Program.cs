@@ -2,6 +2,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using Nests.Database;
 using NestsBackend.Services;
 using Newtonsoft.Json;
@@ -25,10 +26,13 @@ internal static class Program
         builder.Services.AddSingleton(config);
         builder.Services.AddTransient<LiveKitApi>();
         builder.Services.AddTransient<LiveKitJwt>();
-        
-        
+
+
         JsonConvert.DefaultSettings = () => NostrSerializer.Settings;
-        builder.Services.AddControllers().AddNewtonsoftJson(o => { o.SerializerSettings.NullValueHandling = NullValueHandling.Ignore; });
+        builder.Services.AddControllers().AddNewtonsoftJson(o =>
+        {
+            o.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
+        });
 
         builder.Services.AddNestsDatabase(builder.Configuration);
         builder.Services.AddAuthentication(o => { o.AddScheme<NostrAuthHandler>(NostrAuth.Scheme, "Nostr Auth"); });
@@ -38,7 +42,7 @@ internal static class Program
             o.DefaultPolicy = new AuthorizationPolicy(new[]
             {
                 new ClaimsAuthorizationRequirement(ClaimTypes.Name, null)
-            }, new[] {NostrAuth.Scheme});
+            }, new[] { NostrAuth.Scheme });
         });
 
         builder.Services.AddCors();
@@ -47,7 +51,7 @@ internal static class Program
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
         builder.Services.AddMetrics();
-
+        
         var app = builder.Build();
         using (var scope = app.Services.CreateScope())
         {
@@ -68,7 +72,7 @@ internal static class Program
         app.UseHttpMetrics();
         app.UseAuthentication();
         app.UseAuthorization();
-
+        
         app.MapControllers();
         app.MapMetrics();
 

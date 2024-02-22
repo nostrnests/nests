@@ -28,4 +28,4 @@ keys:
 webhook:
     api_key: APIA2zJFaMRctfZ
     urls:
-        - "http://10.100.2.136:5070/api/v1/livekit/webhook"
+        - "http://host.docker.internal:5070/api/v1/livekit/webhook"

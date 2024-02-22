@@ -1,4 +1,4 @@
-import { LiveKitRoom, RoomAudioRenderer, useRoomContext } from "@livekit/components-react";
+import { LiveKitRoom, RoomAudioRenderer, useLocalParticipant, useRoomContext } from "@livekit/components-react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import NostrParticipants from "../element/participants";
 import { NostrEvent, NostrLink, parseNostrLink } from "@snort/system";
@@ -32,8 +32,6 @@ const ChatWidth = 450 as const;
 
 export default function Room() {
   const location = useLocation();
-  const login = useLogin();
-  const [confirmGuest, setConfirmGuest] = useState(false);
   const room = location.state as RoomState | undefined;
   const link = useMemo(() => (room ? NostrLink.fromEvent(room.event) : undefined), [room]);
   const system = useContext(SnortContext);
@@ -72,21 +70,6 @@ export default function Room() {
           <ChatPannel link={link} />
         </div>
       </NostrRoomContextProvider>
-      {login.type === "none" && !confirmGuest && (
-        <Modal id="join-as-guest">
-          <div className="flex flex-col gap-4 items-center">
-            <h2>
-              <FormattedMessage defaultMessage="Join Room" />
-            </h2>
-            <SecondaryButton className="w-full" onClick={() => setConfirmGuest(true)}>
-              <FormattedMessage defaultMessage="Continue as Guest" />
-            </SecondaryButton>
-            <Link to="/sign-up" className="text-highlight">
-              <FormattedMessage defaultMessage="Create a nostr account" />
-            </Link>
-          </div>
-        </Modal>
-      )}
     </LiveKitRoom>
   );
 }
@@ -157,8 +140,12 @@ function JoinRoom() {
   const { id } = useParams();
   const api = useNestsApi();
   const link = parseNostrLink(id!)!;
+  if (link.relays) {
+    updateRelays(link.relays);
+  }
   const event = useEventFeed(link);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     if (event) {
@@ -181,12 +168,31 @@ function JoinRoom() {
       state: {
         event,
         token,
-      },
+      } as RoomState,
       replace: true,
     });
   }
 
-  if (!event) return;
+  useEffect(() => {
+    const query = new URLSearchParams(location.search);
+    const token = query.get("token");
+    if (token && event) {
+      navigate(location.pathname, {
+        state: {
+          event,
+          token,
+        },
+        replace: true,
+      });
+    }
+  }, [event, location, navigate]);
+
+  if (!event)
+    return (
+      <h1>
+        <FormattedMessage defaultMessage="Room not found" />
+      </h1>
+    );
   return (
     <div className="w-screen h-[100dvh] flex-col flex items-center justify-center gap-[10dvh]">
       <Logo />
@@ -202,10 +208,13 @@ function NostrRoomContextProvider({ event, children }: { event: NostrEvent; chil
   const [flyout, setFlyout] = useState<ReactNode>();
   const [volume, setVolume] = useState(1);
   const [roomInfo, setRoomInfo] = useState<RoomInfo>();
+  const [confirmGuest, setConfirmGuest] = useState(false);
+  const login = useLogin();
   const link = useMemo(() => NostrLink.fromEvent(event), [event]);
   const presence = useRoomPresence(link);
   const reactions = useRoomReactions(link);
   const room = useRoomContext();
+  const localParticipant = useLocalParticipant();
   const api = useNestsApi();
   useSendPresence(link);
 
@@ -217,11 +226,50 @@ function NostrRoomContextProvider({ event, children }: { event: NostrEvent; chil
         setRoomInfo(info);
       }
     };
+    const endRecording = () => console.log("END_RECORDING");
+    const handler2 = () => {
+      if (room.participants.size === 0) {
+        endRecording();
+      }
+    };
+
+    const isRecorder = room.localParticipant.permissions?.recorder;
     room.on("roomMetadataChanged", handler);
+    if (isRecorder) {
+      room.on("participantDisconnected", handler2);
+      room.on("disconnected", endRecording);
+      console.log("START_RECORDING");
+    }
     return () => {
       room.off("roomMetadataChanged", handler);
+      if (isRecorder) {
+        room.off("participantDisconnected", handler2);
+        room.off("disconnected", endRecording);
+      }
     };
   }, [room]);
+
+  useEffect(() => {
+    const endRecording = () => console.log("END_RECORDING");
+    const handler2 = () => {
+      if (room.participants.size === 0) {
+        endRecording();
+      }
+    };
+
+    const isRecorder = localParticipant.localParticipant.permissions?.recorder;
+    if (isRecorder) {
+      room.on("participantDisconnected", handler2);
+      room.on("disconnected", endRecording);
+      console.log("START_RECORDING");
+    }
+    return () => {
+      if (isRecorder) {
+        room.off("participantDisconnected", handler2);
+        room.off("disconnected", endRecording);
+      }
+    };
+  }, [room, localParticipant]);
 
   useEffect(() => {
     api.getRoomInfo(link.id).then((m) => {
@@ -248,6 +296,21 @@ function NostrRoomContextProvider({ event, children }: { event: NostrEvent; chil
         {flyout}
       </Flyout>
       {children}
+      {login.type === "none" && !room.localParticipant.permissions?.recorder && !confirmGuest && (
+        <Modal id="join-as-guest">
+          <div className="flex flex-col gap-4 items-center">
+            <h2>
+              <FormattedMessage defaultMessage="Join Room" />
+            </h2>
+            <SecondaryButton className="w-full" onClick={() => setConfirmGuest(true)}>
+              <FormattedMessage defaultMessage="Continue as Guest" />
+            </SecondaryButton>
+            <Link to="/sign-up" className="text-highlight">
+              <FormattedMessage defaultMessage="Create a nostr account" />
+            </Link>
+          </div>
+        </Modal>
+      )}
     </NostrRoomContext.Provider>
   );
 }
