@@ -67,7 +67,7 @@ public class NestsController : Controller
                 Room = new()
                 {
                     RoomName = room.Id.ToString(),
-                    CustomBaseUrl = new Uri(_config.PublicUrl, $"/{naddr.ToBech32()}").ToString(),
+                    CustomBaseUrl = new Uri(_config.PublicNestsUrl, $"/{naddr.ToBech32()}").ToString(),
                     SegmentOutputs =
                     {
                         new SegmentedFileOutput()

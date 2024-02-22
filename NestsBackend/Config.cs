@@ -6,6 +6,11 @@ public class Config
     /// Public facing hostname of the system
     /// </summary>
     public Uri PublicUrl { get; init; } = null!;
+    
+    /// <summary>
+    /// Public URL of the nests UI
+    /// </summary>
+    public Uri PublicNestsUrl { get; init; } = null!;
 
     public string ApiKey { get; init; } = null!;
 
