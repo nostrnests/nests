@@ -10,6 +10,7 @@ import {
   RelaySettings,
   RequestBuilder,
   parseRelaysFromKind,
+  socialGraphInstance,
 } from "@snort/system";
 import { useSyncExternalStore } from "react";
 import usePresence from "./hooks/usePresence";
@@ -50,6 +51,7 @@ class LoginStore extends ExternalStore<LoginSession> {
     this.#session.signer = new Nip7Signer();
     const pk = await this.#session.signer.getPubKey();
     this.#session.pubkey = pk;
+    socialGraphInstance.setRoot(pk);
     this.notifyChange();
   }
 
@@ -63,6 +65,7 @@ class LoginStore extends ExternalStore<LoginSession> {
     this.#session.signerRelay = signer.relays;
     const pk = await this.#session.signer.getPubKey();
     this.#session.pubkey = pk;
+    socialGraphInstance.setRoot(pk);
     this.notifyChange();
   }
 
@@ -83,6 +86,9 @@ class LoginStore extends ExternalStore<LoginSession> {
         }
       }
       this.#session = session;
+      if (session.pubkey) {
+        socialGraphInstance.setRoot(session.pubkey);
+      }
     }
   }
 
@@ -196,4 +202,5 @@ export function loginHook(system: NostrSystem) {
     loadSessionData().catch(console.error);
   });
   loadSessionData().catch(console.error);
+  return LoginSystem.snapshot();
 }

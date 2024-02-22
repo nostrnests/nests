@@ -28,7 +28,9 @@ dayjs.extend(relativeTime);
 
 async function routeInit() {
   await wasmInit();
-  loginHook(snortSystem);
+  const session = loginHook(snortSystem);
+  const bufferList = session.pubkey ? [session.pubkey, ...(session.follows?.filter(a => a[0] === "p").map(a => a[1]) ?? [])] : undefined;
+  await snortSystem.Init(bufferList);
 }
 
 const routes = [
@@ -97,6 +99,7 @@ export const snortSystem = new NostrSystem({
   optimizer: hasWasm ? WasmOptimizer : undefined,
   automaticOutboxModel: false,
   db: new SnortSystemDb(),
+  buildFollowGraph: true,
 });
 
 setLogLevel("debug");

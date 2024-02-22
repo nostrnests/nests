@@ -1,4 +1,4 @@
-import { NostrLink, RequestBuilder } from "@snort/system";
+import { NostrLink, NostrPrefix, RequestBuilder, socialGraphInstance } from "@snort/system";
 import { useRequestBuilder, useUserProfile } from "@snort/system-react";
 import Avatar from "../element/avatar";
 import DisplayName from "../element/display-name";
@@ -14,6 +14,8 @@ import FollowButton from "../element/follow-button";
 import { updateRelays } from "../utils";
 import Icon from "../icon";
 import ZapButton from "../element/zap-button";
+import { AvatarStack } from "../element/avatar-stack";
+import Mention from "../element/mention";
 
 export default function ProfilePage({ link, header }: { link: NostrLink; header: boolean }) {
   updateRelays(DefaultRelays);
@@ -31,6 +33,7 @@ export function ProfilePageContent({ link, flyout }: { link: NostrLink; flyout: 
   const meta = useUserProfile(link.id);
   const navigate = useNavigate();
   const login = useLogin();
+  const isMe = login.pubkey === link.id;
   const sub = useMemo(() => {
     const rb = new RequestBuilder(`rooms:${link.id.slice(0, 12)}`);
     rb.withFilter().kinds([ROOM_KIND]).authors([link.id]);
@@ -40,6 +43,7 @@ export function ProfilePageContent({ link, flyout }: { link: NostrLink; flyout: 
 
   const events = useRequestBuilder(sub);
 
+  const followedBy = isMe ? undefined : socialGraphInstance.followedByFriends(link.id);
   return (
     <div className="flex flex-col gap-4">
       <div className={flyout ? "flex flex-col gap-2" : "flex justify-between"}>
@@ -75,6 +79,24 @@ export function ProfilePageContent({ link, flyout }: { link: NostrLink; flyout: 
           </Button>
         </div>
       </div>
+      {followedBy && (followedBy?.size ?? 0) > 0 && <div className="flex items-center gap-2 text-sm">
+        <AvatarStack>
+          {[...followedBy].slice(0, 3).map(a => <Avatar pubkey={a} link={false} />)}
+        </AvatarStack>
+        <div>
+          <FormattedMessage defaultMessage="Followed by {names}" values={{
+            names: <>
+              {[...followedBy].slice(0, 3).map((a, i) => <>
+                <Mention link={new NostrLink(NostrPrefix.PublicKey, a)} />
+                {i < Math.min(2, followedBy.size - 1) && ","}{" "}
+              </>)}
+            </>
+          }} />
+          {followedBy.size > 3 && <FormattedMessage defaultMessage=" & {n} others" values={{
+            n: followedBy.size - 3
+          }} />}
+        </div>
+      </div>}
       {meta?.isNostrAddressValid && <p className="text-highlight text-sm">{meta.nip05}</p>}
       <p className="text-sm">{meta?.about}</p>
       <hr />

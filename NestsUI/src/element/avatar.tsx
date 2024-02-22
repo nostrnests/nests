@@ -21,7 +21,7 @@ export default function Avatar({
     if ((profile?.picture?.length ?? 0) > 0) {
       return profile?.picture;
     }
-    return `https://robohash.v0l.io/${pubkey}.png`;
+    return `https://robohash.v0l.io/${pubkey ?? "missing"}.png`;
   }
   const inner = (
     <img
@@ -33,7 +33,7 @@ export default function Avatar({
         outline ? `outline outline-${outline}` : undefined,
       )}
       src={getAvatar()}
-    ></img>
+    />
   );
   if (link) {
     return <Link to={`/${hexToBech32("npub", pubkey)}`}>{inner}</Link>;
