@@ -93,12 +93,13 @@ class LoginStore extends ExternalStore<LoginSession> {
   }
 
   toggleHand(link: NostrLink) {
-    if (this.#session.handMap?.includes(link.id)) {
+    this.#session.handMap ??= [];
+    if (this.#session.handMap.includes(link.id)) {
       this.#session.handMap = this.#session.handMap.filter((a) => a !== link.id);
       this.notifyChange();
       return false;
     } else {
-      this.#session.handMap?.push(link.id);
+      this.#session.handMap.push(link.id);
       this.notifyChange();
       return true;
     }
