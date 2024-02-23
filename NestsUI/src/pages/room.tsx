@@ -11,7 +11,7 @@ import { useLogin } from "../login";
 import { CSSProperties, useContext, useEffect, useMemo, useState } from "react";
 import classNames from "classnames";
 import { FormattedMessage } from "react-intl";
-import { removeUndefined, sanitizeRelayUrl, unwrap } from "@snort/shared";
+import { removeUndefined, sanitizeRelayUrl } from "@snort/shared";
 import { updateRelays } from "../utils";
 import { NostrRoomContextProvider } from "../element/nostr-room-context-provider";
 import { JoinRoom } from "../element/join-room";
@@ -36,7 +36,7 @@ export default function Room() {
     return sub;
   }, [link]);
   const roomUpdates = useRequestBuilder(roomSub);
-  const event = unwrap(roomUpdates.length > 0 ? roomUpdates[0] : room?.event);
+  const event = roomUpdates.length > 0 ? roomUpdates[0] : room?.event;
 
   useEffect(() => {
     if (event) {
@@ -52,12 +52,12 @@ export default function Room() {
     }
   }, [event, system]);
 
-  if (!room?.token || !link) return <JoinRoom />;
+  if (!event || !room?.token || !link) return <JoinRoom />;
 
-  const livekitUrl = event.tags.find(
+  const livekitUrl = event?.tags.find(
     (a) => a[0] === "streaming" && (a[1].startsWith("ws+livekit://") || a[1].startsWith("wss+livekit://")),
   )?.[1];
-  const status = event.tags.find((a) => a[0] === "status")?.[1];
+  const status = event?.tags.find((a) => a[0] === "status")?.[1];
   const isLive = status === "live";
   return (
     <LiveKitRoom
