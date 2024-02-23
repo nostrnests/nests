@@ -5,13 +5,18 @@ import { DefaultRelays, ROOM_KIND } from "../const";
 import { updateRelays } from "../utils";
 import { useLogin } from "../login";
 import { RoomListList } from "../element/room-list-list";
+import { unixNow } from "@snort/shared";
 
 export default function RoomList() {
   const login = useLogin();
   const sub = useMemo(() => {
     updateRelays(DefaultRelays);
     const rb = new RequestBuilder(`rooms:${login.lobbyType}`);
-    const fx = rb.withOptions({ leaveOpen: true }).withFilter().kinds([ROOM_KIND]);
+    const fx = rb
+      .withOptions({ leaveOpen: true })
+      .withFilter()
+      .kinds([ROOM_KIND])
+      .since(unixNow() - 60 * 60 * 24 * 7);
     if (login.lobbyType === "following" && login.follows) {
       fx.authors(login.follows.filter((a) => a[0] === "p").map((a) => a[1]));
     }

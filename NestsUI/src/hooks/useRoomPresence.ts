@@ -13,7 +13,8 @@ export default function useRoomPresence(link?: NostrLink) {
     rb.withOptions({ leaveOpen: true })
       .withFilter()
       .kinds([ROOM_PRESENCE])
-      .tag("a", [`${link.kind}:${link.author}:${link.id}`]);
+      .tag("a", [`${link.kind}:${link.author}:${link.id}`])
+      .since(unixNow() - (PRESENCE_TIME * 10));
 
     return rb;
   }, [link]);
