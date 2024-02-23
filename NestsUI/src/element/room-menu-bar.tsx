@@ -7,7 +7,6 @@ import { createPortal } from "react-dom";
 import classNames from "classnames";
 import Icon from "../icon";
 import { useIsAdmin } from "../hooks/useIsAdmin";
-import { useNestsApi } from "../hooks/useNestsApi";
 import { useNostrRoom } from "../hooks/nostr-room-context";
 import { RoomRecording } from "../api";
 import Modal from "./modal";
@@ -28,7 +27,6 @@ export function RoomOptionsButton({ link }: { link: NostrLink }) {
   const [profileEdit, setProfileEdit] = useState(false);
   const isAdmin = useIsAdmin();
   const localParticipant = useLocalParticipant();
-  const api = useNestsApi();
   const roomContext = useNostrRoom();
 
   const menuItem = (icon: string, text: ReactNode, onClick: () => void, className?: string) => {
@@ -89,31 +87,31 @@ export function RoomOptionsButton({ link }: { link: NostrLink }) {
             {localParticipant.microphoneTrack &&
               login.pubkey &&
               menuItem("exit", <FormattedMessage defaultMessage="Leave Stage" />, async () => {
-                await api.updatePermissions(link.id, login.pubkey!, { can_publish: false });
+                await roomContext.api.updatePermissions(link.id, login.pubkey!, { can_publish: false });
                 setOpen(false);
               })}
             {isAdmin && menuItem("audio", <FormattedMessage defaultMessage="Stream Audio" />, () => {})}
             {isAdmin &&
               roomContext.info?.recording === false &&
               menuItem("rec", <FormattedMessage defaultMessage="Start Recording" />, async () => {
-                await api.startRecording(link.id);
+                await roomContext.api.startRecording(link.id);
                 setOpen(false);
               })}
             {isAdmin &&
               roomContext.info?.recording === true &&
               menuItem("stop-rec", <FormattedMessage defaultMessage="Stop Recording" />, async () => {
-                const recs = await api.listRecording(link.id);
+                const recs = await roomContext.api.listRecording(link.id);
                 if (recs) {
                   const activeRecording = recs.find((a) => a.stopped === undefined);
                   if (activeRecording) {
-                    await api.stopRecording(link.id, activeRecording.id);
+                    await roomContext.api.stopRecording(link.id, activeRecording.id);
                     setOpen(false);
                   }
                 }
               })}
             {isAdmin &&
               menuItem("folder", <FormattedMessage defaultMessage="Room Recordings" />, async () => {
-                const recs = await api.listRecording(link.id);
+                const recs = await roomContext.api.listRecording(link.id);
                 setRecordings(recs);
                 setOpen(false);
               })}
@@ -138,7 +136,7 @@ export function RoomOptionsButton({ link }: { link: NostrLink }) {
                   <Async
                     className="text-highlight cursor-pointer select-none"
                     onClick={async () => {
-                      const blob = await api.getRecording(link.id, a.id);
+                      const blob = await roomContext.api.getRecording(link.id, a.id);
                       const atag = document.createElement("a");
                       atag.href = URL.createObjectURL(blob);
                       atag.download = `${a.id}.mp4`;
@@ -151,7 +149,7 @@ export function RoomOptionsButton({ link }: { link: NostrLink }) {
                     name="trash"
                     className="text-delete rounded-xl"
                     onClick={async () => {
-                      await api.deleteRecording(link.id, a.id);
+                      await roomContext.api.deleteRecording(link.id, a.id);
                       setRecordings((rx) => rx?.filter((b) => b.id !== a.id));
                     }}
                   />

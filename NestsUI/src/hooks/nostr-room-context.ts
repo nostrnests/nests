@@ -1,6 +1,7 @@
 import { NostrEvent, TaggedNostrEvent } from "@snort/system";
 import { ReactNode, createContext, useContext } from "react";
-import { RoomInfo } from "../api";
+import { NestsApi, RoomInfo } from "../api";
+import { ApiUrl } from "../const";
 
 export interface RoomState {
   event: NostrEvent;
@@ -11,6 +12,7 @@ export interface RoomState {
   setFlyout: (n?: ReactNode) => void;
   volume: number;
   setVolume: (n: number) => void;
+  api: NestsApi;
 }
 
 export const NostrRoomContext = createContext<RoomState>({
@@ -20,6 +22,7 @@ export const NostrRoomContext = createContext<RoomState>({
   setFlyout: () => {},
   setVolume: () => {},
   volume: 1.0,
+  api: new NestsApi(ApiUrl),
 });
 
 export function useNostrRoom() {

@@ -29,8 +29,8 @@ export class NestsApi {
       "/api/v1/nests",
       JSON.stringify({
         relays,
-        hls_stream: hlsStream
-      })
+        hls_stream: hlsStream,
+      }),
     );
   }
 

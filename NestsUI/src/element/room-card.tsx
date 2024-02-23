@@ -5,7 +5,6 @@ import { useUserProfile } from "@snort/system-react";
 import { Link, useNavigate } from "react-router-dom";
 import { AvatarStack } from "./avatar-stack";
 import classNames from "classnames";
-import { useNestsApi } from "../hooks/useNestsApi";
 import useRoomPresence from "../hooks/useRoomPresence";
 import { ColorPalette } from "../const";
 import StartTime from "./start-time";
@@ -17,6 +16,8 @@ import { useLogin } from "../login";
 import { useNostrRoom } from "../hooks/nostr-room-context";
 import { FormattedMessage } from "react-intl";
 import DisplayName from "./display-name";
+import { extractStreamInfo } from "../utils";
+import { useNestsApi } from "../hooks/useNestsApi";
 
 export default function RoomCard({
   event,
@@ -36,15 +37,10 @@ export default function RoomCard({
   showDescription?: boolean;
 }) {
   const profile = useUserProfile(event.pubkey);
-  const title = event.tags.find((a) => a[0] === "title")?.[1];
-  const summary = event.tags.find((a) => a[0] === "summary")?.[1];
-  const color = event.tags.find((a) => a[0] === "color")?.[1] ?? ColorPalette[0];
-  const status = event.tags.find((a) => a[0] === "status")?.[1];
-  const starts = event.tags.find((a) => a[0] === "starts")?.[1];
-  const image = event.tags.find((a) => a[0] === "image")?.[1];
+
+  const { title, summary, status, starts, image, color } = extractStreamInfo(event);
   const navigate = useNavigate();
   const [editRoom, setEditRoom] = useState(false);
-  const api = useNestsApi();
   const login = useLogin();
 
   const eventLink = useMemo(() => NostrLink.fromEvent(event), [event]);
@@ -52,8 +48,10 @@ export default function RoomCard({
   const presence = presenceEvents ?? loadedPresence;
   const roomContext = useNostrRoom();
 
+  const { service } = extractStreamInfo(event);
+  const api = useNestsApi(service);
+
   async function joinRoom() {
-    if (!api) return;
     const id = event.tags.find((a) => a[0] === "d")?.[1];
     if (id) {
       const { token } = await api.joinRoom(id);
@@ -77,7 +75,7 @@ export default function RoomCard({
       <div
         className={classNames(
           "relative px-6 py-4 rounded-3xl flex flex-col gap-3",
-          image ? "" : `bg-${color}`,
+          image ? "" : `bg-${color ?? ColorPalette[0]}`,
           { "cursor-pointer": (link ?? true) || join },
           className,
         )}
@@ -99,7 +97,11 @@ export default function RoomCard({
         )}
         <div className="flex justify-between">
           <div className="flex gap-4 items-center">
-            {status === "live" ? <ListenerCount n={presence.length} /> : <StartTime n={Number(starts)} />}
+            {status === "live" ? (
+              <ListenerCount n={presence.length} />
+            ) : status === "planned" ? (
+              <StartTime n={Number(starts)} />
+            ) : undefined}
             {inRoom && roomContext.info?.recording === true && (
               <div className="px-2 py-1 flex gap-1 items-center bg-white rounded-full text-delete font-semibold text-sm">
                 <span className="rounded-full w-4 h-4 bg-delete animate-pulse"></span>

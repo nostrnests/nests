@@ -5,7 +5,7 @@ import DisplayName from "../element/display-name";
 import Button, { PrimaryButton } from "../element/button";
 import Header from "../element/header";
 import { useMemo } from "react";
-import { RoomListList } from "./room-list";
+import { RoomListList } from "../element/room-list-list";
 import { DefaultRelays, ROOM_KIND } from "../const";
 import { FormattedMessage } from "react-intl";
 import { logout, useLogin } from "../login";
@@ -23,13 +23,21 @@ export default function ProfilePage({ link, header }: { link: NostrLink; header:
     <>
       {header && <Header />}
       <div className="lg:w-[35rem] mx-auto max-lg:px-4">
-        <ProfilePageContent link={link} flyout={false} />
+        <ProfilePageContent link={link} flyout={false} showEnded={true} />
       </div>
     </>
   );
 }
 
-export function ProfilePageContent({ link, flyout }: { link: NostrLink; flyout: boolean }) {
+export function ProfilePageContent({
+  link,
+  flyout,
+  showEnded,
+}: {
+  link: NostrLink;
+  flyout: boolean;
+  showEnded: boolean;
+}) {
   const meta = useUserProfile(link.id);
   const navigate = useNavigate();
   const login = useLogin();
@@ -116,7 +124,7 @@ export function ProfilePageContent({ link, flyout }: { link: NostrLink; flyout: 
       {meta?.isNostrAddressValid && <p className="text-highlight text-sm">{meta.nip05}</p>}
       <p className="text-sm">{meta?.about}</p>
       <hr />
-      <RoomListList events={events} showCreateWhenEmpty={false} showEmptyRooms={true} />
+      <RoomListList events={events} showCreateWhenEmpty={false} showEmptyRooms={true} showEnded={showEnded} />
     </div>
   );
 }

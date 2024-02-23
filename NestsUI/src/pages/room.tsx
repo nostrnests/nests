@@ -1,29 +1,22 @@
-import { LiveKitRoom, RoomAudioRenderer, useLocalParticipant, useRoomContext } from "@livekit/components-react";
-import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
+import { LiveKitRoom } from "@livekit/components-react";
+import { useLocation, useNavigate } from "react-router-dom";
 import NostrParticipants from "../element/participants";
-import { NostrEvent, NostrLink, parseNostrLink } from "@snort/system";
-import { useNestsApi } from "../hooks/useNestsApi";
-import Logo from "../element/logo";
+import { NostrEvent, NostrLink, RequestBuilder } from "@snort/system";
 import RoomCard from "../element/room-card";
-import { SnortContext, useEventFeed } from "@snort/system-react";
-import { PrimaryButton, SecondaryButton } from "../element/button";
+import { SnortContext, useRequestBuilder } from "@snort/system-react";
 import Icon from "../icon";
 import ChatMessages from "../element/chat-messages";
 import WriteMessage from "../element/write-message";
-import useRoomPresence, { useSendPresence } from "../hooks/useRoomPresence";
 import { useLogin } from "../login";
-import Modal from "../element/modal";
-import { CSSProperties, ReactNode, useContext, useEffect, useMemo, useState } from "react";
-import { useRoomReactions } from "../hooks/useRoomReactions";
+import { CSSProperties, useContext, useEffect, useMemo, useState } from "react";
 import classNames from "classnames";
-import Flyout from "../element/flyout";
-import { NostrRoomContext } from "../hooks/nostr-room-context";
-import { RoomInfo } from "../api";
 import { FormattedMessage } from "react-intl";
-import { removeUndefined, sanitizeRelayUrl } from "@snort/shared";
+import { removeUndefined, sanitizeRelayUrl, unwrap } from "@snort/shared";
 import { updateRelays } from "../utils";
+import { NostrRoomContextProvider } from "../element/nostr-room-context-provider";
+import { JoinRoom } from "../element/join-room";
 
-interface RoomState {
+export interface RoomState {
   event: NostrEvent;
   token: string;
 }
@@ -36,10 +29,19 @@ export default function Room() {
   const link = useMemo(() => (room ? NostrLink.fromEvent(room.event) : undefined), [room]);
   const system = useContext(SnortContext);
 
+  const roomSub = useMemo(() => {
+    if (!link) return;
+    const sub = new RequestBuilder(`room:${link?.id}`);
+    sub.withFilter().link(link);
+    return sub;
+  }, [link]);
+  const roomUpdates = useRequestBuilder(roomSub);
+  const event = unwrap(roomUpdates.length > 0 ? roomUpdates[0] : room?.event);
+
   useEffect(() => {
-    if (room?.event) {
+    if (event) {
       const relays = removeUndefined(
-        room?.event.tags
+        event.tags
           .find((a) => a[0] === "relays")
           ?.slice(1)
           .map((a) => sanitizeRelayUrl(a)) ?? [],
@@ -48,25 +50,27 @@ export default function Room() {
         updateRelays(relays);
       }
     }
-  }, [room?.event, system]);
+  }, [event, system]);
 
   if (!room?.token || !link) return <JoinRoom />;
 
-  const livekitUrl = room.event.tags.find(
+  const livekitUrl = event.tags.find(
     (a) => a[0] === "streaming" && (a[1].startsWith("ws+livekit://") || a[1].startsWith("wss+livekit://")),
   )?.[1];
+  const status = event.tags.find((a) => a[0] === "status")?.[1];
+  const isLive = status === "live";
   return (
     <LiveKitRoom
       serverUrl={(livekitUrl ?? "").replace("+livekit", "")}
       token={room.token}
-      connect={true}
+      connect={isLive}
       audio={{
         autoGainControl: false,
       }}
     >
-      <NostrRoomContextProvider event={room.event}>
+      <NostrRoomContextProvider event={event} token={room.token}>
         <div className="flex overflow-hidden h-[100dvh]">
-          <ParticipantsPannel room={room} />
+          <ParticipantsPannel event={event} />
           <ChatPannel link={link} />
         </div>
       </NostrRoomContextProvider>
@@ -74,7 +78,7 @@ export default function Room() {
   );
 }
 
-function ParticipantsPannel({ room }: { room: RoomState }) {
+function ParticipantsPannel({ event }: { event: NostrEvent }) {
   const navigate = useNavigate();
   return (
     <div className={`lg:w-[calc(100vw-${ChatWidth}px)] max-lg:w-screen overflow-y-auto`}>
@@ -85,8 +89,8 @@ function ParticipantsPannel({ room }: { room: RoomState }) {
         </button>
       </div>
       <div className="flex flex-col gap-8 mx-auto lg:w-[35rem] max-lg:px-4 mb-[30dvh]">
-        <RoomCard event={room.event} inRoom={true} link={false} showDescription={true} />
-        <NostrParticipants event={room.event} />
+        <RoomCard event={event} inRoom={true} link={false} showDescription={true} />
+        <NostrParticipants event={event} />
       </div>
     </div>
   );
@@ -133,184 +137,5 @@ function ChatPannel({ link }: { link: NostrLink }) {
         <WriteMessage link={link} className={classNames(hiddenWhenCollapsed)} />
       </div>
     </div>
-  );
-}
-
-function JoinRoom() {
-  const { id } = useParams();
-  const api = useNestsApi();
-  const link = parseNostrLink(id!)!;
-  if (link.relays) {
-    updateRelays(link.relays);
-  }
-  const event = useEventFeed(link);
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  useEffect(() => {
-    if (event) {
-      const relays = removeUndefined(
-        event.tags
-          .find((a) => a[0] === "relays")
-          ?.slice(1)
-          .map((a) => sanitizeRelayUrl(a)) ?? [],
-      );
-      if (relays.length > 0) {
-        updateRelays(relays);
-      }
-    }
-  }, [event]);
-
-  async function joinRoom() {
-    if (!api) return;
-    const { token } = await api.joinRoom(link.id);
-    navigate(`/${link.encode()}`, {
-      state: {
-        event,
-        token,
-      } as RoomState,
-      replace: true,
-    });
-  }
-
-  useEffect(() => {
-    const query = new URLSearchParams(location.search);
-    const token = query.get("token");
-    if (token && event) {
-      navigate(location.pathname, {
-        state: {
-          event,
-          token,
-        },
-        replace: true,
-      });
-    }
-  }, [event, location, navigate]);
-
-  if (!event)
-    return (
-      <h1>
-        <FormattedMessage defaultMessage="Room not found" />
-      </h1>
-    );
-  return (
-    <div className="w-screen h-[100dvh] flex-col flex items-center justify-center gap-[10dvh]">
-      <Logo />
-      <RoomCard event={event} className="lg:w-[35rem] cursor-default" link={false} showDescription={true} />
-      <PrimaryButton className="px-6 py-4 w-40 text-lg" onClick={joinRoom}>
-        <FormattedMessage defaultMessage="Join" />
-      </PrimaryButton>
-    </div>
-  );
-}
-
-function NostrRoomContextProvider({ event, children }: { event: NostrEvent; children?: ReactNode }) {
-  const [flyout, setFlyout] = useState<ReactNode>();
-  const [volume, setVolume] = useState(1);
-  const [roomInfo, setRoomInfo] = useState<RoomInfo>();
-  const [confirmGuest, setConfirmGuest] = useState(false);
-  const login = useLogin();
-  const link = useMemo(() => NostrLink.fromEvent(event), [event]);
-  const presence = useRoomPresence(link);
-  const reactions = useRoomReactions(link);
-  const room = useRoomContext();
-  const localParticipant = useLocalParticipant();
-  const api = useNestsApi();
-  useSendPresence(link);
-
-  useEffect(() => {
-    const handler = (m?: string) => {
-      if (m) {
-        const info = JSON.parse(m) as RoomInfo;
-        console.debug("setting metadata", info);
-        setRoomInfo(info);
-      }
-    };
-    const endRecording = () => console.log("END_RECORDING");
-    const handler2 = () => {
-      if (room.participants.size === 0) {
-        endRecording();
-      }
-    };
-
-    const isRecorder = room.localParticipant.permissions?.recorder;
-    room.on("roomMetadataChanged", handler);
-    if (isRecorder) {
-      room.on("participantDisconnected", handler2);
-      room.on("disconnected", endRecording);
-      console.log("START_RECORDING");
-    }
-    return () => {
-      room.off("roomMetadataChanged", handler);
-      if (isRecorder) {
-        room.off("participantDisconnected", handler2);
-        room.off("disconnected", endRecording);
-      }
-    };
-  }, [room]);
-
-  useEffect(() => {
-    const endRecording = () => console.log("END_RECORDING");
-    const handler2 = () => {
-      if (room.participants.size === 0) {
-        endRecording();
-      }
-    };
-
-    const isRecorder = localParticipant.localParticipant.permissions?.recorder;
-    if (isRecorder) {
-      room.on("participantDisconnected", handler2);
-      room.on("disconnected", endRecording);
-      console.log("START_RECORDING");
-    }
-    return () => {
-      if (isRecorder) {
-        room.off("participantDisconnected", handler2);
-        room.off("disconnected", endRecording);
-      }
-    };
-  }, [room, localParticipant]);
-
-  useEffect(() => {
-    api.getRoomInfo(link.id).then((m) => {
-      console.debug("setting metadata", m);
-      setRoomInfo(m);
-    });
-  }, [link.id, api]);
-
-  return (
-    <NostrRoomContext.Provider
-      value={{
-        event,
-        reactions,
-        presence,
-        flyout,
-        setFlyout,
-        info: roomInfo,
-        volume,
-        setVolume,
-      }}
-    >
-      <RoomAudioRenderer volume={volume} />
-      <Flyout show={flyout !== undefined} onClose={() => setFlyout(undefined)}>
-        {flyout}
-      </Flyout>
-      {children}
-      {login.type === "none" && !room.localParticipant.permissions?.recorder && !confirmGuest && (
-        <Modal id="join-as-guest">
-          <div className="flex flex-col gap-4 items-center">
-            <h2>
-              <FormattedMessage defaultMessage="Join Room" />
-            </h2>
-            <SecondaryButton className="w-full" onClick={() => setConfirmGuest(true)}>
-              <FormattedMessage defaultMessage="Continue as Guest" />
-            </SecondaryButton>
-            <Link to="/sign-up" className="text-highlight">
-              <FormattedMessage defaultMessage="Create a nostr account" />
-            </Link>
-          </div>
-        </Modal>
-      )}
-    </NostrRoomContext.Provider>
   );
 }

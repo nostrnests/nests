@@ -1,7 +1,6 @@
-import { EventExt, NostrEvent, NostrLink, NostrPrefix } from "@snort/system";
+import { NostrEvent, NostrLink, NostrPrefix } from "@snort/system";
 import { ReactNode, useState } from "react";
 import Button, { PrimaryButton, SecondaryButton } from "./button";
-import useEventBuilder from "../hooks/useEventBuilder";
 import { unixNow } from "@snort/shared";
 import { useNavigate } from "react-router-dom";
 import BannerEditor from "./banner-editor";
@@ -10,7 +9,8 @@ import { useNostrRoom } from "../hooks/nostr-room-context";
 import Mention from "./mention";
 import Avatar from "./avatar";
 import IconButton from "./icon-button";
-import { useNestsApi } from "../hooks/useNestsApi";
+import { updateOrAddTag } from "../utils";
+import useEventModifier from "../hooks/useEventModifier";
 
 type EditTab = "room" | "admin";
 
@@ -58,9 +58,9 @@ function EditRoomDetails({ event, onClose }: { event: NostrEvent; onClose: () =>
   const [desc, setDesc] = useState(event.tags.find((a) => a[0] === "description")?.[1] ?? "");
   const [color, setColor] = useState(event.tags.find((a) => a[0] === "color")?.[1]);
   const [image, setImage] = useState(event.tags.find((a) => a[0] === "image")?.[1]);
-  const { system, signer } = useEventBuilder();
   const navigate = useNavigate();
   const { formatMessage } = useIntl();
+  const modifier = useEventModifier();
 
   return (
     <>
@@ -98,27 +98,13 @@ function EditRoomDetails({ event, onClose }: { event: NostrEvent; onClose: () =>
       <BannerEditor onImage={setImage} onColor={setColor} initialColor={color} initialImage={image} />
       <PrimaryButton
         onClick={async () => {
-          const updateOrAddTag = (tag: string, value: string) => {
-            const oldTag = event.tags.find((a) => a[0] === tag);
-            if (oldTag) {
-              oldTag[1] = value;
-            } else {
-              event.tags.push([tag, value]);
-            }
-          };
-          updateOrAddTag("title", name);
-          updateOrAddTag("summary", desc);
-          updateOrAddTag("color", color ?? "");
-          updateOrAddTag("image", image ?? "");
+          updateOrAddTag(event, "title", name);
+          updateOrAddTag(event, "summary", desc);
+          updateOrAddTag(event, "color", color ?? "");
+          updateOrAddTag(event, "image", image ?? "");
 
-          event.created_at = unixNow();
-          event.id = EventExt.createId(event);
-          const signed = await signer?.sign(event);
-          console.debug(signed);
-          if (signed) {
-            await system.BroadcastEvent(signed);
-            onClose();
-          }
+          await modifier.update(event);
+          onClose();
         }}
       >
         <FormattedMessage defaultMessage="Save" />
@@ -133,15 +119,9 @@ function EditRoomDetails({ event, onClose }: { event: NostrEvent; onClose: () =>
           const status = event.tags.find((a) => a[0] === "status")!;
           if (status[1] !== "ended") {
             status[1] = "ended";
-            event.tags.push(["ends", unixNow().toString()]);
-            event.created_at = unixNow();
-            event.id = EventExt.createId(event);
-            const signed = await signer?.sign(event);
-            console.debug(signed);
-            if (signed) {
-              await system.BroadcastEvent(signed);
-              navigate("/");
-            }
+            updateOrAddTag(event, "ends", unixNow().toString());
+            await modifier.update(event);
+            navigate("/");
           }
         }}
       >
@@ -153,7 +133,6 @@ function EditRoomDetails({ event, onClose }: { event: NostrEvent; onClose: () =>
 
 function EditRoomAdmin() {
   const roomContext = useNostrRoom();
-  const api = useNestsApi();
   const link = NostrLink.fromEvent(roomContext.event);
   return (
     <>
@@ -173,7 +152,7 @@ function EditRoomAdmin() {
                 name="trash"
                 className="rounded-xl !bg-delete"
                 onClick={async () => {
-                  await api.updatePermissions(link.id, a, {
+                  await roomContext.api.updatePermissions(link.id, a, {
                     is_admin: false,
                   });
                 }}
@@ -195,7 +174,7 @@ function EditRoomAdmin() {
               name="trash"
               className="rounded-xl !bg-delete"
               onClick={async () => {
-                await api.updatePermissions(link.id, a, {
+                await roomContext.api.updatePermissions(link.id, a, {
                   can_publish: false,
                 });
               }}

@@ -15,7 +15,7 @@ export default defineConfig({
       srcDir: "src",
       filename: "service-worker.ts",
       devOptions: {
-        enabled: true,
+        enabled: false,
         type: "module",
       },
       workbox: {

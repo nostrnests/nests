@@ -16,12 +16,13 @@ export default function Avatar({
   outline?: number;
   link: boolean;
 }) {
-  const profile = useUserProfile(pubkey.startsWith("guest") ? undefined : pubkey);
+  const isUnknown = pubkey.startsWith("guest") || pubkey === "";
+  const profile = useUserProfile(isUnknown ? undefined : pubkey);
   function getAvatar() {
     if ((profile?.picture?.length ?? 0) > 0) {
       return profile?.picture;
     }
-    return `https://robohash.v0l.io/${pubkey ?? "missing"}.png`;
+    return `https://robohash.v0l.io/${isUnknown ? "missing" : pubkey}.png`;
   }
   const inner = (
     <img

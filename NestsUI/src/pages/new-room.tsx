@@ -125,12 +125,14 @@ export default function NewRoom() {
       </div>
       <BannerEditor onImage={setImage} onColor={setColor} />
       <div>
-        <Collapsed header={open => <div
-          className="flex gap-2 items-center font-medium mb-2"
+        <Collapsed
+          header={(open) => (
+            <div className="flex gap-2 items-center font-medium mb-2">
+              <FormattedMessage defaultMessage="Custom Relays (Optional)" />
+              <Icon name="chevron" className={`${open ? "rotate-90" : "-rotate-90"} transition`} size={16} />
+            </div>
+          )}
         >
-          <FormattedMessage defaultMessage="Custom Relays (Optional)" />
-          <Icon name="chevron" className={`${open ? "rotate-90" : "-rotate-90"} transition`} size={16} />
-        </div>}>
           <div className="flex flex-col gap-2">
             <p className="text-off-white">
               <FormattedMessage defaultMessage="If you'd like to broadcast only to specific relays, you can add those here." />
@@ -171,13 +173,17 @@ export default function NewRoom() {
           <p className="font-medium mb-2">
             <FormattedMessage defaultMessage="Create room video stream" />
           </p>
-          <input type="checkbox" checked={hls} onChange={e => setHls(e.target.checked)} />
+          <input type="checkbox" checked={hls} onChange={(e) => setHls(e.target.checked)} />
         </div>
 
-        <Collapsed header={open => <small className="flex gap-2 items-center">
-          <FormattedMessage defaultMessage="What is this?" />
-          <Icon name="chevron" className={`${open ? "rotate-90" : "-rotate-90"} transition`} size={16} />
-        </small>}>
+        <Collapsed
+          header={(open) => (
+            <small className="flex gap-2 items-center">
+              <FormattedMessage defaultMessage="What is this?" />
+              <Icon name="chevron" className={`${open ? "rotate-90" : "-rotate-90"} transition`} size={16} />
+            </small>
+          )}
+        >
           <small className="text-off-white">
             <FormattedMessage defaultMessage="Enabling this option will create a video stream of this nest, allowing people to watch the nest on zap.stream / Amethyst / nostrudel.ninja / sats.gg or any client that supports Live Activities (NIP-53), they will also be able to chat in the room while watching." />
           </small>

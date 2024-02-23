@@ -1,4 +1,3 @@
-import { useNestsApi } from "../hooks/useNestsApi";
 import { useEnsureRoom } from "@livekit/components-react";
 import { LocalParticipant, RemoteParticipant } from "livekit-client";
 import Icon from "../icon";
@@ -20,12 +19,12 @@ export default function ProfileCard({
   participant: LocalParticipant | RemoteParticipant;
   pubkey: string;
 }) {
-  const api = useNestsApi();
   const login = useLogin();
   const room = useEnsureRoom();
   const nostrRoom = useNostrRoom();
   const isLoginAdmin = useIsAdmin();
   const { isFollowing, follow, unfollow } = useFollowing();
+
   const thisIsAdmin = nostrRoom.info?.admins.includes(pubkey);
   const thisIsHost = pubkey === nostrRoom.info?.host;
   const isSelf = pubkey === login.pubkey;
@@ -51,7 +50,9 @@ export default function ProfileCard({
   return (
     <div className="absolute z-10 bg-foreground-2 rounded-xl overflow-hidden flex flex-col font-medium w-max">
       {menuItem("eye", <FormattedMessage defaultMessage="View Profile" />, () => {
-        nostrRoom.setFlyout(<ProfilePageContent link={new NostrLink(NostrPrefix.PublicKey, pubkey)} flyout={true} />);
+        nostrRoom.setFlyout(
+          <ProfilePageContent link={new NostrLink(NostrPrefix.PublicKey, pubkey)} flyout={true} showEnded={false} />,
+        );
       })}
       {!isSelf &&
         menuItem(
@@ -77,22 +78,22 @@ export default function ProfileCard({
               <FormattedMessage defaultMessage="Remove from stage" />
             ),
             async () => {
-              await api.updatePermissions(room.name, pubkey, { can_publish: !isSpeaker });
+              await nostrRoom.api.updatePermissions(room.name, pubkey, { can_publish: !isSpeaker });
             },
           )}
           {!isMuted &&
             menuItem("mic-off", <FormattedMessage defaultMessage="Mute" />, async () => {
-              await api.updatePermissions(room.name, pubkey, { mute_microphone: true });
+              await nostrRoom.api.updatePermissions(room.name, pubkey, { mute_microphone: true });
             })}
           {!thisIsAdmin &&
             !thisIsHost &&
             menuItem("admin", <FormattedMessage defaultMessage="Make admin" />, async () => {
-              await api.updatePermissions(room.name, pubkey, { is_admin: true });
+              await nostrRoom.api.updatePermissions(room.name, pubkey, { is_admin: true });
             })}
           {thisIsAdmin &&
             !thisIsHost &&
             menuItem("admin", <FormattedMessage defaultMessage="Remove admin" />, async () => {
-              await api.updatePermissions(room.name, pubkey, { is_admin: false });
+              await nostrRoom.api.updatePermissions(room.name, pubkey, { is_admin: false });
             })}
           {!isSelf && !thisIsHost && (
             <>

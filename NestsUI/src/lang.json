@@ -14,11 +14,17 @@
   "01iNut": {
     "defaultMessage": "Nostr address does not belong to you"
   },
+  "0t0MiS": {
+    "defaultMessage": "Start Room"
+  },
   "0vL5u1": {
     "defaultMessage": "Create an account"
   },
   "1FTExG": {
     "defaultMessage": "<lg>{n}</lg> <sm>Sats</sm>"
+  },
+  "1K5W/3": {
+    "defaultMessage": "Followed by {names}"
   },
   "1t2eph": {
     "defaultMessage": "Remove admin"
@@ -29,6 +35,9 @@
   "2jp98l": {
     "defaultMessage": "Custom amount",
     "description": "Custom amount for zaps"
+  },
+  "3ZC0eT": {
+    "defaultMessage": "All rooms"
   },
   "3s2cxm": {
     "defaultMessage": "Lobby"
@@ -50,6 +59,9 @@
   },
   "6xQg6j": {
     "defaultMessage": "Ban user"
+  },
+  "7EqMUS": {
+    "defaultMessage": "If this option is disabled they will still be able to see the nest on those clients and chat but not hear the room audio."
   },
   "7vwVDQ": {
     "defaultMessage": "Nostr address not found"
@@ -73,6 +85,9 @@
   },
   "B5pZ3p": {
     "defaultMessage": "Share Room"
+  },
+  "C/m3jB": {
+    "defaultMessage": "Back to Lobby"
   },
   "C81/uG": {
     "defaultMessage": "Logout"
@@ -107,6 +122,12 @@
   "IbE9GF": {
     "defaultMessage": "Scheduled Time (optional)"
   },
+  "IbQ1f/": {
+    "defaultMessage": "Room Ended"
+  },
+  "IlNKmr": {
+    "defaultMessage": "Create room video stream"
+  },
   "Iul/hR": {
     "defaultMessage": "Active Rooms"
   },
@@ -118,6 +139,9 @@
   },
   "Jkxa7F": {
     "defaultMessage": "View Profile"
+  },
+  "L06Gac": {
+    "defaultMessage": "Please close the following rooms:"
   },
   "Lv0zJu": {
     "defaultMessage": "Details"
@@ -164,11 +188,17 @@
   "T4lB1e": {
     "defaultMessage": "Leave stage"
   },
+  "TP/cMX": {
+    "defaultMessage": "Ended"
+  },
   "U/VWC2": {
     "defaultMessage": "Stream Audio"
   },
   "Uo/DWG": {
     "defaultMessage": "About too long"
+  },
+  "Up5U7K": {
+    "defaultMessage": "Block"
   },
   "VvvK+z": {
     "defaultMessage": "Sign in with extension"
@@ -176,14 +206,26 @@
   "VzzYJk": {
     "defaultMessage": "Create"
   },
+  "WMlFwU": {
+    "defaultMessage": "Enabling this option will create a video stream of this nest, allowing people to watch the nest on zap.stream / Amethyst / nostrudel.ninja / sats.gg or any client that supports Live Activities (NIP-53), they will also be able to chat in the room while watching."
+  },
   "WTrOy3": {
     "defaultMessage": "Chat"
+  },
+  "Y2Ues0": {
+    "defaultMessage": "& {n} others"
   },
   "aUuFuf": {
     "defaultMessage": "\"{room_name}\" nest is live! Come join 🤗 {url}"
   },
+  "aabpty": {
+    "defaultMessage": "Rooms left open"
+  },
   "btNUvb": {
     "defaultMessage": "Room name"
+  },
+  "cPIKU2": {
+    "defaultMessage": "Following"
   },
   "cXAlMR": {
     "defaultMessage": "Scheduled"
@@ -215,6 +257,9 @@
   },
   "hvEgD/": {
     "defaultMessage": "Room Recordings"
+  },
+  "i7iq6+": {
+    "defaultMessage": "What is this?"
   },
   "ieGrWo": {
     "defaultMessage": "Follow"
@@ -248,6 +293,9 @@
   "omWbg5": {
     "defaultMessage": "Custom Relays (Optional)"
   },
+  "p15VNv": {
+    "defaultMessage": "Start room"
+  },
   "pXFAd/": {
     "defaultMessage": "Stop Recording"
   },
@@ -277,6 +325,12 @@
   },
   "yAaNQA": {
     "defaultMessage": "Admins"
+  },
+  "yfHzsX": {
+    "defaultMessage": "Room not found"
+  },
+  "yygQBD": {
+    "defaultMessage": "Restart room"
   },
   "zA95/o": {
     "defaultMessage": "Moderator"

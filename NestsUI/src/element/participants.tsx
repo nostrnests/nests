@@ -51,7 +51,7 @@ export default function NostrParticipants({ event }: { event: NostrEvent }) {
 }
 
 function NostrParticipant({ p, event }: { p: RemoteParticipant | LocalParticipant; event: NostrEvent }) {
-  const isGuest = p.identity.startsWith("guest-");
+  const isGuest = p.identity.startsWith("guest-") || p.identity === "";
   const isMe = p instanceof LocalParticipant;
   const profile = useUserProfile(isGuest ? undefined : p.identity);
   const presence = useUserPresence(p.identity);
