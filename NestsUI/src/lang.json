@@ -45,6 +45,9 @@
   "47FYwb": {
     "defaultMessage": "Cancel"
   },
+  "5B660s": {
+    "defaultMessage": "Recovery email"
+  },
   "5q3qC0": {
     "defaultMessage": "Download"
   },
@@ -130,6 +133,9 @@
   },
   "Iul/hR": {
     "defaultMessage": "Active Rooms"
+  },
+  "JCIgkj": {
+    "defaultMessage": "Username"
   },
   "JVshdm": {
     "defaultMessage": "Make admin"
@@ -310,6 +316,9 @@
   },
   "uMhpKe": {
     "defaultMessage": "Color"
+  },
+  "unQI/I": {
+    "defaultMessage": "Personal note"
   },
   "wEQDC6": {
     "defaultMessage": "Edit"

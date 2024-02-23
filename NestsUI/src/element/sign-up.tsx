@@ -40,10 +40,20 @@ export default function SignUp() {
         <FormattedMessage defaultMessage="Create an account" />
       </h1>
       <div className="flex items-center bg-foreground-2 rounded-xl">
-        <input type="text" placeholder={formatMessage({ defaultMessage: "Username" })} value={username} onChange={(e) => setUsername(e.target.value)} />
+        <input
+          type="text"
+          placeholder={formatMessage({ defaultMessage: "Username" })}
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+        />
         <div className="opacity-50 px-2">@{Bunker}</div>
       </div>
-      <input type="text" placeholder={formatMessage({ defaultMessage: "Recovery email" })} value={email} onChange={(e) => setEmail(e.target.value)} />
+      <input
+        type="text"
+        placeholder={formatMessage({ defaultMessage: "Recovery email" })}
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+      />
       <PrimaryButton onClick={createAccount}>
         <FormattedMessage defaultMessage="Create account" />
       </PrimaryButton>

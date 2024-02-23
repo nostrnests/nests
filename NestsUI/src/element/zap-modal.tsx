@@ -85,7 +85,11 @@ export default function ZapFlow({ targets, onClose }: { targets: Array<ZapTarget
               value={customAmount}
               onChange={(e) => setCustomAmount(e.target.value ? Number(e.target.value) : undefined)}
             />
-            <textarea placeholder={formatMessage({ defaultMessage: "Personal note"})} value={comment} onChange={(e) => setComment(e.target.value)} />
+            <textarea
+              placeholder={formatMessage({ defaultMessage: "Personal note" })}
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+            />
             <PrimaryButton
               onClick={async () => {
                 if (signer && pubkey) {
