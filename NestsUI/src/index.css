@@ -104,6 +104,10 @@ textarea {
   min-width: 0;
 }
 
+input[type="checkbox"] {
+  @apply w-6 h-6;
+}
+
 .react {
   animation: react 5s forwards;
 }

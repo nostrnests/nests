@@ -22,11 +22,15 @@ export class NestsApi {
     readonly signer?: EventSigner,
   ) {}
 
-  async createRoom(relays: Array<string>): Promise<CreateRoomResponse> {
+  async createRoom(relays: Array<string>, hlsStream: boolean): Promise<CreateRoomResponse> {
     return await this.#fetch<CreateRoomResponse>(
-      "GET",
+      "PUT",
       true,
-      `/api/v1/nests?${relays.map((a) => `relay=${encodeURIComponent(a)}`).join("&")}`,
+      "/api/v1/nests",
+      JSON.stringify({
+        relays,
+        hls_stream: hlsStream
+      })
     );
   }
 

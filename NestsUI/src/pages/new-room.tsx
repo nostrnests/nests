@@ -12,6 +12,7 @@ import BannerEditor from "../element/banner-editor";
 import { FormattedMessage, useIntl } from "react-intl";
 import { updateRelays } from "../utils";
 import Icon from "../icon";
+import Collapsed from "../element/collapsed";
 
 export default function NewRoom() {
   updateRelays(DefaultRelays);
@@ -23,7 +24,7 @@ export default function NewRoom() {
   const [image, setImage] = useState<string>();
   const [relayInput, setRelayInput] = useState("");
   const [relays, setRelays] = useState<Array<string>>([...DefaultRelays]);
-  const [customRelays, setCustomRelays] = useState(false);
+  const [hls, setHls] = useState(false);
   const navigate = useNavigate();
   const login = useLogin();
   const { formatMessage } = useIntl();
@@ -55,7 +56,7 @@ export default function NewRoom() {
   async function createRoom() {
     if (!login.signer) return;
     const api = new NestsApi(ApiUrl, login.signer);
-    const room = await api.createRoom(relays);
+    const room = await api.createRoom(relays, hls);
     const eb = buildEvent(room.roomId);
 
     room.endpoints.forEach((e) => eb.tag(["streaming", e]));
@@ -124,14 +125,12 @@ export default function NewRoom() {
       </div>
       <BannerEditor onImage={setImage} onColor={setColor} />
       <div>
-        <div
-          className="flex gap-2 items-center font-medium mb-2 cursor-pointer"
-          onClick={() => setCustomRelays((s) => !s)}
+        <Collapsed header={open => <div
+          className="flex gap-2 items-center font-medium mb-2"
         >
           <FormattedMessage defaultMessage="Custom Relays (Optional)" />
-          <Icon name="chevron" className={`${customRelays ? "rotate-90" : "-rotate-90"} transition`} size={16} />
-        </div>
-        {customRelays && (
+          <Icon name="chevron" className={`${open ? "rotate-90" : "-rotate-90"} transition`} size={16} />
+        </div>}>
           <div className="flex flex-col gap-2">
             <p className="text-off-white">
               <FormattedMessage defaultMessage="If you'd like to broadcast only to specific relays, you can add those here." />
@@ -165,7 +164,28 @@ export default function NewRoom() {
               </div>
             ))}
           </div>
-        )}
+        </Collapsed>
+      </div>
+      <div>
+        <div className="flex items-center justify-between">
+          <p className="font-medium mb-2">
+            <FormattedMessage defaultMessage="Create room video stream" />
+          </p>
+          <input type="checkbox" checked={hls} onChange={e => setHls(e.target.checked)} />
+        </div>
+
+        <Collapsed header={open => <small className="flex gap-2 items-center">
+          <FormattedMessage defaultMessage="What is this?" />
+          <Icon name="chevron" className={`${open ? "rotate-90" : "-rotate-90"} transition`} size={16} />
+        </small>}>
+          <small className="text-off-white">
+            <FormattedMessage defaultMessage="Enabling this option will create a video stream of this nest, allowing people to watch the nest on zap.stream / Amethyst / nostrudel.ninja / sats.gg or any client that supports Live Activities (NIP-53), they will also be able to chat in the room while watching." />
+          </small>
+          <br />
+          <small className="text-off-white">
+            <FormattedMessage defaultMessage="If this option is disabled they will still be able to see the nest on those clients and chat but not hear the room audio." />
+          </small>
+        </Collapsed>
       </div>
       <RoomCard event={dmeoRoom} showDescription={true} />
       <div className="flex gap-2 justify-center">

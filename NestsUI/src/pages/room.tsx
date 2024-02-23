@@ -78,7 +78,7 @@ function ParticipantsPannel({ room }: { room: RoomState }) {
   const navigate = useNavigate();
   return (
     <div className={`lg:w-[calc(100vw-${ChatWidth}px)] max-lg:w-screen overflow-y-auto`}>
-      <div className="px-4 py-6">
+      <div className="px-4 pt-6">
         <button className="flex gap-2 items-center text-highlight cursor-pointer" onClick={() => navigate("/")}>
           <Icon name="chevron" />
           <FormattedMessage defaultMessage="Lobby" />
