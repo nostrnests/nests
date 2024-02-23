@@ -1,54 +1,53 @@
-volumes:
+﻿volumes:
   postgres:
+  strfry:
   redis:
-  recordings:
 services:
   livekit:
     image: livekit/livekit-server:latest
     command: --config /etc/livekit.yaml
     restart: unless-stopped
-    network_mode: host
     volumes:
-      - ./compose-config/livekit-prod.yaml:/etc/livekit.yaml
-    depends_on: 
+      - ./compose-config/livekit-dev.yaml:/etc/livekit.yaml
+    depends_on:
       - redis
+    ports:
+      - "7880:7880"
   livekit-egress:
     image: livekit/egress:latest
     restart: unless-stopped
     environment:
       - "EGRESS_CONFIG_FILE=/etc/egress.yaml"
+    ports:
+      - "7980:7980"
     volumes:
       - ./compose-config/egress.yaml:/etc/egress.yaml
-      - recordings:/data/recordings
+      - ./recordings:/data/recordings
     depends_on:
       - livekit
       - redis
   redis:
     image: redis:latest
     restart: unless-stopped
+    ports:
+      - "6679:6379"
     volumes:
       - redis:/data
   postgres:
     image: "postgres:15"
     restart: unless-stopped
+    ports:
+      - "25333:5432"
     volumes:
       - "postgres:/var/lib/postgresql/data"
     environment:
       - "POSTGRES_DB=nests"
       - "POSTGRES_HOST_AUTH_METHOD=trust"
-  backend:
+  strfry:
+    image: dockurr/strfry
     restart: unless-stopped
-    build:
-      context: .
-      dockerfile: NestsBackend/Dockerfile
-    volumes:
-      - ./NestsBackend/appsettings.compose.json:/app/appsettings.Production.json
-      - recordings:/data/recordings
-  ui:
-    restart: unless-stopped
-    build: 
-      context: NestsUI
-      args:
-        - "NGINX_CONF=nginx.compose.conf"
     ports:
-      - "8089:8080"
+      - "7777:7777"
+    volumes:
+      - strfry:/app/strfry-db
+      - ./compose-config/strfry.conf:/etc/strfry.conf

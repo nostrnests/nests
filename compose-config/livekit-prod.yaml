@@ -3,7 +3,7 @@ rtc:
     tcp_port: 7881
     port_range_start: 50000
     port_range_end: 60000
-    use_external_ip: false
+    use_external_ip: true
     enable_loopback_candidate: false
 redis:
     address: redis:6379
@@ -18,8 +18,8 @@ redis:
     cluster_addresses: []
     max_redirects: null
 turn:
-    enabled: false
-    domain: ""
+    enabled: true
+    domain: "nostrnests.com"
     tls_port: 5349
     udp_port: 3478
     external_tls: true
@@ -28,4 +28,4 @@ keys:
 webhook:
     api_key: APIA2zJFaMRctfZ
     urls:
-        - "http://host.docker.internal:5070/api/v1/livekit/webhook"
+        - "http://backend:8080/api/v1/livekit/webhook"

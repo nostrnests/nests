@@ -1,0 +1,31 @@
+port: 7880
+rtc:
+    tcp_port: 7881
+    port_range_start: 50000
+    port_range_end: 60000
+    use_external_ip: false
+    enable_loopback_candidate: false
+redis:
+    address: redis:6379
+    username: ""
+    password: ""
+    db: 0
+    use_tls: false
+    sentinel_master_name: ""
+    sentinel_username: ""
+    sentinel_password: ""
+    sentinel_addresses: []
+    cluster_addresses: []
+    max_redirects: null
+turn:
+    enabled: false
+    domain: ""
+    tls_port: 5349
+    udp_port: 3478
+    external_tls: true
+keys:
+    APIA2zJFaMRctfZ: jWXlEyKmu5eazIGViKFfO0TgT6el8EyjvMR0Tei3HFrB
+webhook:
+    api_key: APIA2zJFaMRctfZ
+    urls:
+        - "http://host.docker.internal:5070/api/v1/livekit/webhook"
