@@ -5,8 +5,10 @@ using Microsoft.EntityFrameworkCore;
 using Nests.Database;
 using NestsBackend.Model;
 using NestsBackend.Services;
+using Newtonsoft.Json;
 using Nostr.Client.Identifiers;
 using Nostr.Client.Messages;
+using CreateRoomRequest = NestsBackend.Model.CreateRoomRequest;
 using Room = Nests.Database.Room;
 
 namespace NestsBackend.Controllers;
@@ -14,35 +16,27 @@ namespace NestsBackend.Controllers;
 [Route("/api/v1/nests")]
 [Consumes("application/json")]
 [Produces("application/json")]
-public class NestsController : Controller
+public class NestsController(Config config, NestsContext db, LiveKitApi liveKit, LiveKitJwt liveKitJwt)
+    : Controller
 {
-    private readonly Config _config;
-    private readonly NestsContext _db;
-    private readonly LiveKitApi _liveKit;
-    private readonly LiveKitJwt _liveKitJwt;
-
-    public NestsController(Config config, NestsContext db, LiveKitApi liveKit, LiveKitJwt liveKitJwt)
-    {
-        _config = config;
-        _db = db;
-        _liveKit = liveKit;
-        _liveKitJwt = liveKitJwt;
-    }
-
     /// <summary>
     /// Create a new room
     /// </summary>
     /// <returns>Template nostr event with tags for streaming url and d-tag</returns>
-    [HttpGet]
+    [HttpPut]
     [Authorize(AuthenticationSchemes = NostrAuth.Scheme)]
-    public async Task<IActionResult> CreateNewRoom([FromQuery] string[] relay)
+    public async Task<IActionResult> CreateNewRoom([FromBody] CreateRoomRequest req)
     {
         var pubkey = HttpContext.GetPubKey();
         if (string.IsNullOrEmpty(pubkey)) return Unauthorized();
 
+        const int maxParticipants = 50;
         var room = new Room
         {
-            CreatedBy = pubkey
+            CreatedBy = pubkey,
+            Relays = req.Relays,
+            VideoStream = req.HlsStream,
+            Capacity = maxParticipants
         };
 
         var user = new Participant
@@ -54,35 +48,20 @@ public class NestsController : Controller
             RoomId = room.Id
         };
 
-        _db.Rooms.Add(room);
-        _db.Participants.Add(user);
-        await _db.SaveChangesAsync();
+        db.Rooms.Add(room);
+        db.Participants.Add(user);
+        await db.SaveChangesAsync();
 
-        var naddr = new NostrAddressIdentifier(room.Id.ToString(), pubkey, relay, NostrKind.LiveEvent);
-        var liveKitReq = new CreateRoomRequest
+        var liveKitReq = new LiveKit.Proto.CreateRoomRequest
         {
             Name = room.Id.ToString(),
-            Egress = new()
-            {
-                Room = new()
-                {
-                    RoomName = room.Id.ToString(),
-                    CustomBaseUrl = new Uri(_config.PublicNestsUrl, $"/{naddr.ToBech32()}").ToString(),
-                    SegmentOutputs =
-                    {
-                        new SegmentedFileOutput()
-                        {
-                            Protocol = SegmentedFileProtocol.HlsProtocol,
-                            FilenamePrefix = $"{_config.EgressRecordingPath!}/live/{room.Id}/seg",
-                            LivePlaylistName = "live.m3u8"
-                        }
-                    }
-                }
-            }
+            MaxParticipants = maxParticipants,
+            EmptyTimeout = (uint)TimeSpan.FromMinutes(3).TotalSeconds,
+            Metadata = JsonConvert.SerializeObject(await GetRoomInfoObject(room.Id))
         };
 
-        await _liveKit.CreateRoom(liveKitReq);
-        var token = _liveKitJwt.CreateToken(pubkey, new LiveKitJwt.Permissions()
+        await liveKit.CreateRoom(liveKitReq);
+        var token = liveKitJwt.CreateToken(pubkey, new LiveKitJwt.Permissions()
         {
             Room = room.Id.ToString(),
             RoomJoin = true,
@@ -92,15 +71,20 @@ public class NestsController : Controller
             CanPublishSources = ["microphone"]
         });
 
+        var endpoints = new List<Uri>(
+        [
+            new Uri(
+                $"{(config.PublicUrl.Scheme == "http" ? "ws" : "wss")}+livekit://{config.PublicUrl.Host}:{config.PublicUrl.Port}")
+        ]);
+        if (req.HlsStream)
+        {
+            endpoints.Add(new Uri(config.PublicUrl, $"api/v1/live/{room.Id}/live.m3u8"));
+        }
+
         return Json(new CreateRoomResponse
         {
             RoomId = room.Id,
-            Endpoints =
-            {
-                new Uri(_config.PublicUrl, $"api/v1/live/{room.Id}/live.m3u8"),
-                new Uri(
-                    $"{(_config.PublicUrl.Scheme == "http" ? "ws" : "wss")}+livekit://{_config.PublicUrl.Host}:{_config.PublicUrl.Port}")
-            },
+            Endpoints = endpoints,
             Token = token
         });
     }
@@ -114,7 +98,7 @@ public class NestsController : Controller
     [AllowAnonymous]
     public async Task<IActionResult> GuestJoinRoom([FromRoute] Guid id)
     {
-        var room = await _db.Rooms
+        var room = await db.Rooms
             .AsNoTracking()
             .FirstOrDefaultAsync(a => a.Id == id);
 
@@ -124,7 +108,7 @@ public class NestsController : Controller
         }
 
         var guid = $"guest-{Guid.NewGuid()}";
-        var token = _liveKitJwt.CreateToken(guid, new LiveKitJwt.Permissions()
+        var token = liveKitJwt.CreateToken(guid, new LiveKitJwt.Permissions()
         {
             Room = room.Id.ToString(),
             RoomJoin = true,
@@ -147,7 +131,7 @@ public class NestsController : Controller
         var pubkey = HttpContext.GetPubKey();
         if (string.IsNullOrEmpty(pubkey)) return Unauthorized();
 
-        var room = await _db.Rooms
+        var room = await db.Rooms
             .AsNoTracking()
             .FirstOrDefaultAsync(a => a.Id == id);
 
@@ -156,7 +140,7 @@ public class NestsController : Controller
             return NotFound();
         }
 
-        var participant = await _db.Participants
+        var participant = await db.Participants
             .AsNoTracking()
             .FirstOrDefaultAsync(a => a.RoomId == room.Id && a.Pubkey == pubkey);
 
@@ -170,11 +154,11 @@ public class NestsController : Controller
                 IsSpeaker = false
             };
 
-            _db.Participants.Add(participant);
-            await _db.SaveChangesAsync();
+            db.Participants.Add(participant);
+            await db.SaveChangesAsync();
         }
 
-        var token = _liveKitJwt.CreateToken(pubkey, new LiveKitJwt.Permissions()
+        var token = liveKitJwt.CreateToken(pubkey, new LiveKitJwt.Permissions()
         {
             Room = room.Id.ToString(),
             RoomJoin = true,
@@ -200,7 +184,7 @@ public class NestsController : Controller
         var pubkey = HttpContext.GetPubKey();
         if (string.IsNullOrEmpty(pubkey)) return Unauthorized();
 
-        var room = await _db.Rooms
+        var room = await db.Rooms
             .AsNoTracking()
             .FirstOrDefaultAsync(a => a.Id == id);
 
@@ -209,7 +193,7 @@ public class NestsController : Controller
             return NotFound();
         }
 
-        var participant = await _db.Participants
+        var participant = await db.Participants
             .FirstOrDefaultAsync(a => a.RoomId == room.Id && a.Pubkey == req.Participant);
 
         if (participant == default)
@@ -217,7 +201,7 @@ public class NestsController : Controller
             return BadRequest();
         }
 
-        var callerParticipant = await _db.Participants
+        var callerParticipant = await db.Participants
             .AsNoTracking()
             .FirstOrDefaultAsync(a => a.RoomId == room.Id && a.Pubkey == pubkey);
 
@@ -249,7 +233,7 @@ public class NestsController : Controller
 
         if (req.MuteMicrophone.HasValue)
         {
-            var roomParticipant = await _liveKit.GetParticipant(new()
+            var roomParticipant = await liveKit.GetParticipant(new()
             {
                 Room = room.Id.ToString(),
                 Identity = participant.Pubkey
@@ -257,7 +241,7 @@ public class NestsController : Controller
             var micTrack = roomParticipant.Tracks.FirstOrDefault(a => a.Source == TrackSource.Microphone);
             if (micTrack != default)
             {
-                await _liveKit.MutePublishedTrack(new()
+                await liveKit.MutePublishedTrack(new()
                 {
                     Room = room.Id.ToString(),
                     Identity = participant.Pubkey,
@@ -270,10 +254,10 @@ public class NestsController : Controller
 
         if (changes)
         {
-            await _db.SaveChangesAsync();
+            await db.SaveChangesAsync();
             try
             {
-                await _liveKit.UpdateParticipant(new()
+                await liveKit.UpdateParticipant(new()
                 {
                     Room = room.Id.ToString(),
                     Identity = participant.Pubkey,
@@ -327,7 +311,7 @@ public class NestsController : Controller
         var (room, user) = roomInfo.Value;
         var recordingId = Guid.NewGuid();
 
-        if (_config.EgressRecordingPath == default)
+        if (config.EgressRecordingPath == default)
         {
             throw new Exception("Recording path not configured");
         }
@@ -341,12 +325,12 @@ public class NestsController : Controller
                 new EncodedFileOutput
                 {
                     FileType = EncodedFileType.Mp4,
-                    Filepath = $"{_config.EgressRecordingPath}/{recordingId}"
+                    Filepath = $"{config.EgressRecordingPath}/{recordingId}"
                 }
             }
         };
 
-        var rsp = await _liveKit.StartRoomCompositeEgress(req);
+        var rsp = await liveKit.StartRoomCompositeEgress(req);
         if (rsp.Status is EgressStatus.EgressStarting)
         {
             var newRecording = new Recording()
@@ -356,8 +340,8 @@ public class NestsController : Controller
                 StartedBy = user.Pubkey,
                 EgressId = rsp.EgressId
             };
-            _db.Recordings.Add(newRecording);
-            await _db.SaveChangesAsync();
+            db.Recordings.Add(newRecording);
+            await db.SaveChangesAsync();
             await UpdateRoomInfo(roomId);
             return Accepted();
         }
@@ -382,7 +366,7 @@ public class NestsController : Controller
         }
 
         var (room, _) = roomInfo.Value;
-        var recording = await _db.Recordings
+        var recording = await db.Recordings
             .FirstOrDefaultAsync(a => a.Id == id && a.RoomId == roomId);
         if (recording == default)
         {
@@ -394,12 +378,12 @@ public class NestsController : Controller
             return BadRequest(new NestError("Already stopped"));
         }
 
-        await _liveKit.StopEgress(recording.RoomId, new()
+        await liveKit.StopEgress(recording.RoomId, new()
         {
             EgressId = recording.EgressId
         });
         recording.Stopped = DateTime.UtcNow;
-        await _db.SaveChangesAsync();
+        await db.SaveChangesAsync();
 
         await UpdateRoomInfo(roomId);
 
@@ -422,7 +406,7 @@ public class NestsController : Controller
             Id = a.Id,
             Started = a.Started,
             Stopped = a.Stopped,
-            Url = new Uri(_config.PublicUrl, $"/api/v1/nests/{room.Id}/recording/{a.Id}")
+            Url = new Uri(config.PublicUrl, $"/api/v1/nests/{room.Id}/recording/{a.Id}")
         }));
     }
 
@@ -435,7 +419,7 @@ public class NestsController : Controller
             return BadRequest();
         }
 
-        var recording = await _db.Recordings
+        var recording = await db.Recordings
             .FirstOrDefaultAsync(a => a.Id == id && a.RoomId == roomId);
         if (recording == default)
         {
@@ -447,7 +431,7 @@ public class NestsController : Controller
             return BadRequest(new NestError("Recording not finished"));
         }
 
-        var path = Path.Combine(_config.ApiRecordingPath!, $"{recording.Id}.mp4");
+        var path = Path.Combine(config.ApiRecordingPath!, $"{recording.Id}.mp4");
         if (Path.Exists(path))
         {
             var fs = new FileStream(path, FileMode.Open,
@@ -474,7 +458,7 @@ public class NestsController : Controller
             return BadRequest();
         }
 
-        var recording = await _db.Recordings
+        var recording = await db.Recordings
             .AsNoTracking()
             .FirstOrDefaultAsync(a => a.Id == id && a.RoomId == roomId);
         if (recording == default)
@@ -482,11 +466,11 @@ public class NestsController : Controller
             return NotFound();
         }
 
-        var path = Path.Combine(_config.ApiRecordingPath!, $"{recording.Id}.mp4");
+        var path = Path.Combine(config.ApiRecordingPath!, $"{recording.Id}.mp4");
         if (Path.Exists(path))
         {
             System.IO.File.Delete(path);
-            await _db.Recordings
+            await db.Recordings
                 .Where(a => a.Id == recording.Id)
                 .ExecuteDeleteAsync();
             return Accepted();
@@ -500,7 +484,7 @@ public class NestsController : Controller
         var pubkey = HttpContext.GetPubKey();
         if (string.IsNullOrEmpty(pubkey)) return default;
 
-        var room = await _db.Rooms
+        var room = await db.Rooms
             .AsNoTracking()
             .Include(a => a.Recordings)
             .FirstOrDefaultAsync(a => a.Id == roomId);
@@ -510,7 +494,7 @@ public class NestsController : Controller
             return default;
         }
 
-        var user = await _db.Participants
+        var user = await db.Participants
             .AsNoTracking()
             .FirstOrDefaultAsync(a => a.Pubkey == pubkey && a.RoomId == room.Id);
 
@@ -529,7 +513,7 @@ public class NestsController : Controller
 
     private async Task<RoomInfoResponse?> GetRoomInfoObject(Guid roomId)
     {
-        var room = await _db.Rooms
+        var room = await db.Rooms
             .AsNoTracking()
             .Include(a => a.Participants)
             .Include(a => a.Recordings)
@@ -545,7 +529,7 @@ public class NestsController : Controller
             Host = room.CreatedBy,
             Speakers = room.Participants.Where(a => a.IsSpeaker).Select(a => a.Pubkey).ToList(),
             Admins = room.Participants.Where(a => a.IsAdmin).Select(a => a.Pubkey).ToList(),
-            Link = new NostrAddressIdentifier(room.Id.ToString(), room.CreatedBy, null, (NostrKind)30312).ToBech32(),
+            Link = new NostrAddressIdentifier(room.Id.ToString(), room.CreatedBy, null, NostrKind.LiveEvent).ToBech32(),
             Recording = room.Recordings.Any(a => a.Stopped == null)
         };
     }
@@ -555,6 +539,6 @@ public class NestsController : Controller
         var info = await GetRoomInfoObject(roomId);
         if (info == default) return;
 
-        await _liveKit.UpdateRoomMetadata(roomId, info);
+        await liveKit.UpdateRoomMetadata(roomId, info);
     }
 }

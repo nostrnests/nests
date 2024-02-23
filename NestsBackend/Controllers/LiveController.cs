@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace NestsBackend.Controllers;
 
@@ -6,19 +7,13 @@ namespace NestsBackend.Controllers;
 /// Live playlist (HLS) controller
 /// </summary>
 [Route("/api/v1/live")]
-public class LiveController : Controller
+[AllowAnonymous]
+public class LiveController(Config config) : Controller
 {
-    private readonly Config _config;
-
-    public LiveController(Config config)
-    {
-        _config = config;
-    }
-
     [HttpGet("{id:guid}/{filename}")]
     public IActionResult GetLivePlaylist([FromRoute] Guid id, [FromRoute] string filename)
     {
-        var filePath = $"{_config.ApiRecordingPath!}/live/{id}/{filename}";
+        var filePath = $"{config.ApiRecordingPath!}/live/{id}/{filename}";
         var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read);
         return File(fs, "application/octet-stream");
     }

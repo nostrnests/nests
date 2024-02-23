@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Nests.Database;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Nests.Database.Migrations
 {
     [DbContext(typeof(NestsContext))]
-    partial class NestsContextModelSnapshot : ModelSnapshot
+    [Migration("20240223101642_RoomConfig")]
+    partial class RoomConfig
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -97,7 +100,8 @@ namespace Nests.Database.Migrations
 
                     b.Property<List<string>>("Relays")
                         .IsRequired()
-                        .HasColumnType("text[]");
+                        .HasColumnType("text[]")
+                        .HasDefaultValue(new List<string>());
 
                     b.Property<bool>("VideoStream")
                         .HasColumnType("boolean");
