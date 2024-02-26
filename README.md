@@ -1,6 +1,6 @@
 ## Room
 
-Following NIP-53 using `kind: 30312`
+Following NIP-53 using `kind: 30311`
 
 `service` tag is added to point clients to the API which controls the room access
 
@@ -70,7 +70,7 @@ a given time window.
 
 ## ZapSplits
 
-Zap splits should be set on the room `kind: 30312` as NIP-57.G `zap` tags
+Zap splits should be set on the room `kind: 30311` as NIP-57.G `zap` tags
 
 ## Testing
 Start by bringing up the dev env:
