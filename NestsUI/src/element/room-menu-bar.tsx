@@ -15,6 +15,7 @@ import Async from "./async";
 import { FormattedMessage } from "react-intl";
 import ShareModal from "./share-modal";
 import { ProfileEditor } from "./profile-editor";
+import DeviceSelector from "./device-selector";
 
 export function RoomOptionsButton({ link }: { link: NostrLink }) {
   const [open, setOpen] = useState(false);
@@ -25,6 +26,7 @@ export function RoomOptionsButton({ link }: { link: NostrLink }) {
   const [share, setShare] = useState(false);
   const [w, setW] = useState(230);
   const [profileEdit, setProfileEdit] = useState(false);
+  const [devices, setDevices] = useState(false);
   const isAdmin = useIsAdmin();
   const localParticipant = useLocalParticipant();
   const roomContext = useNostrRoom();
@@ -80,6 +82,10 @@ export function RoomOptionsButton({ link }: { link: NostrLink }) {
                 setProfileEdit(true);
                 setOpen(false);
               })}
+            {menuItem("gear", <FormattedMessage defaultMessage="Devices" />, () => {
+              setDevices(true);
+              setOpen(false);
+            })}
             {menuItem("share", <FormattedMessage defaultMessage="Share" />, () => {
               setShare(true);
               setOpen(false);
@@ -168,6 +174,11 @@ export function RoomOptionsButton({ link }: { link: NostrLink }) {
       {profileEdit && (
         <Modal id="profile-editor" onClose={() => setProfileEdit(false)}>
           <ProfileEditor onClose={() => setProfileEdit(false)} />
+        </Modal>
+      )}
+      {devices && (
+        <Modal id="devices" onClose={() => setDevices(false)}>
+          <DeviceSelector />
         </Modal>
       )}
     </>

@@ -14,7 +14,7 @@ export default function useRoomPresence(link?: NostrLink) {
       .withFilter()
       .kinds([ROOM_PRESENCE])
       .tag("a", [`${link.kind}:${link.author}:${link.id}`])
-      .since(unixNow() - (PRESENCE_TIME * 10));
+      .since(unixNow() - PRESENCE_TIME * 10);
 
     return rb;
   }, [link]);
