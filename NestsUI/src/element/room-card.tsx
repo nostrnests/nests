@@ -18,6 +18,8 @@ import { FormattedMessage } from "react-intl";
 import DisplayName from "./display-name";
 import { extractStreamInfo } from "../utils";
 import { useNestsApi } from "../hooks/useNestsApi";
+import { PrimaryButton } from "./button";
+import ShareModal from "./share-modal";
 
 export default function RoomCard({
   event,
@@ -27,6 +29,7 @@ export default function RoomCard({
   join,
   presenceEvents,
   showDescription,
+  showShareMenu,
 }: {
   event: NostrEvent;
   inRoom?: boolean;
@@ -35,12 +38,14 @@ export default function RoomCard({
   join?: boolean;
   presenceEvents?: Array<NostrEvent>;
   showDescription?: boolean;
+  showShareMenu?: boolean;
 }) {
   const profile = useUserProfile(event.pubkey);
 
   const { title, summary, status, starts, image, color } = extractStreamInfo(event);
   const navigate = useNavigate();
   const [editRoom, setEditRoom] = useState(false);
+  const [share, setShare] = useState(false);
   const login = useLogin();
 
   const eventLink = useMemo(() => NostrLink.fromEvent(event), [event]);
@@ -118,6 +123,12 @@ export default function RoomCard({
               </AvatarStack>
             </div>
           )}
+          {!inRoom && status === "planned" && (showShareMenu ?? true) && <PrimaryButton onClick={() => setShare(true)}>
+            <FormattedMessage defaultMessage="Share" />
+          </PrimaryButton>}
+          {share && <Modal id="share-room" onClose={() => setShare(false)}>
+            <ShareModal event={event} onClose={() => setShare(false)} />
+          </Modal>}
         </div>
         <div className="text-2xl font-semibold">{title}</div>
         {showDescription && <div className="text-sm">{summary}</div>}

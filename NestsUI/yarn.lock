@@ -4128,6 +4128,43 @@ __metadata:
   languageName: node
   linkType: hard
 
+"ical-generator@npm:^7.0.0":
+  version: 7.0.0
+  resolution: "ical-generator@npm:7.0.0"
+  dependencies:
+    uuid-random: "npm:^1.3.2"
+  peerDependencies:
+    "@touch4it/ical-timezones": ">=1.6.0"
+    "@types/luxon": ">= 1.26.0"
+    "@types/mocha": ">= 8.2.1"
+    dayjs: ">= 1.10.0"
+    luxon: ">= 1.26.0"
+    moment: ">= 2.29.0"
+    moment-timezone: ">= 0.5.33"
+    rrule: ">= 2.6.8"
+  peerDependenciesMeta:
+    "@touch4it/ical-timezones":
+      optional: true
+    "@types/luxon":
+      optional: true
+    "@types/mocha":
+      optional: true
+    "@types/node":
+      optional: true
+    dayjs:
+      optional: true
+    luxon:
+      optional: true
+    moment:
+      optional: true
+    moment-timezone:
+      optional: true
+    rrule:
+      optional: true
+  checksum: 10c0/51db80789f5434b8d84c53130e14446c6de8a8f93811f93d27cbaebf251b58fa82ab51e5ed51e005ca3be2ce2646a99b3920f159f0fbd3a897e34cf156f7a818
+  languageName: node
+  linkType: hard
+
 "iconv-lite@npm:^0.6.2":
   version: 0.6.3
   resolution: "iconv-lite@npm:0.6.3"
@@ -5045,6 +5082,7 @@ __metadata:
     eslint: "npm:^8.55.0"
     eslint-plugin-react-hooks: "npm:^4.6.0"
     eslint-plugin-react-refresh: "npm:^0.4.5"
+    ical-generator: "npm:^7.0.0"
     livekit-client: "npm:^1.15.10"
     postcss: "npm:^8.4.33"
     prettier: "npm:^3.2.5"
@@ -6596,6 +6634,13 @@ __metadata:
   version: 1.0.2
   resolution: "util-deprecate@npm:1.0.2"
   checksum: 10c0/41a5bdd214df2f6c3ecf8622745e4a366c4adced864bc3c833739791aeeeb1838119af7daed4ba36428114b5c67dcda034a79c882e97e43c03e66a4dd7389942
+  languageName: node
+  linkType: hard
+
+"uuid-random@npm:^1.3.2":
+  version: 1.3.2
+  resolution: "uuid-random@npm:1.3.2"
+  checksum: 10c0/14cb0fc8d52738b9f3b856df39e82f50650dad3dca254d3e62742148ba57292697c53d7bb171b84ad9d0f9d9231fd0f13d13eb65cb67b7d6c994f78d40e5e363
   languageName: node
   linkType: hard
 

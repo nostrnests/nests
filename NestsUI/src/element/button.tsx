@@ -17,6 +17,9 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         type="button"
         className={classNames("py-2 px-3 relative font-semibold leading-5 select-none", className)}
         onClick={async (e) => {
+          if(onClick) {
+            e.stopPropagation();
+          }
           try {
             setLoading(true);
             await onClick?.(e);

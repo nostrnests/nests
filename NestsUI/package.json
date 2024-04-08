@@ -23,6 +23,7 @@
     "babel-plugin-formatjs": "^10.5.13",
     "classnames": "^2.5.1",
     "dayjs": "^1.11.10",
+    "ical-generator": "^7.0.0",
     "livekit-client": "^1.15.10",
     "qr-code-styling": "^1.6.0-rc.1",
     "react": "^18.2.0",
