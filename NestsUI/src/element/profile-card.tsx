@@ -29,7 +29,7 @@ export default function ProfileCard({
   const thisIsHost = pubkey === nostrRoom.info?.host;
   const isSelf = pubkey === login.pubkey;
 
-  const isSpeaker = participant.audioTracks.size > 0;
+  const isSpeaker = participant.permissions?.canPublish ?? false;
   const isMuted = !participant.isMicrophoneEnabled;
   const menuItem = (icon: string, text: ReactNode, onClick: () => Promise<void> | void, className?: string) => {
     return (
