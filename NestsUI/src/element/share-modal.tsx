@@ -15,7 +15,7 @@ export default function ShareModal({ event, onClose }: { event: NostrEvent; onCl
   const { formatMessage } = useIntl();
   const { copy, copied } = useCopy();
   const { system, signer, pubkey } = useEventBuilder();
-  const { title, status, starts, ends, id } = extractStreamInfo(event);
+  const { title, status, starts, ends, id, summary } = extractStreamInfo(event);
   const profile = useUserProfile(event.pubkey);
 
   const url = `${window.location.protocol}//${window.location.host}/${link.encode()}`;
@@ -55,6 +55,7 @@ export default function ShareModal({ event, onClose }: { event: NostrEvent; onCl
       start: new Date(Number(starts) * 1000),
       end: ends ? new Date(Number(ends) * 1000) : null,
       summary: title,
+      description: summary,
       organizer: {
         name: getDisplayName(profile, event.pubkey),
         email: `nostr:${hexToBech32("npub", event.pubkey)}`
