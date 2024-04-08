@@ -15,6 +15,7 @@ import { removeUndefined, sanitizeRelayUrl } from "@snort/shared";
 import { updateRelays } from "../utils";
 import { NostrRoomContextProvider } from "../element/nostr-room-context-provider";
 import { JoinRoom } from "../element/join-room";
+import { useSwipeable } from "react-swipeable";
 
 export interface RoomState {
   event: NostrEvent;
@@ -106,6 +107,17 @@ function ChatPannel({ link }: { link: NostrLink }) {
     "max-lg:transition",
   ];
 
+
+  const swipeHandlers = useSwipeable({
+    onSwipedUp: () => {
+      setExpanded(true);
+    },
+    onSwipedDown: () => {
+      setExpanded(false);
+    }
+  });
+
+
   const hiddenWhenCollapsed = { "max-lg:hidden": !expanded };
   return (
     <div
@@ -115,6 +127,7 @@ function ChatPannel({ link }: { link: NostrLink }) {
           ["--card-height"]: `${cardHeight}dvh`,
         } as CSSProperties
       }
+      {...swipeHandlers}
     >
       <div
         className={classNames("h-3 min-h-3 bg-foreground-2 w-40 rounded-full mt-2 mx-auto cursor-pointer lg:hidden", {

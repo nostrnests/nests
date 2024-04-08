@@ -5053,6 +5053,7 @@ __metadata:
     react-dom: "npm:^18.2.0"
     react-intl: "npm:^6.6.2"
     react-router-dom: "npm:^6.21.3"
+    react-swipeable: "npm:^7.0.1"
     tailwindcss: "npm:^3.4.1"
     tslib: "npm:^2.6.2"
     typescript: "npm:^5.2.2"
@@ -5537,6 +5538,15 @@ __metadata:
   peerDependencies:
     react: ">=16.8"
   checksum: 10c0/66a0377a74ef2d298b9d617c02ba7a10e7e8b8be34b303068b5b5986f05e965037c51c0d45ea3a7967438f2dfde76c2c0f638cf19d3417fb408608ee9aee1668
+  languageName: node
+  linkType: hard
+
+"react-swipeable@npm:^7.0.1":
+  version: 7.0.1
+  resolution: "react-swipeable@npm:7.0.1"
+  peerDependencies:
+    react: ^16.8.3 || ^17 || ^18
+  checksum: 10c0/ebd34ac4cad0053db2a43a5113a1b1f2ecbe2badbf4b3aae14cf7292cf836991378637dc7b7da6cf5217215b92559b43dd43775ba3fea95e7e451dc76d029893
   languageName: node
   linkType: hard
 

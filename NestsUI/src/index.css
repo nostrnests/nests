@@ -111,6 +111,7 @@ input[type="checkbox"] {
 
 .react {
   animation: react 5s forwards;
+  z-index: 19;
 }
 @keyframes react {
   0% {
@@ -118,11 +119,11 @@ input[type="checkbox"] {
   }
   30% {
     opacity: 1;
-    transform: translateY(-72px) scale(1.5);
+    transform: translateY(-60px) scale(1.5);
   }
   90% {
     opacity: 1;
-    transform: translateY(-72px) scale(1.5);
+    transform: translateY(-60px) scale(1.5);
   }
   100% {
     opacity: 0;

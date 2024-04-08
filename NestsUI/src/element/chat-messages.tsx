@@ -18,7 +18,7 @@ import { FormattedMessage, FormattedNumber } from "react-intl";
 import classNames from "classnames";
 import Mention from "./mention";
 
-export default function ChatMessages({ link, className }: { link: NostrLink; className?: string }) {
+export default function ChatMessages({ link, className, ...props }: { link: NostrLink; className?: string }) {
   const sub = useMemo(() => {
     const rb = new RequestBuilder(`chat-messages:${link.id}`);
     rb.withOptions({ leaveOpen: true }).withFilter().kinds([LIVE_CHAT, EventKind.ZapReceipt]).replyToLink([link]);
@@ -28,7 +28,7 @@ export default function ChatMessages({ link, className }: { link: NostrLink; cla
   const messages = useRequestBuilder(sub);
 
   return (
-    <div className={classNames("overflow-y-auto flex flex-col-reverse gap-3 px-5 grow", className)}>
+    <div className={classNames("overflow-y-auto flex flex-col-reverse gap-3 px-5 grow", className)} {...props}>
       {messages.map((a) => {
         switch (a.kind) {
           case EventKind.ZapReceipt: {
