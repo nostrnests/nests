@@ -115,11 +115,14 @@ input[type="checkbox"] {
 @keyframes react {
   0% {
     opacity: 0.1;
-    transform: scale(0.5);
   }
-  10% {
+  30% {
     opacity: 1;
-    transform: scale(1);
+    transform: translateY(-72px) scale(1.5);
+  }
+  90% {
+    opacity: 1;
+    transform: translateY(-72px) scale(1.5);
   }
   100% {
     opacity: 0;
