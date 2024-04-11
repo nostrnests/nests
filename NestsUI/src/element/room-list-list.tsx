@@ -45,6 +45,7 @@ export function RoomListList({
 
   const roomPresence = useRequestBuilder(subPresence);
 
+  const getTag = (a: NostrEvent, key: string) => a.tags.find((a) => a[0] === key)?.[1];
   const eventsWithPresence = useMemo(() => {
     return events
       .filter((a) => {
@@ -66,11 +67,11 @@ export function RoomListList({
   }, [events, roomPresence]);
 
   const liveRooms = eventsWithPresence.filter((a) => {
-    const status = a.event.tags.find((a) => a[0] === "status")?.[1];
+    const status = getTag(a.event, "status");
     return status === "live" && (showEmptyRooms || a.presence.length > 0);
   });
   const mineLeftOpen = eventsWithPresence.filter((a) => {
-    const status = a.event.tags.find((a) => a[0] === "status")?.[1];
+    const status = getTag(a.event, "status");
     return a.event.pubkey === login.pubkey && status === "live" && a.presence.length === 0;
   });
   const [closeMine, setCloseMine] = useState(false);
@@ -84,12 +85,16 @@ export function RoomListList({
     });
   }, [mineLeftOpen]);
   const plannedRooms = eventsWithPresence.filter((a) => {
-    const status = a.event.tags.find((a) => a[0] === "status")?.[1];
-    const starts = Number(a.event.tags.find((a) => a[0] === "starts")?.[1]);
+    const status = getTag(a.event, "status");
+    const starts = Number(getTag(a.event, "starts"));
     return status === "planned" && starts + 60 * 60 > unixNow();
+  }).sort((a, b) => {
+    const aStart = Number(getTag(a.event, "starts"));
+    const bStart = Number(getTag(b.event, "starts"));
+    return aStart > bStart ? 1 : -1;
   });
   const endedRooms = eventsWithPresence.filter((a) => {
-    const status = a.event.tags.find((a) => a[0] === "status")?.[1];
+    const status = getTag(a.event, "status");
     return status === "ended" && showEnded;
   });
   return (
