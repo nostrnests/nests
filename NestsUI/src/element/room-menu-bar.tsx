@@ -16,6 +16,8 @@ import { FormattedMessage } from "react-intl";
 import ShareModal from "./share-modal";
 import { ProfileEditor } from "./profile-editor";
 import DeviceSelector from "./device-selector";
+import Wallet from "./wallet";
+import Flyout from "./flyout";
 
 export function RoomOptionsButton({ link }: { link: NostrLink }) {
   const [open, setOpen] = useState(false);
@@ -27,6 +29,7 @@ export function RoomOptionsButton({ link }: { link: NostrLink }) {
   const [w, setW] = useState(230);
   const [profileEdit, setProfileEdit] = useState(false);
   const [devices, setDevices] = useState(false);
+  const [wallet, setWallet] = useState(false);
   const isAdmin = useIsAdmin();
   const localParticipant = useLocalParticipant();
   const roomContext = useNostrRoom();
@@ -96,7 +99,11 @@ export function RoomOptionsButton({ link }: { link: NostrLink }) {
                 await roomContext.api.updatePermissions(link.id, login.pubkey!, { can_publish: false });
                 setOpen(false);
               })}
-            {isAdmin && menuItem("audio", <FormattedMessage defaultMessage="Stream Audio" />, () => {})}
+            {menuItem("wallet", <FormattedMessage defaultMessage="Wallet" />, () => {
+              setWallet(true);
+              setOpen(false);
+            })}
+            {false && isAdmin && menuItem("audio", <FormattedMessage defaultMessage="Stream Audio" />, () => {})}
             {isAdmin &&
               roomContext.info?.recording === false &&
               menuItem("rec", <FormattedMessage defaultMessage="Start Recording" />, async () => {
@@ -181,6 +188,9 @@ export function RoomOptionsButton({ link }: { link: NostrLink }) {
           <DeviceSelector />
         </Modal>
       )}
+      <Flyout side="left" show={wallet} onClose={() => setWallet(false)}>
+        <Wallet />
+      </Flyout>
     </>
   );
 }

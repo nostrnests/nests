@@ -107,16 +107,14 @@ function ChatPannel({ link }: { link: NostrLink }) {
     "max-lg:transition",
   ];
 
-
   const swipeHandlers = useSwipeable({
     onSwipedUp: () => {
       setExpanded(true);
     },
     onSwipedDown: () => {
       setExpanded(false);
-    }
+    },
   });
-
 
   const hiddenWhenCollapsed = { "max-lg:hidden": !expanded };
   return (

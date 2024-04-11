@@ -84,15 +84,17 @@ export function RoomListList({
       }
     });
   }, [mineLeftOpen]);
-  const plannedRooms = eventsWithPresence.filter((a) => {
-    const status = getTag(a.event, "status");
-    const starts = Number(getTag(a.event, "starts"));
-    return status === "planned" && starts + 60 * 60 > unixNow();
-  }).sort((a, b) => {
-    const aStart = Number(getTag(a.event, "starts"));
-    const bStart = Number(getTag(b.event, "starts"));
-    return aStart > bStart ? 1 : -1;
-  });
+  const plannedRooms = eventsWithPresence
+    .filter((a) => {
+      const status = getTag(a.event, "status");
+      const starts = Number(getTag(a.event, "starts"));
+      return status === "planned" && starts + 60 * 60 > unixNow();
+    })
+    .sort((a, b) => {
+      const aStart = Number(getTag(a.event, "starts"));
+      const bStart = Number(getTag(b.event, "starts"));
+      return aStart > bStart ? 1 : -1;
+    });
   const endedRooms = eventsWithPresence.filter((a) => {
     const status = getTag(a.event, "status");
     return status === "ended" && showEnded;

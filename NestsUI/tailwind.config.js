@@ -21,6 +21,7 @@ export default {
         foreground: "rgb(var(--foreground) / <alpha-value>)",
         "foreground-2": "rgb(var(--foreground-2) / <alpha-value>)",
         "foreground-2-hover": "rgb(var(--foreground-2-hover) / <alpha-value>)",
+        "foreground-3": "rgb(var(--foreground-3) / <alpha-value>)",
         primary: "rgb(var(--primary) / <alpha-value>)",
         highlight: "rgb(var(--highlight) / <alpha-value>)",
         delete: "rgb(var(--delete) / <alpha-value>)",

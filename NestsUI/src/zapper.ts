@@ -1,13 +1,6 @@
 import { isHex, LNURL } from "@snort/shared";
 import { EventPublisher, NostrEvent, NostrLink, SystemInterface } from "@snort/system";
-
-export interface LNWallet {
-  payInvoice: (pr: string) => Promise<{
-    preimage?: string;
-    isPaid: boolean;
-    fees?: number;
-  }>;
-}
+import { LNWallet } from "@snort/wallet";
 
 export interface ZapTarget {
   type: "lnurl" | "pubkey";
@@ -128,7 +121,7 @@ export class Zapper {
           const res = await wallet?.payInvoice(invoice.pr);
           ret.push({
             target: t,
-            paid: res?.isPaid ?? false,
+            paid: Boolean(res?.preimage),
             sent: toSend,
             pr: invoice.pr,
             fee: res?.fees ?? 0,

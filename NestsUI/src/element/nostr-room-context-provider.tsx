@@ -140,7 +140,7 @@ export function NostrRoomContextProvider({
       }}
     >
       <RoomAudioRenderer volume={volume} />
-      <Flyout show={flyout !== undefined} onClose={() => setFlyout(undefined)}>
+      <Flyout side="right" show={flyout !== undefined} onClose={() => setFlyout(undefined)}>
         {flyout}
       </Flyout>
       {children}

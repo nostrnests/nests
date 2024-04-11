@@ -22,6 +22,7 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import dayjs from "dayjs";
 import IntlContext from "./intl";
 import { loginHook } from "./login";
+import { setupWebLNWalletConfig } from "./wallet";
 
 dayjs.extend(localizedFormat);
 dayjs.extend(relativeTime);
@@ -33,6 +34,7 @@ async function routeInit() {
     ? [session.pubkey, ...(session.follows?.filter((a) => a[0] === "p").map((a) => a[1]) ?? [])]
     : undefined;
   await snortSystem.Init(bufferList);
+  setupWebLNWalletConfig();
 }
 
 const routes = [

@@ -13,6 +13,8 @@ import { LIVE_CHAT } from "../const";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Track } from "livekit-client";
 import VuBar from "./vu";
+import { useWallet } from "../wallet";
+import WalletBalance from "./wallet-balance";
 
 export default function WriteMessage({ link, className }: { link: NostrLink; className?: string }) {
   const [msg, setMsg] = useState("");
@@ -79,6 +81,7 @@ function MenuBar({ link }: { link: NostrLink }) {
   const navigate = useNavigate();
   const hand = useHand(link);
   const refMenu = useRef<HTMLDivElement | null>(null);
+  const wallet = useWallet();
 
   async function toggleMute() {
     room.localParticipant.setMicrophoneEnabled(!room.localParticipant.isMicrophoneEnabled);
@@ -95,7 +98,12 @@ function MenuBar({ link }: { link: NostrLink }) {
   const desktopClasses = ["lg:bg-foreground", "lg:px-4", "lg:rounded-full"];
   return (
     <div className={classNames("relative", desktopContainer)}>
-      <div className={classNames(desktopClasses, "flex justify-evenly py-3 gap-4")} ref={refMenu}>
+      <div className={classNames(desktopClasses, "flex justify-evenly py-3 gap-2")} ref={refMenu}>
+        {wallet.wallet && (
+          <div className="rounded-full bg-foreground-2 flex items-center px-3 max-lg:text-xs lg:text-sm font-medium">
+            <WalletBalance />
+          </div>
+        )}
         <IconButton
           className="rounded-full aspect-square bg-foreground-2"
           name="exit"

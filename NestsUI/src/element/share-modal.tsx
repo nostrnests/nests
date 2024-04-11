@@ -33,10 +33,10 @@ export default function ShareModal({ event, onClose }: { event: NostrEvent; onCl
       }
       case "planned": {
         return formatMessage(
-          { defaultMessage: '{title}\n{url}' },
+          { defaultMessage: "{title}\n{url}" },
           {
             title,
-            url
+            url,
           },
         );
       }
@@ -47,7 +47,7 @@ export default function ShareModal({ event, onClose }: { event: NostrEvent; onCl
   async function iCal() {
     const ical = await import("ical-generator");
     const calendar = ical.default({
-      name: "nostrnests.com"
+      name: "nostrnests.com",
     });
     calendar.method(ical.ICalCalendarMethod.REQUEST);
     calendar.createEvent({
@@ -58,13 +58,13 @@ export default function ShareModal({ event, onClose }: { event: NostrEvent; onCl
       description: summary,
       organizer: {
         name: getDisplayName(profile, event.pubkey),
-        email: `nostr:${hexToBech32("npub", event.pubkey)}`
+        email: `nostr:${hexToBech32("npub", event.pubkey)}`,
       },
-      url
+      url,
     });
 
     const evBlob = new Blob([calendar.toString()], {
-      type: "text/calendar; charset=utf-8"
+      type: "text/calendar; charset=utf-8",
     });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(evBlob);

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { LNWallet, ZapTarget, Zapper } from "../zapper";
+import { ZapTarget, Zapper } from "../zapper";
 import DisplayName from "./display-name";
 import Modal from "./modal";
 import IconButton from "./icon-button";
@@ -10,16 +10,7 @@ import { EventPublisher } from "@snort/system";
 import QrCode from "./qr";
 import { FormattedMessage, useIntl } from "react-intl";
 import Copy from "./copy";
-
-const WebLnWallet = {
-  payInvoice: async (pr: string) => {
-    const res = await window.webln!.sendPayment(pr);
-    return {
-      ...res,
-      isPaid: Boolean(res.preimage),
-    };
-  },
-} as LNWallet;
+import { useWallet } from "../wallet";
 
 export default function ZapFlow({ targets, onClose }: { targets: Array<ZapTarget>; onClose: () => void }) {
   const { system, signer, pubkey } = useEventBuilder();
@@ -31,6 +22,7 @@ export default function ZapFlow({ targets, onClose }: { targets: Array<ZapTarget
   const [comment, setComment] = useState("");
   const [invoice, setInvoice] = useState("");
   const { formatMessage } = useIntl();
+  const wallet = useWallet();
 
   useEffect(() => {
     if (customAmount !== undefined) {
@@ -93,16 +85,17 @@ export default function ZapFlow({ targets, onClose }: { targets: Array<ZapTarget
             <PrimaryButton
               onClick={async () => {
                 if (signer && pubkey) {
-                  await window.webln?.enable();
                   const zapper = new Zapper(system, new EventPublisher(signer, pubkey));
                   await zapper.load(targets);
                   const res = await zapper.send(
-                    window.webln ? WebLnWallet : undefined,
+                    wallet.wallet,
                     targets.map((a) => ({ ...a, memo: comment })),
                     customAmount !== undefined ? customAmount : amount,
                   );
                   if (!res[0].paid) {
                     setInvoice(res[0].pr);
+                  } else {
+                    onClose();
                   }
                 }
               }}

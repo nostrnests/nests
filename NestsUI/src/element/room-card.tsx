@@ -123,12 +123,16 @@ export default function RoomCard({
               </AvatarStack>
             </div>
           )}
-          {!inRoom && status === "planned" && (showShareMenu ?? true) && <PrimaryButton onClick={() => setShare(true)}>
-            <FormattedMessage defaultMessage="Share" />
-          </PrimaryButton>}
-          {share && <Modal id="share-room" onClose={() => setShare(false)}>
-            <ShareModal event={event} onClose={() => setShare(false)} />
-          </Modal>}
+          {!inRoom && status === "planned" && (showShareMenu ?? true) && (
+            <PrimaryButton onClick={() => setShare(true)}>
+              <FormattedMessage defaultMessage="Share" />
+            </PrimaryButton>
+          )}
+          {share && (
+            <Modal id="share-room" onClose={() => setShare(false)}>
+              <ShareModal event={event} onClose={() => setShare(false)} />
+            </Modal>
+          )}
         </div>
         <div className="text-2xl font-semibold">{title}</div>
         {showDescription && <div className="text-sm">{summary}</div>}
