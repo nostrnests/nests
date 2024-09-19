@@ -16,6 +16,7 @@ import Icon from "../icon";
 import ZapButton from "../element/zap-button";
 import { AvatarStack } from "../element/avatar-stack";
 import Mention from "../element/mention";
+import Text from "../element/text";
 
 export default function ProfilePage({ link, header }: { link: NostrLink; header: boolean }) {
   updateRelays(DefaultRelays);
@@ -122,7 +123,7 @@ export function ProfilePageContent({
         </div>
       )}
       {meta?.isNostrAddressValid && <p className="text-highlight text-sm">{meta.nip05}</p>}
-      <p className="text-sm">{meta?.about}</p>
+      {meta?.about && <Text content={meta?.about} tags={[]} />}
       <hr />
       <RoomListList events={events} showCreateWhenEmpty={false} showEmptyRooms={true} showEnded={showEnded} />
     </div>

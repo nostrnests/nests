@@ -8,14 +8,14 @@ import { unixNow } from "@snort/shared";
 
 export default function useRoomPresence(link?: NostrLink) {
   const subPresence = useMemo(() => {
-    if (!link) return;
-    const rb = new RequestBuilder(`presence:${link.id}`);
-    rb.withOptions({ leaveOpen: true })
-      .withFilter()
-      .kinds([ROOM_PRESENCE])
-      .tag("a", [`${link.kind}:${link.author}:${link.id}`])
-      .since(unixNow() - PRESENCE_TIME * 10);
-
+    const rb = new RequestBuilder(`presence:${link?.id}`);
+    if (link) {
+      rb.withOptions({ leaveOpen: true })
+        .withFilter()
+        .kinds([ROOM_PRESENCE])
+        .tag("a", [`${link.kind}:${link.author}:${link.id}`])
+        .since(unixNow() - PRESENCE_TIME * 10);
+    }
     return rb;
   }, [link]);
 

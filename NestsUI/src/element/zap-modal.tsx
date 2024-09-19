@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { ZapTarget, Zapper } from "../zapper";
 import DisplayName from "./display-name";
 import Modal from "./modal";
 import IconButton from "./icon-button";
@@ -11,6 +10,7 @@ import QrCode from "./qr";
 import { FormattedMessage, useIntl } from "react-intl";
 import Copy from "./copy";
 import { useWallet } from "../wallet";
+import { ZapTarget, Zapper } from "@snort/wallet";
 
 export default function ZapFlow({ targets, onClose }: { targets: Array<ZapTarget>; onClose: () => void }) {
   const { system, signer, pubkey } = useEventBuilder();

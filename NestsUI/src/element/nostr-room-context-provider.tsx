@@ -58,7 +58,7 @@ export function NostrRoomContextProvider({
     };
     const endRecording = () => console.log("END_RECORDING");
     const handler2 = () => {
-      if (room.participants.size === 0) {
+      if (room.numParticipants === 0) {
         endRecording();
       }
     };
@@ -82,7 +82,7 @@ export function NostrRoomContextProvider({
   useEffect(() => {
     const endRecording = () => console.log("END_RECORDING");
     const handler2 = () => {
-      if (room.participants.size === 0) {
+      if (room.numParticipants === 0) {
         endRecording();
       }
     };

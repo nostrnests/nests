@@ -30,17 +30,16 @@ export function RoomListList({
   const login = useLogin();
   const modifier = useEventModifier();
   const subPresence = useMemo(() => {
+    const rb = new RequestBuilder("presence:room-list");
     if (events.length > 0) {
-      const rb = new RequestBuilder("presence:room-list");
       const fx = rb
         .withOptions({ leaveOpen: true })
         .withFilter()
         .kinds([ROOM_PRESENCE])
         .since(unixNow() - PRESENCE_TIME * 10);
       fx.replyToLink(events.map((a) => NostrLink.fromEvent(a)));
-
-      return rb;
     }
+    return rb;
   }, [events]);
 
   const roomPresence = useRequestBuilder(subPresence);

@@ -1,13 +1,4 @@
-import {
-  EventKind,
-  NostrEvent,
-  NostrLink,
-  ParsedFragment,
-  RequestBuilder,
-  parseNostrLink,
-  parseZap,
-  transformText,
-} from "@snort/system";
+import { EventKind, NostrEvent, NostrLink, RequestBuilder, parseZap } from "@snort/system";
 import { useRequestBuilder, useUserProfile } from "@snort/system-react";
 import { useMemo } from "react";
 import Avatar from "./avatar";
@@ -16,7 +7,7 @@ import Icon from "../icon";
 import { LIVE_CHAT } from "../const";
 import { FormattedMessage, FormattedNumber } from "react-intl";
 import classNames from "classnames";
-import Mention from "./mention";
+import Text from "./text";
 
 export default function ChatMessages({ link, className, ...props }: { link: NostrLink; className?: string }) {
   const sub = useMemo(() => {
@@ -45,30 +36,6 @@ export default function ChatMessages({ link, className, ...props }: { link: Nost
 
 function ChatMessage({ event }: { event: NostrEvent }) {
   const profile = useUserProfile(event.pubkey);
-  const frags = useMemo(() => {
-    return transformText(event.content, event.tags);
-  }, [event.content, event.tags]);
-
-  function renderFrag(frag: ParsedFragment) {
-    switch (frag.type) {
-      case "link":
-        return (
-          <a href={frag.content} rel="noreferer" target="_blank" className="text-highlight">
-            {frag.content}
-          </a>
-        );
-      case "media": {
-        if (frag.mimeType?.startsWith("image/")) {
-          return <img src={frag.content} />;
-        }
-        return frag.content;
-      }
-      case "mention":
-        return <Mention link={parseNostrLink(frag.content)} />;
-      default:
-        return frag.content;
-    }
-  }
 
   return (
     <div className="grid grid-cols-[32px_auto] gap-2">
@@ -77,7 +44,7 @@ function ChatMessage({ event }: { event: NostrEvent }) {
         <div className="text-medium leading-8">
           <DisplayName pubkey={event.pubkey} profile={profile} />
         </div>
-        {frags.map(renderFrag)}
+        <Text content={event.content} tags={event.tags} />
       </div>
     </div>
   );

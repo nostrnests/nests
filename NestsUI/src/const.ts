@@ -5,7 +5,7 @@
 import { EventKind } from "@snort/system";
 
 //export const ApiUrl = "";
-export const ApiUrl = import.meta.env.VITE_API_URL || "https://nests.v0l.io";
+export const ApiUrl = import.meta.env.VITE_API_URL || "https://nostrnests.com";
 
 /**
  * Default relays to connect and publish to

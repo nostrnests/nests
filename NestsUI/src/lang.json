@@ -2,8 +2,14 @@
   "+0zv6g": {
     "defaultMessage": "Image"
   },
+  "+20FW7": {
+    "defaultMessage": "Devices"
+  },
   "+t+11k": {
     "defaultMessage": "Close Room"
+  },
+  "+vVZ/G": {
+    "defaultMessage": "Connect"
   },
   "/8ACb2": {
     "defaultMessage": "Add to stage"
@@ -42,11 +48,17 @@
   "3s2cxm": {
     "defaultMessage": "Lobby"
   },
+  "3yk8fB": {
+    "defaultMessage": "Wallet"
+  },
   "47FYwb": {
     "defaultMessage": "Cancel"
   },
   "5B660s": {
     "defaultMessage": "Recovery email"
+  },
+  "5KHvHs": {
+    "defaultMessage": "Permission not granted"
   },
   "5q3qC0": {
     "defaultMessage": "Download"
@@ -83,6 +95,12 @@
   "AGHEaD": {
     "defaultMessage": "No Recordings"
   },
+  "AUlRcp": {
+    "defaultMessage": "Nostr Wallet Connect"
+  },
+  "Aqf057": {
+    "defaultMessage": "iCal"
+  },
   "AyGauy": {
     "defaultMessage": "Login"
   },
@@ -97,6 +115,9 @@
   },
   "CE79Az": {
     "defaultMessage": "There are no active rooms yet."
+  },
+  "CsCUYo": {
+    "defaultMessage": "{n} sats"
   },
   "D5Li4U": {
     "defaultMessage": "Start a new room"
@@ -146,6 +167,9 @@
   "Jkxa7F": {
     "defaultMessage": "View Profile"
   },
+  "K4DbZ2": {
+    "defaultMessage": "\"{title}\" nest is live! Come join 🤗 {url}"
+  },
   "L06Gac": {
     "defaultMessage": "Please close the following rooms:"
   },
@@ -157,6 +181,9 @@
   },
   "MU0ket": {
     "defaultMessage": "Speaker"
+  },
+  "MlIOKw": {
+    "defaultMessage": "Using Alby? Go to {link} to get your NWC config. Or see {other_link}"
   },
   "OKhRC6": {
     "defaultMessage": "Share"
@@ -218,11 +245,17 @@
   "WTrOy3": {
     "defaultMessage": "Chat"
   },
+  "XMYlZD": {
+    "defaultMessage": "My Wallet"
+  },
+  "Xfdu5o": {
+    "defaultMessage": "Audio Devices"
+  },
   "Y2Ues0": {
     "defaultMessage": "& {n} others"
   },
-  "aUuFuf": {
-    "defaultMessage": "\"{room_name}\" nest is live! Come join 🤗 {url}"
+  "Yf3DwC": {
+    "defaultMessage": "Connect a wallet to send instant payments"
   },
   "aabpty": {
     "defaultMessage": "Rooms left open"
@@ -238,6 +271,9 @@
   },
   "cyR7Kh": {
     "defaultMessage": "Back"
+  },
+  "dLtJMz": {
+    "defaultMessage": "{title} {url}"
   },
   "dM9S71": {
     "defaultMessage": "Schedule a room"

@@ -5,15 +5,16 @@ import { useNostrRoom } from "./nostr-room-context";
 
 export function useRoomReactions(link?: NostrLink) {
   const sub = useMemo(() => {
-    if (!link) return;
-    const rb = new RequestBuilder(`reactions:${link.id}`);
-    rb.withOptions({ leaveOpen: true })
-      .withFilter()
-      .kinds([EventKind.Reaction, EventKind.ZapReceipt])
-      .tag("a", [`${link.kind}:${link.author}:${link.id}`]);
-
+    const rb = new RequestBuilder(`reactions:${link?.id}`);
+    if (link) {
+      rb.withOptions({ leaveOpen: true })
+        .withFilter()
+        .kinds([EventKind.Reaction, EventKind.ZapReceipt])
+        .tag("a", [`${link.kind}:${link.author}:${link.id}`]);
+    }
     return rb;
   }, [link]);
+
   const reactions = useRequestBuilder(sub);
   return reactions.filter((a) => link?.referencesThis(a));
 }

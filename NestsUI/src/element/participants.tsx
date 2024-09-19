@@ -65,7 +65,7 @@ function NostrParticipant({ p, event }: { p: RemoteParticipant | LocalParticipan
         lt.mute();
       };
       p.on("localTrackPublished", handler);
-      if (permissions.canPublish && p.audioTracks.size === 0) {
+      if (permissions.canPublish && p.audioTrackPublications.size === 0) {
         p.setMicrophoneEnabled(true);
       }
       return () => {
@@ -135,13 +135,13 @@ function NostrParticipant({ p, event }: { p: RemoteParticipant | LocalParticipan
               </div>
             </div>
           )}
-          {p.audioTracks.size > 0 && (
+          {p.audioTrackPublications.size > 0 && (
             <div className="absolute w-[72px] h-[72px] rotate-[135deg]">
               <div className="bg-foreground rounded-full inline-block mt-[-4px] ml-[-4px] w-8 h-8 flex items-center justify-center">
                 <div className="flex items-center justify-center relative rotate-[-135deg] w-full h-full overflow-hidden rounded-full">
                   <Icon name={p.isMicrophoneEnabled ? "mic" : "mic-off"} className="z-20" size={20} />
                   <VuBar
-                    track={p.getTrack(Track.Source.Microphone)?.audioTrack?.mediaStreamTrack}
+                    track={p.getTrackPublication(Track.Source.Microphone)?.audioTrack?.mediaStreamTrack}
                     height={40}
                     width={40}
                     className="absolute top-0 left-0 w-full h-full z-10"

@@ -31,9 +31,10 @@ export default function Room() {
   const system = useContext(SnortContext);
 
   const roomSub = useMemo(() => {
-    if (!link) return;
     const sub = new RequestBuilder(`room:${link?.id}`);
-    sub.withFilter().link(link);
+    if (link) {
+      sub.withFilter().link(link);
+    }
     return sub;
   }, [link]);
   const roomUpdates = useRequestBuilder(roomSub);

@@ -118,7 +118,7 @@ function MenuBar({ link }: { link: NostrLink }) {
             await hand.toggleHand();
           }}
         />
-        {room.localParticipant.audioTracks.size > 0 && (
+        {room.localParticipant.audioTrackPublications.size > 0 && (
           <IconButton
             className={`relative rounded-full overflow-hidden aspect-square${localParticipant.isMicrophoneEnabled ? " text-highlight" : ""}`}
             name={localParticipant.isMicrophoneEnabled ? "mic" : "mic-off"}
@@ -126,7 +126,7 @@ function MenuBar({ link }: { link: NostrLink }) {
             onClick={toggleMute}
           >
             <VuBar
-              track={room.localParticipant.getTrack(Track.Source.Microphone)?.audioTrack?.mediaStreamTrack}
+              track={room.localParticipant.getTrackPublication(Track.Source.Microphone)?.audioTrack?.mediaStreamTrack}
               height={40}
               width={40}
               className="absolute top-0 left-0 w-full h-full opacity-20"
