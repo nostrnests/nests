@@ -94,7 +94,7 @@ function ParticipantsPannel({ event }: { event: NostrEvent }) {
 function ChatPannel({ link }: { link: NostrLink }) {
   const [expanded, setExpanded] = useState(false);
   const login = useLogin();
-  const cardHeight = login.type === "none" ? 4 : 10;
+  const cardHeight = login.type === "none" ? 40 : 85;
   const mobileStyles = [
     {
       "max-lg:translate-y-[20dvh] max-lg:h-[80dvh]": expanded,
@@ -123,7 +123,7 @@ function ChatPannel({ link }: { link: NostrLink }) {
       className={classNames(mobileStyles, "lg:h-[100dvh] bg-foreground overflow-hidden flex flex-col w-chat")}
       style={
         {
-          ["--card-height"]: `${cardHeight}dvh`,
+          ["--card-height"]: `${cardHeight}px`,
         } as CSSProperties
       }
       {...swipeHandlers}
