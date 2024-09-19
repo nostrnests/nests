@@ -22,8 +22,12 @@ export default function Login() {
     setError("");
     if (username.startsWith("nsec1")) {
       await doNsecLogin();
-    } else {
+    } else if (username.includes("@")) {
       await doBunkerLogin();
+    } else if (username.startsWith("bunker://")) {
+      await doBunkerLogin();
+    } else {
+      setError(errorCodes.invalid);
     }
   }
 
@@ -43,14 +47,9 @@ export default function Login() {
     }
   }
 
-  async function doBunkerLogin() {
-    if (!username.includes("@")) {
-      setError(errorCodes.invalid);
-      return;
-    }
-
-    const [name, domain] = username.split("@");
-    try {
+  async function resolveBunkerUrl() {
+    if (username.includes("@")) {
+      const [name, domain] = username.split("@");
       const nip5 = await fetchNostrAddress(name, domain);
       if (!nip5) {
         setError(errorCodes.invalid);
@@ -69,8 +68,16 @@ export default function Login() {
         setError(errorCodes.notBunker);
         return;
       }
+      return `bunker://${pubkey}?${bunkerRelays.map((a) => `relay=${encodeURIComponent(a)}`).join("&")}`;
+    } else {
+      return username;
+    }
+  }
+  async function doBunkerLogin() {
+    try {
+      const url = await resolveBunkerUrl();
+      if (!url) return;
 
-      const url = `bunker://${pubkey}?${bunkerRelays.map((a) => `relay=${encodeURIComponent(a)}`).join("&")}`;
       const bunker = new Nip46Signer(url);
       bunker.on("oauth", (url) => {
         window.open(url, undefined, "width=600,height=800,popup=yes");
@@ -81,6 +88,8 @@ export default function Login() {
     } catch (e) {
       if (e instanceof Error) {
         setError(e.message);
+      } else if (typeof e === "string") {
+        setError(e);
       }
     }
   }
