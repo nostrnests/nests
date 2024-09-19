@@ -1379,7 +1379,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@bufbuild/protobuf@npm:^1.7.2":
+"@bufbuild/protobuf@npm:^1.10.0, @bufbuild/protobuf@npm:^1.7.2":
   version: 1.10.0
   resolution: "@bufbuild/protobuf@npm:1.10.0"
   checksum: 10c0/5487b9c2e63846d0e3bde4d025cc77ae44a22166a5d6c184df0da5581e1ab6d66dd115af0ccad814576dcd011bb1b93989fb0ac1eb4ae452979bb8b186693ba0
@@ -1920,6 +1920,15 @@ __metadata:
   dependencies:
     "@bufbuild/protobuf": "npm:^1.7.2"
   checksum: 10c0/6badb14b8254ef49e369190872b3593daa534d84da07a73a1670a87bf45c896c403f9bb10c38daf37812ebd20b1f9087439bebe50f2f40330384664361be7d52
+  languageName: node
+  linkType: hard
+
+"@livekit/protocol@npm:^1.22.0":
+  version: 1.22.0
+  resolution: "@livekit/protocol@npm:1.22.0"
+  dependencies:
+    "@bufbuild/protobuf": "npm:^1.10.0"
+  checksum: 10c0/6896b65c8c5384c7ca5acf9a72a8c047cc5a672becf0550ed56447ac89594bc1cc0a32bf2e34c122c0620e24c5b78c339573e76e9a903536e579c810ed995e0d
   languageName: node
   linkType: hard
 
@@ -5517,6 +5526,7 @@ __metadata:
     "@formatjs/cli": "npm:^6.2.7"
     "@livekit/components-react": "npm:^2.5.4"
     "@livekit/components-styles": "npm:^1.1.2"
+    "@livekit/protocol": "npm:^1.22.0"
     "@scure/base": "npm:^1.1.5"
     "@snort/shared": "npm:^1.0.17"
     "@snort/system": "npm:^1.5.1"

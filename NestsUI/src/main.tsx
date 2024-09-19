@@ -114,6 +114,8 @@ export const snortSystem = new NostrSystem({
   optimizer: hasWasm ? WasmOptimizer : undefined,
   db: new SnortSystemDb(),
   buildFollowGraph: true,
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  //@ts-expect-error
   cachingRelay: cacheRelay,
 });
 

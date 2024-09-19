@@ -15,6 +15,7 @@
   "dependencies": {
     "@livekit/components-react": "^2.5.4",
     "@livekit/components-styles": "^1.1.2",
+    "@livekit/protocol": "^1.22.0",
     "@scure/base": "^1.1.5",
     "@snort/shared": "^1.0.17",
     "@snort/system": "^1.5.1",
