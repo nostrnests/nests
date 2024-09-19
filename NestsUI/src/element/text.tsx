@@ -28,5 +28,5 @@ export default function Text({ content, tags }: { content: string; tags: Array<A
     }
   }
 
-  return <div className="whitespace-pre">{frags.map(renderFrag)}</div>;
+  return <div className="whitespace-pre text-wrap">{frags.map(renderFrag)}</div>;
 }

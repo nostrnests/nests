@@ -5,9 +5,10 @@ import Avatar from "./avatar";
 import DisplayName from "./display-name";
 import Icon from "../icon";
 import { LIVE_CHAT } from "../const";
-import { FormattedMessage, FormattedNumber } from "react-intl";
+import { FormattedMessage } from "react-intl";
 import classNames from "classnames";
 import Text from "./text";
+import { formatSats } from "../utils";
 
 export default function ChatMessages({ link, className, ...props }: { link: NostrLink; className?: string }) {
   const sub = useMemo(() => {
@@ -76,11 +77,7 @@ function ChatZap({ event }: { event: NostrEvent }) {
                 />
               ),
               receiver: <DisplayName pubkey={zap.receiver ?? event.pubkey} profile={targetProfile} />,
-              amount: (
-                <span className="text-bitcoin font-bold">
-                  <FormattedNumber value={zap.amount / 1000} />K sats
-                </span>
-              ),
+              amount: <span className="text-bitcoin font-bold">{formatSats(zap.amount)}</span>,
             }}
           />
         </span>
