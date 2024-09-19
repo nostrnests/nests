@@ -10,7 +10,13 @@ export const ApiUrl = import.meta.env.VITE_API_URL || "https://nostrnests.com";
 /**
  * Default relays to connect and publish to
  */
-export const DefaultRelays = ["wss://relay.snort.social", "wss://nos.lol", "wss://relay.damus.io", "wss://nostr.land"];
+export const DefaultRelays = [
+  "wss://relay.snort.social",
+  "wss://nos.lol",
+  "wss://relay.damus.io",
+  "wss://nostr.land",
+  "wss://relay.primal.net",
+];
 //export const DefaultRelays = ["ws://host.docker.internal:7777"];
 
 /**

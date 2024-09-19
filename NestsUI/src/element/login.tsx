@@ -3,7 +3,7 @@ import Button, { PrimaryButton } from "./button";
 import { loginWith } from "../login";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useState } from "react";
-import { fetchNostrAddress } from "@snort/shared";
+import { bech32ToHex, fetchNostrAddress, isHex } from "@snort/shared";
 import { Nip46Signer } from "@snort/system";
 
 export default function Login() {
@@ -13,13 +13,37 @@ export default function Login() {
   const navigate = useNavigate();
 
   const errorCodes = {
-    invalid: formatMessage({ defaultMessage: "Not a valid nostr address" }),
+    invalid: formatMessage({ defaultMessage: "Invalid login details" }),
     notFound: formatMessage({ defaultMessage: "Nostr address not found" }),
     notBunker: formatMessage({ defaultMessage: "Address is not a nostr bunker" }),
   };
 
   async function doLogin() {
     setError("");
+    if (username.startsWith("nsec1")) {
+      await doNsecLogin();
+    } else {
+      await doBunkerLogin();
+    }
+  }
+
+  async function doNsecLogin() {
+    try {
+      const hexKey = bech32ToHex(username);
+      if (hexKey.length !== 64 || !isHex(hexKey)) {
+        setError(errorCodes.invalid);
+        return;
+      }
+      await loginWith("nsec", hexKey);
+      navigate("/");
+    } catch (e) {
+      if (e instanceof Error) {
+        setError(e.message);
+      }
+    }
+  }
+
+  async function doBunkerLogin() {
     if (!username.includes("@")) {
       setError(errorCodes.invalid);
       return;
@@ -68,9 +92,9 @@ export default function Login() {
       </h1>
       <div className="flex gap-2 w-full">
         <input
-          type="text"
+          type={username.startsWith("nsec") ? "password" : "text"}
           className="grow"
-          placeholder={formatMessage({ defaultMessage: "Nostr Address" })}
+          placeholder={formatMessage({ defaultMessage: "nsec / user@nsec.app" })}
           value={username}
           onChange={(e) => setUsername(e.target.value)}
         />

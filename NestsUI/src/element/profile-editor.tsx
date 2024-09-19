@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import { LNURL, fetchNip05Pubkey } from "@snort/shared";
+import { LNURL, fetchNip05Pubkey, hexToBech32 } from "@snort/shared";
 import { mapEventToProfile } from "@snort/system";
 import { useUserProfile } from "@snort/system-react";
 import { openFile } from "../upload";
@@ -9,6 +9,7 @@ import { debounce } from "../utils";
 import useEventBuilder from "../hooks/useEventBuilder";
 import { PrimaryButton } from "./button";
 import nostrBuildUpload from "../upload/nostrbuild";
+import Copy from "./copy";
 
 const MaxUsernameLength = 100;
 const MaxAboutLength = 500;
@@ -284,6 +285,14 @@ export function ProfileEditor({ onClose }: { onClose: () => void }) {
           />
           <div>{lud16Valid === false ? <span className="text-delete">{invalidLud16Message}</span> : <></>}</div>
         </div>
+        {login.type === "nsec" && (
+          <div className="flex flex-col w-full gap-2">
+            <h4>
+              <FormattedMessage defaultMessage="Private Key" />
+            </h4>
+            <Copy text={hexToBech32("nsec", login.privateKey!)} mask="*" />
+          </div>
+        )}
         {error && <b className="text-delete">{error.message}</b>}
         <PrimaryButton onClick={() => saveProfile()}>
           <FormattedMessage defaultMessage="Save" />

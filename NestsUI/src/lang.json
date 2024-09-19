@@ -54,9 +54,6 @@
   "47FYwb": {
     "defaultMessage": "Cancel"
   },
-  "5B660s": {
-    "defaultMessage": "Recovery email"
-  },
   "5KHvHs": {
     "defaultMessage": "Permission not granted"
   },
@@ -66,11 +63,11 @@
   "5vMmmR": {
     "defaultMessage": "Usernames are not unique on Nostr. The nostr address is your unique human-readable address that is unique to you upon registration."
   },
-  "6jRTzo": {
-    "defaultMessage": "Not a valid nostr address"
-  },
   "6sGucA": {
     "defaultMessage": "New Room"
+  },
+  "6tIixi": {
+    "defaultMessage": "Invalid login details"
   },
   "6xQg6j": {
     "defaultMessage": "Ban user"
@@ -166,6 +163,9 @@
   },
   "Jkxa7F": {
     "defaultMessage": "View Profile"
+  },
+  "JymXbw": {
+    "defaultMessage": "Private Key"
   },
   "K4DbZ2": {
     "defaultMessage": "\"{title}\" nest is live! Come join 🤗 {url}"
@@ -293,6 +293,9 @@
   },
   "g5pX+a": {
     "defaultMessage": "About"
+  },
+  "hi2yFz": {
+    "defaultMessage": "nsec / user@nsec.app"
   },
   "huqKGl": {
     "defaultMessage": "Create account"

@@ -24,11 +24,22 @@ import IntlContext from "./intl";
 import { loginHook } from "./login";
 import { setupWebLNWalletConfig } from "./wallet";
 
+import WorkerVite from "@snort/worker-relay/src/worker?worker";
+import { WorkerRelayInterface } from "@snort/worker-relay";
+
 dayjs.extend(localizedFormat);
 dayjs.extend(relativeTime);
 
+const cacheRelay = new WorkerRelayInterface(
+  import.meta.env.DEV ? new URL("@snort/worker-relay/dist/esm/worker.mjs", import.meta.url) : new WorkerVite(),
+);
+
 async function routeInit() {
   await wasmInit();
+  await cacheRelay.init({
+    databasePath: "nests.db",
+    insertBatchSize: 100,
+  });
   const session = loginHook(snortSystem);
   const bufferList = session.pubkey
     ? [session.pubkey, ...(session.follows?.filter((a) => a[0] === "p").map((a) => a[1]) ?? [])]
@@ -101,9 +112,9 @@ const router = createBrowserRouter(routes);
 
 export const snortSystem = new NostrSystem({
   optimizer: hasWasm ? WasmOptimizer : undefined,
-  automaticOutboxModel: false,
   db: new SnortSystemDb(),
   buildFollowGraph: true,
+  cachingRelay: cacheRelay,
 });
 
 setLogLevel("debug");

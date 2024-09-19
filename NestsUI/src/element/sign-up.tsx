@@ -1,37 +1,27 @@
 import { Link, useNavigate } from "react-router-dom";
 import { PrimaryButton } from "./button";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import { Nip46Signer } from "@snort/system";
-import { fetchNostrAddress } from "@snort/shared";
+import { EventPublisher } from "@snort/system";
 import { loginWith } from "../login";
+import { SnortContext } from "@snort/system-react";
 
-const Bunker = "nsec.app";
 export default function SignUp() {
   const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
   const navigate = useNavigate();
   const { formatMessage } = useIntl();
+  const system = useContext(SnortContext);
 
-  async function createAccount() {
-    const nip5 = await fetchNostrAddress("_", Bunker);
-    const bunkerPubkey = nip5?.names["_"];
-    if (!bunkerPubkey) {
-      throw new Error("Not a valid bunker");
-    }
-
-    const bunkerRelays = nip5.nip46?.[bunkerPubkey];
-    if (!bunkerRelays) {
-      throw new Error("Not a valid bunker");
-    }
-
-    const bunker = new Nip46Signer(`bunker://${bunkerPubkey}?relay=${encodeURIComponent(bunkerRelays[0])}`);
-    bunker.on("oauth", (url) => {
-      window.open(url, "Bunker", "width=600,height=800,popup=yes");
+  async function generateKey() {
+    const newKey = new Uint8Array(32);
+    crypto.getRandomValues(newKey);
+    const builder = EventPublisher.privateKey(newKey);
+    const meta = await builder.metadata({
+      name: username,
     });
-    await bunker.createAccount(username, Bunker, email);
-    await loginWith("nip46", bunker);
-    navigate(-1);
+    await system.BroadcastEvent(meta);
+    await loginWith("nsec", newKey);
+    navigate("/");
   }
 
   return (
@@ -46,15 +36,8 @@ export default function SignUp() {
           value={username}
           onChange={(e) => setUsername(e.target.value)}
         />
-        <div className="opacity-50 px-2">@{Bunker}</div>
       </div>
-      <input
-        type="text"
-        placeholder={formatMessage({ defaultMessage: "Recovery email" })}
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-      />
-      <PrimaryButton onClick={createAccount}>
+      <PrimaryButton onClick={generateKey}>
         <FormattedMessage defaultMessage="Create account" />
       </PrimaryButton>
       <p className="text-center">

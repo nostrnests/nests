@@ -7,11 +7,16 @@ export interface CopyProps {
   text: string;
   maxSize?: number;
   className?: string;
+  mask?: string;
 }
-export default function Copy({ text, maxSize = 32, className }: CopyProps) {
+export default function Copy({ text, maxSize = 32, className, mask }: CopyProps) {
   const { copy, copied } = useCopy();
   const sliceLength = maxSize / 2;
-  const trimmed = text.length > maxSize ? `${text.slice(0, sliceLength)}...${text.slice(-sliceLength)}` : text;
+  const displayText = mask ? mask.repeat(text.length) : text;
+  const trimmed =
+    displayText.length > maxSize
+      ? `${displayText.slice(0, sliceLength)}...${displayText.slice(-sliceLength)}`
+      : displayText;
 
   return (
     <div className={classNames("flex pointer gap-2 items-center", className)} onClick={() => copy(text)}>

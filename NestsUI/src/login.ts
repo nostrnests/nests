@@ -14,8 +14,9 @@ import {
 } from "@snort/system";
 import { useSyncExternalStore } from "react";
 import usePresence from "./hooks/usePresence";
+import { bytesToString } from "@scure/base";
 
-type LoginTypes = "none" | "nip7" | "nip46";
+type LoginTypes = "none" | "nip7" | "nip46" | "nsec";
 export type SupportedLocales = "en-US";
 
 export interface LoginData {
@@ -41,6 +42,19 @@ class LoginStore extends ExternalStore<LoginSession> {
   constructor() {
     super();
     this.loadSession();
+  }
+
+  async loginWithPrivateKey(key: string | Uint8Array) {
+    if (this.#session.type !== "none") {
+      throw new Error("Already logged in ");
+    }
+    this.#session.type = "nsec";
+    this.#session.privateKey = typeof key === "string" ? key : bytesToString("hex", key as Uint8Array);
+    this.#session.signer = new PrivateKeySigner(key);
+    const pk = await this.#session.signer.getPubKey();
+    this.#session.pubkey = pk;
+    socialGraphInstance.setRoot(pk);
+    this.notifyChange();
   }
 
   async loginWithNip7() {
@@ -83,6 +97,9 @@ class LoginStore extends ExternalStore<LoginSession> {
           session.signer = new Nip46Signer(url, new PrivateKeySigner(session.privateKey!));
           session.signer.init();
           break;
+        }
+        case "nsec": {
+          session.signer = new PrivateKeySigner(session.privateKey!);
         }
       }
       this.#session = session;
@@ -149,15 +166,18 @@ export function useLogin() {
   );
 }
 
-export async function loginWith(type: LoginTypes, data?: Nip46Signer) {
+export async function loginWith(type: LoginTypes, data?: Nip46Signer | string | Uint8Array) {
   switch (type) {
     case "nip7": {
       await LoginSystem.loginWithNip7();
       break;
     }
     case "nip46": {
-      await LoginSystem.loginWithNip46(data!);
+      await LoginSystem.loginWithNip46(data as Nip46Signer);
       break;
+    }
+    case "nsec": {
+      await LoginSystem.loginWithPrivateKey(data as string | Uint8Array);
     }
   }
 }
