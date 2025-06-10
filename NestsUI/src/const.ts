@@ -39,7 +39,7 @@ export const ColorPalette = [
 /**
  * Nests room event kind
  */
-export const ROOM_KIND = 30_311 as EventKind;
+export const ROOM_KIND = 30_312 as EventKind;
 
 /**
  * Room presence event kind
