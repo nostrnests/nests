@@ -1,12 +1,12 @@
 ## Room
 
-Following NIP-53 using `kind: 30311`
+Following NIP-53 using `kind: 30312`
 
 `service` tag is added to point clients to the API which controls the room access
 
 ```json
 {
-  "kind": 30311,
+  "kind": 30312,
   "tags": [
     ["d", "<unique identifier>"],
     ["title", "<name of the event>"],
