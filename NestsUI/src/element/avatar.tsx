@@ -22,7 +22,7 @@ export default function Avatar({
     if ((profile?.picture?.length ?? 0) > 0) {
       return profile?.picture;
     }
-    return `https://robohash.v0l.io/${isUnknown ? "missing" : pubkey}.png`;
+    return `https://nostr-rs-api.v0l.io/avatar/robots/${isUnknown ? "missing" : pubkey}.png`;
   }
   const inner = (
     <img
