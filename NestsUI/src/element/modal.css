@@ -1,3 +1,5 @@
+@reference "../index.css";
+
 .modal {
   width: 100dvw;
   height: 100dvh;
@@ -12,13 +14,13 @@
 }
 
 .modal-body {
-  background-color: rgb(var(--foreground));
   padding: 33px 36px;
   border-radius: 24px;
   margin-top: auto;
   margin-bottom: auto;
   max-width: 100%;
   position: relative;
+  @apply bg-foreground;
 }
 
 @media (min-width: 460px) {
@@ -26,6 +28,7 @@
     width: 460px;
   }
 }
+
 @media (max-width: 460px) {
   .modal-body {
     width: calc(100% - 20px);
@@ -35,7 +38,7 @@
 
 .modal-body input,
 .modal-body textarea {
-  background-color: rgb(var(--foreground-2));
+  @apply bg-foreground-2;
 }
 
 .modal-body p {

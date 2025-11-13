@@ -1,28 +1,47 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  --color-background: rgb(28, 32, 41);
+  --color-foreground: rgb(39, 44, 57);
+  --color-foreground-2: rgb(62, 69, 86);
+  --color-foreground-2-hover: rgb(96, 105, 129);
+  --color-foreground-3: rgb(81, 90, 112);
+  --color-primary: var(--primary);
+  --color-highlight: rgb(168, 140, 250);
+  --color-delete: rgb(255, 74, 78);
+  --color-bitcoin: rgb(255, 122, 48);
+  --color-off-white: rgb(203, 213, 225);
+
+  --background-image-gradient-1: var(--gradient-1);
+  --background-image-gradient-2: var(--gradient-2);
+  --background-image-gradient-3: var(--gradient-3);
+  --background-image-gradient-4: var(--gradient-4);
+  --background-image-gradient-5: var(--gradient-5);
+  --background-image-gradient-6: var(--gradient-6);
+  --background-image-gradient-7: var(--gradient-7);
+  --background-image-gradient-8: var(--gradient-8);
+  --background-image-gradient-9: var(--gradient-9);
+  --background-image-gradient-10: var(--gradient-10);
+  --background-image-gradient-11: var(--gradient-11);
+}
 
 :root {
-  --background: 28 32 41;
-  --foreground: 39 44 57;
-  --foreground-2: 62 69 86;
-  --foreground-2-hover: 96 105 129;
-  --foreground-3: 81 90 112;
-  --highlight: 168 140 250;
-  --delete: 255 74 78;
-  --bitcoin: 255 122 48;
+  --highlight: rgb(168, 140, 250);
+  --delete: rgb(255, 74, 78);
+  --bitcoin: rgb(255, 122, 48);
   --success: var(--primary-5);
-  --off-white: 203 213 225;
+  --off-white: rgb(203, 213, 225);
 
-  --primary-1: 143 105 255;
-  --primary-2: 93 109 255;
-  --primary-3: 241 88 192;
-  --primary-4: 235 169 0;
-  --primary-5: 44 186 80;
-  --primary-6: 192 58 255;
-  --primary-6: 255 43 47;
-  --primary-7: 0 193 235;
-  --primary-8: 255 110 28;
+  --primary: var(--primary-1);
+  --primary-1: rgb(143, 105, 255);
+  --primary-2: rgb(93, 109, 255);
+  --primary-3: rgb(241, 88, 192);
+  --primary-4: rgb(235, 169, 0);
+  --primary-5: rgb(44, 186, 80);
+  --primary-6: rgb(192, 58, 255);
+  --primary-6: rgb(255, 43, 47);
+  --primary-7: rgb(0, 193, 235);
+  --primary-8: rgb(255, 110, 28);
 
   --gradient-1: linear-gradient(90deg, #16a085 0%, #f4d03f 100%);
   --gradient-2: linear-gradient(90deg, #e65c00 0%, #f9d423 100%);
@@ -58,34 +77,42 @@
 h1 {
   @apply text-3xl font-semibold;
 }
+
 h2 {
   @apply text-2xl font-semibold;
 }
+
 h3 {
   @apply text-xl font-semibold;
 }
+
 h4 {
   @apply text-lg font-semibold;
 }
+
 hr {
-  border-color: rgb(var(--foreground-2));
+  @apply border-foreground-2;
 }
+
 a {
   font-weight: 500;
 }
+
 body {
   font-family: "Inter", sans-serif;
-  background-color: rgb(var(--background));
   color: #fff;
   --primary: var(--primary-1);
+  @apply bg-background;
 }
 
 .stack {
   display: flex;
 }
+
 .stack > img {
   margin-right: -0.5rem;
 }
+
 .stack > img:last-of-type {
   margin-right: 0;
 }
@@ -98,12 +125,12 @@ input,
 textarea,
 select {
   border-radius: 12px;
-  background-color: rgb(var(--foreground));
   padding: 12px 16px;
   line-height: 22px;
   font-weight: 400;
   color: #fff;
   min-width: 0;
+  @apply bg-foreground-2;
 }
 
 input[type="checkbox"] {
@@ -114,18 +141,22 @@ input[type="checkbox"] {
   animation: react 5s forwards;
   z-index: 19;
 }
+
 @keyframes react {
   0% {
     opacity: 0.1;
   }
+
   30% {
     opacity: 1;
     transform: translateY(-60px) scale(1.5);
   }
+
   90% {
     opacity: 1;
     transform: translateY(-60px) scale(1.5);
   }
+
   100% {
     opacity: 0;
   }
@@ -143,7 +174,7 @@ body {
   width: var(--chat-w);
 }
 
-@media screen(lg) {
+@media screen and (min-width: 720px) {
   body {
     --chat-w: 450px;
   }

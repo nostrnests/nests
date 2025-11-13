@@ -75,12 +75,13 @@ export default function RoomCard({
       styles.backgroundImage = `url(${image})`;
       styles.backgroundPosition = "center";
       styles.backgroundSize = "cover";
+    } else {
+      styles.backgroundImage = `var(--${color ?? ColorPalette[0]})`;
     }
     return (
       <div
         className={classNames(
           "relative px-6 py-4 rounded-3xl flex flex-col gap-3",
-          image ? "" : `bg-${color ?? ColorPalette[0]}`,
           { "cursor-pointer": (link ?? true) || join },
           className,
         )}

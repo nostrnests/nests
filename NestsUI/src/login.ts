@@ -10,11 +10,9 @@ import {
   RelaySettings,
   RequestBuilder,
   parseRelaysFromKind,
-  socialGraphInstance,
 } from "@snort/system";
 import { useSyncExternalStore } from "react";
 import usePresence from "./hooks/usePresence";
-import { bytesToString } from "@scure/base";
 
 type LoginTypes = "none" | "nip7" | "nip46" | "nsec";
 export type SupportedLocales = "en-US";
@@ -48,12 +46,12 @@ class LoginStore extends ExternalStore<LoginSession> {
     if (this.#session.type !== "none") {
       throw new Error("Already logged in ");
     }
+    const signer = new PrivateKeySigner(key);
+    this.#session.signer = signer;
     this.#session.type = "nsec";
-    this.#session.privateKey = typeof key === "string" ? key : bytesToString("hex", key as Uint8Array);
-    this.#session.signer = new PrivateKeySigner(key);
-    const pk = await this.#session.signer.getPubKey();
+    this.#session.privateKey = signer.privateKey;
+    const pk = signer.getPubKey();
     this.#session.pubkey = pk;
-    socialGraphInstance.setRoot(pk);
     this.notifyChange();
   }
 
@@ -65,7 +63,6 @@ class LoginStore extends ExternalStore<LoginSession> {
     this.#session.signer = new Nip7Signer();
     const pk = await this.#session.signer.getPubKey();
     this.#session.pubkey = pk;
-    socialGraphInstance.setRoot(pk);
     this.notifyChange();
   }
 
@@ -79,7 +76,6 @@ class LoginStore extends ExternalStore<LoginSession> {
     this.#session.signerRelay = signer.relays;
     const pk = await this.#session.signer.getPubKey();
     this.#session.pubkey = pk;
-    socialGraphInstance.setRoot(pk);
     this.notifyChange();
   }
 
@@ -103,9 +99,6 @@ class LoginStore extends ExternalStore<LoginSession> {
         }
       }
       this.#session = session;
-      if (session.pubkey) {
-        socialGraphInstance.setRoot(session.pubkey);
-      }
     }
   }
 
@@ -203,7 +196,9 @@ export function loginHook(system: NostrSystem) {
     const session = LoginSystem.snapshot();
     if (lastPubkey === session.pubkey) return;
     lastPubkey = session.pubkey;
+
     if (session.pubkey) {
+      system.config.socialGraphInstance.setRoot(session.pubkey);
       const rb = new RequestBuilder(`login:${session.pubkey.slice(0, 12)}`);
       rb.withFilter().authors([session.pubkey]).kinds([EventKind.ContactList, EventKind.Relays]);
 

@@ -1,4 +1,4 @@
-import { NostrEvent, NostrLink, NostrPrefix } from "@snort/system";
+import { NostrEvent, NostrLink } from "@snort/system";
 import { ReactNode, useState } from "react";
 import Button, { PrimaryButton, SecondaryButton } from "./button";
 import { unixNow } from "@snort/shared";
@@ -146,11 +146,11 @@ function EditRoomAdmin() {
             <div key={`admin-${a}`} className="flex justify-between items-center bg-foreground-2 py-3 px-4 rounded-2xl">
               <div className="flex gap-2 items-center">
                 <Avatar pubkey={a} link={false} size={40} />
-                <Mention link={new NostrLink(NostrPrefix.PublicKey, a)} />
+                <Mention link={NostrLink.publicKey(a)} />
               </div>
               <IconButton
                 name="trash"
-                className="rounded-xl !bg-delete"
+                className="rounded-xl bg-delete!"
                 onClick={async () => {
                   await roomContext.api.updatePermissions(link.id, a, {
                     is_admin: false,
@@ -168,11 +168,11 @@ function EditRoomAdmin() {
           <div key={`speaker-${a}`} className="flex justify-between items-center bg-foreground-2 py-3 px-4 rounded-2xl">
             <div className="flex gap-2 items-center">
               <Avatar pubkey={a} link={false} size={40} />
-              <Mention link={new NostrLink(NostrPrefix.PublicKey, a)} />
+              <Mention link={NostrLink.publicKey(a)} />
             </div>
             <IconButton
               name="trash"
-              className="rounded-xl !bg-delete"
+              className="rounded-xl bg-delete!"
               onClick={async () => {
                 await roomContext.api.updatePermissions(link.id, a, {
                   can_publish: false,

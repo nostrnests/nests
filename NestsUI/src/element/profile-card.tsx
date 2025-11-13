@@ -5,7 +5,7 @@ import { ReactNode } from "react";
 import classNames from "classnames";
 import { useNostrRoom } from "../hooks/nostr-room-context";
 import { ProfilePageContent } from "../pages/profile";
-import { NostrLink, NostrPrefix } from "@snort/system";
+import { NostrLink } from "@snort/system";
 import { useIsAdmin } from "../hooks/useIsAdmin";
 import { useLogin } from "../login";
 import { FormattedMessage } from "react-intl";
@@ -50,9 +50,7 @@ export default function ProfileCard({
   return (
     <div className="absolute z-10 bg-foreground-2 rounded-xl overflow-hidden flex flex-col font-medium w-max">
       {menuItem("eye", <FormattedMessage defaultMessage="View Profile" />, () => {
-        nostrRoom.setFlyout(
-          <ProfilePageContent link={new NostrLink(NostrPrefix.PublicKey, pubkey)} flyout={true} showEnded={false} />,
-        );
+        nostrRoom.setFlyout(<ProfilePageContent link={NostrLink.publicKey(pubkey)} flyout={true} showEnded={false} />);
       })}
       {!isSelf &&
         menuItem(

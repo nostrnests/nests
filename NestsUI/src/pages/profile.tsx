@@ -1,10 +1,10 @@
-import { NostrLink, NostrPrefix, RequestBuilder, socialGraphInstance } from "@snort/system";
-import { useRequestBuilder, useUserProfile } from "@snort/system-react";
+import { NostrLink, RequestBuilder } from "@snort/system";
+import { SnortContext, useRequestBuilder, useUserProfile } from "@snort/system-react";
 import Avatar from "../element/avatar";
 import DisplayName from "../element/display-name";
 import Button, { PrimaryButton } from "../element/button";
 import Header from "../element/header";
-import { useMemo } from "react";
+import { useContext, useMemo } from "react";
 import { RoomListList } from "../element/room-list-list";
 import { DefaultRelays, ROOM_KIND } from "../const";
 import { FormattedMessage } from "react-intl";
@@ -23,7 +23,7 @@ export default function ProfilePage({ link, header }: { link: NostrLink; header:
   return (
     <>
       {header && <Header />}
-      <div className="lg:w-[35rem] mx-auto max-lg:px-4">
+      <div className="lg:w-140 mx-auto max-lg:px-4">
         <ProfilePageContent link={link} flyout={false} showEnded={true} />
       </div>
     </>
@@ -42,6 +42,7 @@ export function ProfilePageContent({
   const meta = useUserProfile(link.id);
   const navigate = useNavigate();
   const login = useLogin();
+  const system = useContext(SnortContext);
   const isMe = login.pubkey === link.id;
   const sub = useMemo(() => {
     const rb = new RequestBuilder(`rooms:${link.id.slice(0, 12)}`);
@@ -52,7 +53,7 @@ export function ProfilePageContent({
 
   const events = useRequestBuilder(sub);
 
-  const followedBy = isMe ? undefined : socialGraphInstance.followedByFriends(link.id);
+  const followedBy = isMe ? undefined : system.config.socialGraphInstance.followedByFriends(link.id);
   return (
     <div className="flex flex-col gap-4">
       <div className={flyout ? "flex flex-col gap-2" : "flex justify-between"}>
@@ -103,7 +104,7 @@ export function ProfilePageContent({
                   <>
                     {[...followedBy].slice(0, 3).map((a, i) => (
                       <>
-                        <Mention link={new NostrLink(NostrPrefix.PublicKey, a)} />
+                        <Mention link={NostrLink.publicKey(a)} />
                         {i < Math.min(2, followedBy.size - 1) && ","}{" "}
                       </>
                     ))}
@@ -122,7 +123,7 @@ export function ProfilePageContent({
           </div>
         </div>
       )}
-      {meta?.isNostrAddressValid && <p className="text-highlight text-sm">{meta.nip05}</p>}
+      {meta?.nip05 && <p className="text-highlight text-sm">{meta.nip05}</p>}
       {meta?.about && <Text content={meta?.about} tags={[]} />}
       <hr />
       <RoomListList events={events} showCreateWhenEmpty={false} showEmptyRooms={true} showEnded={showEnded} />

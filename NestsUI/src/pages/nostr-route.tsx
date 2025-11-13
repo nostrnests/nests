@@ -1,9 +1,9 @@
-import { NostrLink, NostrPrefix, tryParseNostrLink } from "@snort/system";
+import { NostrLink, tryParseNostrLink } from "@snort/system";
 import { useParams } from "react-router-dom";
 import ProfilePage from "./profile";
 import Room from "./room";
 import { useEffect, useState } from "react";
-import { fetchNip05Pubkey } from "@snort/shared";
+import { fetchNip05Pubkey, NostrPrefix } from "@snort/shared";
 import { useIntl } from "react-intl";
 
 export default function NostrRoute() {

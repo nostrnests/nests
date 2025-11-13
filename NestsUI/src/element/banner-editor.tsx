@@ -56,7 +56,10 @@ export default function BannerEditor({
         <div className="flex gap-4 flex-wrap">
           {ColorPalette.map((a) => (
             <div
-              className={`w-8 h-8 rounded-full cursor-pointer${a === color ? " outline outline-2" : ""} bg-${a}`}
+              className={`w-8 h-8 rounded-full cursor-pointer${a === color ? " outline-2" : ""}`}
+              style={{
+                backgroundImage: `var(--${a})`,
+              }}
               key={a}
               onClick={() => setColor(a)}
             ></div>
@@ -65,7 +68,7 @@ export default function BannerEditor({
       )}
       {bgType === "image" && (
         <div
-          className="outline outline-1 outline-dashed cursor-pointer rounded-xl text-primary flex justify-center overflow-hidden"
+          className="outline-1 outline-dashed cursor-pointer rounded-xl text-primary flex justify-center overflow-hidden"
           onClick={async () => {
             setImageProcessing(true);
             try {

@@ -76,7 +76,7 @@ export default function NewRoom() {
   if (login.type === "none") return <Navigate to={"/login"} />;
 
   return (
-    <div className="lg:w-[35rem] max-lg:px-4 mx-auto flex flex-col gap-4 mt-10">
+    <div className="lg:w-140 max-lg:px-4 mx-auto flex flex-col gap-4 mt-10">
       <h1 className="text-center">
         <FormattedMessage defaultMessage="New Room" />
       </h1>
