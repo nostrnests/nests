@@ -1,6 +1,6 @@
-import { EventKind, NostrEvent, NostrLink, RequestBuilder, parseZap } from "@snort/system";
+import { EventBuilder, EventKind, NostrEvent, NostrLink, RequestBuilder, parseZap } from "@snort/system";
 import { useRequestBuilder, useUserProfile } from "@snort/system-react";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import Avatar from "./avatar";
 import DisplayName from "./display-name";
 import Icon from "../icon";
@@ -9,6 +9,8 @@ import { FormattedMessage } from "react-intl";
 import classNames from "classnames";
 import Text from "./text";
 import { formatSats } from "../utils";
+import useEventBuilder from "../hooks/useEventBuilder";
+import ZapFlow from "./zap-modal";
 
 export default function ChatMessages({ link, className, ...props }: { link: NostrLink; className?: string }) {
   const sub = useMemo(() => {
@@ -19,6 +21,41 @@ export default function ChatMessages({ link, className, ...props }: { link: Nost
 
   const messages = useRequestBuilder(sub);
 
+  // Get all chat message IDs for reaction/zap subscription
+  const chatMessageIds = useMemo(() => {
+    return messages.filter((m) => m.kind === LIVE_CHAT).map((m) => m.id);
+  }, [messages]);
+
+  // Subscribe to reactions and zaps for chat messages
+  const reactionsSub = useMemo(() => {
+    const rb = new RequestBuilder(`chat-reactions:${link.id}`);
+    if (chatMessageIds.length > 0) {
+      rb.withOptions({ leaveOpen: true })
+        .withFilter()
+        .kinds([EventKind.Reaction, EventKind.ZapReceipt])
+        .tag("e", chatMessageIds);
+    }
+    return rb;
+  }, [link.id, chatMessageIds]);
+
+  const reactionsAndZaps = useRequestBuilder(reactionsSub);
+
+  // Group reactions and zaps by message ID
+  const reactionsByMessage = useMemo(() => {
+    const map = new Map<string, NostrEvent[]>();
+    for (const event of reactionsAndZaps) {
+      const eTag = event.tags.find((t) => t[0] === "e");
+      if (eTag) {
+        const msgId = eTag[1];
+        if (!map.has(msgId)) {
+          map.set(msgId, []);
+        }
+        map.get(msgId)!.push(event);
+      }
+    }
+    return map;
+  }, [reactionsAndZaps]);
+
   return (
     <div className={classNames("overflow-y-auto flex flex-col-reverse gap-3 px-5 grow", className)} {...props}>
       {messages.map((a) => {
@@ -27,7 +64,13 @@ export default function ChatMessages({ link, className, ...props }: { link: Nost
             return <ChatZap event={a} key={a.id} />;
           }
           default: {
-            return <ChatMessage event={a} key={a.id} />;
+            return (
+              <ChatMessage
+                event={a}
+                key={a.id}
+                reactions={reactionsByMessage.get(a.id) ?? []}
+              />
+            );
           }
         }
       })}
@@ -35,19 +78,154 @@ export default function ChatMessages({ link, className, ...props }: { link: Nost
   );
 }
 
-function ChatMessage({ event }: { event: NostrEvent }) {
+function ChatMessage({ event, reactions }: { event: NostrEvent; reactions: NostrEvent[] }) {
   const profile = useUserProfile(event.pubkey);
+  const [showActions, setShowActions] = useState(false);
+
+  // Separate reactions and zaps
+  const emojiReactions = reactions.filter((r) => r.kind === EventKind.Reaction);
+  const zaps = reactions.filter((r) => r.kind === EventKind.ZapReceipt);
+
+  // Count emoji reactions
+  const reactionCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const r of emojiReactions) {
+      const emoji = r.content;
+      if (emoji && emoji !== "+" && emoji !== "-") {
+        counts.set(emoji, (counts.get(emoji) || 0) + 1);
+      }
+    }
+    return counts;
+  }, [emojiReactions]);
+
+  // Calculate total zap amount
+  const totalZapAmount = useMemo(() => {
+    return zaps.reduce((total, z) => {
+      const parsed = parseZap(z);
+      return total + parsed.amount;
+    }, 0);
+  }, [zaps]);
 
   return (
-    <div className="grid grid-cols-[32px_auto] gap-2">
+    <div
+      className="grid grid-cols-[32px_auto] gap-2 group relative"
+      onMouseEnter={() => setShowActions(true)}
+      onMouseLeave={() => setShowActions(false)}
+      onClick={() => setShowActions((s) => !s)}
+    >
       <Avatar pubkey={event.pubkey} size={32} link={true} />
-      <div className="flex flex-col text-sm text-wrap overflow-wrap overflow-hidden">
+      <div className="flex flex-col text-sm break-words overflow-hidden min-w-0">
         <div className="text-medium leading-8">
           <DisplayName pubkey={event.pubkey} profile={profile} />
         </div>
         <Text content={event.content} tags={event.tags} />
+        {/* Reactions and zaps display */}
+        {(reactionCounts.size > 0 || totalZapAmount > 0) && (
+          <div className="flex flex-wrap gap-1 mt-1">
+            {Array.from(reactionCounts.entries()).map(([emoji, count]) => (
+              <span
+                key={emoji}
+                className="bg-foreground-2 rounded-full px-2 py-0.5 text-xs flex items-center gap-1"
+              >
+                <span>{emoji}</span>
+                {count > 1 && <span className="text-foreground-3">{count}</span>}
+              </span>
+            ))}
+            {totalZapAmount > 0 && (
+              <span className="bg-foreground-2 rounded-full px-2 py-0.5 text-xs flex items-center gap-1 text-bitcoin">
+                <Icon name="zap" size={12} />
+                <span>{formatSats(totalZapAmount)}</span>
+              </span>
+            )}
+          </div>
+        )}
       </div>
+      {showActions && (
+        <ChatMessageActions
+          event={event}
+          profile={profile}
+          onClose={() => setShowActions(false)}
+        />
+      )}
     </div>
+  );
+}
+
+function ChatMessageActions({
+  event,
+  profile,
+  onClose,
+}: {
+  event: NostrEvent;
+  profile: ReturnType<typeof useUserProfile>;
+  onClose: () => void;
+}) {
+  const { system, signer } = useEventBuilder();
+  const [showZap, setShowZap] = useState(false);
+
+  const hasLightningAddress = profile?.lud16 || profile?.lud06;
+  const quickReactions = ["🤙", "💯", "😂", "🔥", "🫂"];
+
+  async function sendReaction(content: string) {
+    if (!signer) return;
+
+    const link = NostrLink.fromEvent(event);
+    const eb = new EventBuilder()
+      .kind(EventKind.Reaction)
+      .content(content)
+      .tag(link.toEventTag()!)
+      .tag(["p", event.pubkey]);
+
+    const ev = await eb.buildAndSign(signer);
+    await system.BroadcastEvent(ev);
+    onClose();
+  }
+
+  return (
+    <>
+      {showZap && (
+        <ZapFlow
+          onClose={() => {
+            setShowZap(false);
+            onClose();
+          }}
+          targets={[
+            {
+              type: "pubkey",
+              weight: 1,
+              value: event.pubkey,
+              zap: {
+                pubkey: event.pubkey,
+                anon: false,
+                event: NostrLink.fromEvent(event),
+              },
+            },
+          ]}
+        />
+      )}
+      <div
+        className="absolute right-0 top-0 flex items-center gap-1 bg-foreground-2 rounded-full px-2 py-1 shadow-lg z-10"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {quickReactions.map((emoji) => (
+          <button
+            key={emoji}
+            className="hover:bg-foreground rounded p-1 text-lg transition-colors"
+            onClick={() => sendReaction(emoji)}
+          >
+            {emoji}
+          </button>
+        ))}
+        {hasLightningAddress && (
+          <button
+            className="hover:bg-foreground rounded p-1 transition-colors"
+            onClick={() => setShowZap(true)}
+          >
+            <Icon name="zap" size={18} className="text-primary" />
+          </button>
+        )}
+      </div>
+    </>
   );
 }
 

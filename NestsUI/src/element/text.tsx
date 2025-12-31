@@ -11,7 +11,7 @@ export default function Text({ content, tags }: { content: string; tags: Array<A
     switch (frag.type) {
       case "link":
         return (
-          <a href={frag.content} rel="noreferer" target="_blank" className="text-highlight">
+          <a href={frag.content} rel="noreferer" target="_blank" className="text-highlight break-all">
             {frag.content}
           </a>
         );
@@ -28,5 +28,5 @@ export default function Text({ content, tags }: { content: string; tags: Array<A
     }
   }
 
-  return <div className="whitespace-pre text-wrap">{frags.map(renderFrag)}</div>;
+  return <div className="whitespace-pre-wrap break-words">{frags.map(renderFrag)}</div>;
 }
