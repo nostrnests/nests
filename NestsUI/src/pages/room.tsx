@@ -1,5 +1,5 @@
 import { LiveKitRoom } from "@livekit/components-react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import NostrParticipants from "../element/participants";
 import { NostrEvent, NostrLink, RequestBuilder } from "@snort/system";
 import RoomCard from "../element/room-card";
@@ -25,10 +25,25 @@ export interface RoomState {
 const ChatWidth = 450 as const;
 
 export default function Room() {
+  const { id } = useParams();
   const location = useLocation();
+  const navigate = useNavigate();
   const room = location.state as RoomState | undefined;
   const link = useMemo(() => (room ? NostrLink.fromEvent(room.event) : undefined), [room]);
   const system = useContext(SnortContext);
+
+  // Update URL to match the canonical naddr from the event
+  useEffect(() => {
+    if (link && id) {
+      const correctNaddr = link.encode();
+      if (id !== correctNaddr) {
+        navigate(`/${correctNaddr}`, {
+          state: location.state,
+          replace: true,
+        });
+      }
+    }
+  }, [link, id, navigate, location.state]);
 
   const roomSub = useMemo(() => {
     const sub = new RequestBuilder(`room:${link?.id}`);
