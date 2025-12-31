@@ -6,7 +6,7 @@ import { PrimaryButton, SecondaryButton } from "./button";
 import useRoomPresence, { useSendPresence } from "../hooks/useRoomPresence";
 import { useLogin } from "../login";
 import Modal from "./modal";
-import { ReactNode, useEffect, useMemo, useState } from "react";
+import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { useRoomReactions } from "../hooks/useRoomReactions";
 import Flyout from "./flyout";
 import { NostrRoomContext } from "../hooks/nostr-room-context";
@@ -15,14 +15,18 @@ import { FormattedMessage } from "react-intl";
 import { unixNow } from "@snort/shared";
 import { extractStreamInfo, updateOrAddTag } from "../utils";
 import useEventModifier from "../hooks/useEventModifier";
+import { usePageVisibility } from "../hooks/usePageVisibility";
+import { ConnectionState } from "livekit-client";
 
 export function NostrRoomContextProvider({
   event,
   token,
+  serverUrl,
   children,
 }: {
   event: NostrEvent;
   token: string;
+  serverUrl: string;
   children?: ReactNode;
 }) {
   const [flyout, setFlyout] = useState<ReactNode>();
@@ -46,6 +50,31 @@ export function NostrRoomContextProvider({
   const isEnded = status === "ended";
   const isPlanned = status === "planned";
   useSendPresence(isLive ? link : undefined);
+
+  // Handle reconnection when page becomes visible after being hidden (mobile wake)
+  const { isVisible } = usePageVisibility();
+  const wasHiddenRef = useRef(false);
+
+  useEffect(() => {
+    if (!isVisible) {
+      wasHiddenRef.current = true;
+    } else if (wasHiddenRef.current) {
+      wasHiddenRef.current = false;
+
+      // Check if LiveKit room needs reconnection
+      const connectionState = room.state;
+      if (connectionState === ConnectionState.Disconnected && serverUrl) {
+        console.debug("Page became visible, LiveKit disconnected - attempting reconnect");
+        room.connect(serverUrl, token, {
+          autoSubscribe: true,
+        }).catch((e) => {
+          console.error("Failed to reconnect to LiveKit:", e);
+        });
+      } else if (connectionState === ConnectionState.Connected) {
+        console.debug("Page became visible, LiveKit still connected");
+      }
+    }
+  }, [isVisible, room, token, serverUrl]);
 
   // Handle room metadata change / recording
   useEffect(() => {
