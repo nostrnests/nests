@@ -10,6 +10,8 @@ export interface RoomState {
   flyout?: ReactNode;
   info?: RoomInfo;
   setFlyout: (n?: ReactNode) => void;
+  lobbyOpen: boolean;
+  setLobbyOpen: (open: boolean) => void;
   volume: number;
   setVolume: (n: number) => void;
   api: NestsApi;
@@ -20,6 +22,8 @@ export const NostrRoomContext = createContext<RoomState>({
   reactions: [],
   presence: [],
   setFlyout: () => {},
+  lobbyOpen: false,
+  setLobbyOpen: () => {},
   setVolume: () => {},
   volume: 1.0,
   api: new NestsApi(ApiUrl),
