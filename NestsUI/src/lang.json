@@ -5,6 +5,9 @@
   "+20FW7": {
     "defaultMessage": "Devices"
   },
+  "+iV+lb": {
+    "defaultMessage": "Extension"
+  },
   "+t+11k": {
     "defaultMessage": "Close Room"
   },
@@ -66,17 +69,14 @@
   "6sGucA": {
     "defaultMessage": "New Room"
   },
-  "6tIixi": {
-    "defaultMessage": "Invalid login details"
-  },
   "6xQg6j": {
     "defaultMessage": "Ban user"
   },
   "7EqMUS": {
     "defaultMessage": "If this option is disabled they will still be able to see the nest on those clients and chat but not hear the room audio."
   },
-  "7vwVDQ": {
-    "defaultMessage": "Nostr address not found"
+  "7bWt93": {
+    "defaultMessage": "Invalid login details"
   },
   "9Xmefb": {
     "defaultMessage": "Short description about the room",
@@ -88,6 +88,9 @@
   },
   "9pMqYs": {
     "defaultMessage": "Nostr Address"
+  },
+  "A2mL5b": {
+    "defaultMessage": "Connect with Bunker"
   },
   "AGHEaD": {
     "defaultMessage": "No Recordings"
@@ -101,8 +104,14 @@
   "AyGauy": {
     "defaultMessage": "Login"
   },
+  "AyknBt": {
+    "defaultMessage": "Connection failed"
+  },
   "B5pZ3p": {
     "defaultMessage": "Share Room"
+  },
+  "Bfifzx": {
+    "defaultMessage": "Manual bunker connection"
   },
   "C/m3jB": {
     "defaultMessage": "Back to Lobby"
@@ -115,6 +124,9 @@
   },
   "CsCUYo": {
     "defaultMessage": "{n} sats"
+  },
+  "D3pCPn": {
+    "defaultMessage": "Scan with your signer app"
   },
   "D5Li4U": {
     "defaultMessage": "Start a new room"
@@ -200,6 +212,9 @@
   "QQkNag": {
     "defaultMessage": "Hosted by {name}"
   },
+  "QcNbCg": {
+    "defaultMessage": "Sign in with extension"
+  },
   "QtFGiO": {
     "defaultMessage": "Host"
   },
@@ -233,9 +248,6 @@
   "Up5U7K": {
     "defaultMessage": "Block"
   },
-  "VvvK+z": {
-    "defaultMessage": "Sign in with extension"
-  },
   "VzzYJk": {
     "defaultMessage": "Create"
   },
@@ -244,6 +256,9 @@
   },
   "WTrOy3": {
     "defaultMessage": "Chat"
+  },
+  "X0Nuq5": {
+    "defaultMessage": "Waiting for connection..."
   },
   "XMYlZD": {
     "defaultMessage": "My Wallet"
@@ -256,6 +271,12 @@
   },
   "Yf3DwC": {
     "defaultMessage": "Connect a wallet to send instant payments"
+  },
+  "ZThfyD": {
+    "defaultMessage": "Nsec"
+  },
+  "a2xj0Q": {
+    "defaultMessage": "Connect"
   },
   "aabpty": {
     "defaultMessage": "Rooms left open"
@@ -294,8 +315,11 @@
   "g5pX+a": {
     "defaultMessage": "About"
   },
-  "hi2yFz": {
-    "defaultMessage": "nsec / user@nsec.app"
+  "gqH4cW": {
+    "defaultMessage": "Try Again"
+  },
+  "gsMTMh": {
+    "defaultMessage": "Connection timed out"
   },
   "huqKGl": {
     "defaultMessage": "Create account"
@@ -308,6 +332,9 @@
   },
   "ieGrWo": {
     "defaultMessage": "Follow"
+  },
+  "ikhYUY": {
+    "defaultMessage": "Copy Connection String"
   },
   "itPgxd": {
     "defaultMessage": "Profile"
@@ -325,6 +352,9 @@
   "kc5EOy": {
     "defaultMessage": "Username is too long"
   },
+  "ldIFD4": {
+    "defaultMessage": "Nostr address not found"
+  },
   "mBMl8U": {
     "defaultMessage": "Room Description (Optional 140 chars)"
   },
@@ -335,6 +365,9 @@
   "oM1Qdm": {
     "defaultMessage": "Speakers"
   },
+  "odXmn8": {
+    "defaultMessage": "Sign in"
+  },
   "omWbg5": {
     "defaultMessage": "Custom Relays (Optional)"
   },
@@ -344,11 +377,23 @@
   "pXFAd/": {
     "defaultMessage": "Stop Recording"
   },
+  "qUVdL3": {
+    "defaultMessage": "Create a nostr account"
+  },
+  "r2Jjms": {
+    "defaultMessage": "Login"
+  },
+  "rWCW3v": {
+    "defaultMessage": "Sign in using your browser extension (Alby, nos2x, etc.)"
+  },
   "st17aP": {
     "defaultMessage": "There are no scheduled rooms right now."
   },
-  "tarxmH": {
-    "defaultMessage": "Address is not a nostr bunker"
+  "szuHw0": {
+    "defaultMessage": "Copied!"
+  },
+  "tMCYLt": {
+    "defaultMessage": "nsec / user@nsec.app"
   },
   "uCk8r+": {
     "defaultMessage": "Already have an account?"
@@ -358,6 +403,9 @@
   },
   "unQI/I": {
     "defaultMessage": "Personal note"
+  },
+  "v4Y2S4": {
+    "defaultMessage": "Address is not a nostr bunker"
   },
   "wEQDC6": {
     "defaultMessage": "Edit"

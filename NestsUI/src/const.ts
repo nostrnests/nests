@@ -14,7 +14,7 @@ export const DefaultRelays = [
   "wss://relay.snort.social",
   "wss://nos.lol",
   "wss://relay.damus.io",
-  "wss://nostr.land",
+  "wss://relay.ditto.pub",
   "wss://relay.primal.net",
 ];
 //export const DefaultRelays = ["ws://host.docker.internal:7777"];
