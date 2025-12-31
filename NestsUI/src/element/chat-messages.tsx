@@ -13,8 +13,19 @@ import useEventBuilder from "../hooks/useEventBuilder";
 import ZapFlow from "./zap-modal";
 import { useNostrRoom } from "../hooks/nostr-room-context";
 import { ProfilePageContent } from "../pages/profile";
+import useMuteList from "../hooks/useMuteList";
+import { useLogin } from "../login";
+import Modal from "./modal";
+import { PrimaryButton, SecondaryButton } from "./button";
 
 export default function ChatMessages({ link, className, ...props }: { link: NostrLink; className?: string }) {
+  const nostrRoom = useNostrRoom();
+  const login = useLogin();
+  const hostPubkey = nostrRoom.event?.pubkey;
+
+  // Fetch user's mute list and room host's mute list
+  const { allMutes, isMuted, mute, unmute } = useMuteList(hostPubkey ? [hostPubkey] : undefined);
+
   const sub = useMemo(() => {
     const rb = new RequestBuilder(`chat-messages:${link.id}`);
     rb.withOptions({ leaveOpen: true }).withFilter().kinds([LIVE_CHAT, EventKind.ZapReceipt]).replyToLink([link]);
@@ -23,10 +34,23 @@ export default function ChatMessages({ link, className, ...props }: { link: Nost
 
   const messages = useRequestBuilder(sub);
 
+  // Filter out messages from muted users (user's mutes + host's mutes)
+  const filteredMessages = useMemo(() => {
+    return messages.filter((m) => {
+      // For zap receipts, check the sender
+      if (m.kind === EventKind.ZapReceipt) {
+        const zap = parseZap(m);
+        return !allMutes.has(zap.sender ?? m.pubkey);
+      }
+      // For regular messages, check the pubkey
+      return !allMutes.has(m.pubkey);
+    });
+  }, [messages, allMutes]);
+
   // Get all chat message IDs for reaction/zap subscription
   const chatMessageIds = useMemo(() => {
-    return messages.filter((m) => m.kind === LIVE_CHAT).map((m) => m.id);
-  }, [messages]);
+    return filteredMessages.filter((m) => m.kind === LIVE_CHAT).map((m) => m.id);
+  }, [filteredMessages]);
 
   // Subscribe to reactions and zaps for chat messages
   const reactionsSub = useMemo(() => {
@@ -60,7 +84,7 @@ export default function ChatMessages({ link, className, ...props }: { link: Nost
 
   return (
     <div className={classNames("overflow-y-auto flex flex-col-reverse gap-3 px-5 grow", className)} {...props}>
-      {messages.map((a) => {
+      {filteredMessages.map((a) => {
         switch (a.kind) {
           case EventKind.ZapReceipt: {
             return <ChatZap event={a} key={a.id} />;
@@ -71,6 +95,10 @@ export default function ChatMessages({ link, className, ...props }: { link: Nost
                 event={a}
                 key={a.id}
                 reactions={reactionsByMessage.get(a.id) ?? []}
+                isMuted={isMuted(a.pubkey)}
+                onMute={() => mute(a.pubkey)}
+                onUnmute={() => unmute(a.pubkey)}
+                canMute={login.type !== "none" && a.pubkey !== login.pubkey}
               />
             );
           }
@@ -80,7 +108,21 @@ export default function ChatMessages({ link, className, ...props }: { link: Nost
   );
 }
 
-function ChatMessage({ event, reactions }: { event: NostrEvent; reactions: NostrEvent[] }) {
+function ChatMessage({
+  event,
+  reactions,
+  isMuted,
+  onMute,
+  onUnmute,
+  canMute,
+}: {
+  event: NostrEvent;
+  reactions: NostrEvent[];
+  isMuted: boolean;
+  onMute: () => void;
+  onUnmute: () => void;
+  canMute: boolean;
+}) {
   const profile = useUserProfile(event.pubkey);
   const [showActions, setShowActions] = useState(false);
   const nostrRoom = useNostrRoom();
@@ -159,6 +201,10 @@ function ChatMessage({ event, reactions }: { event: NostrEvent; reactions: Nostr
           event={event}
           profile={profile}
           onClose={() => setShowActions(false)}
+          isMuted={isMuted}
+          onMute={onMute}
+          onUnmute={onUnmute}
+          canMute={canMute}
         />
       )}
     </div>
@@ -169,13 +215,22 @@ function ChatMessageActions({
   event,
   profile,
   onClose,
+  isMuted,
+  onMute,
+  onUnmute,
+  canMute,
 }: {
   event: NostrEvent;
   profile: ReturnType<typeof useUserProfile>;
   onClose: () => void;
+  isMuted: boolean;
+  onMute: () => void;
+  onUnmute: () => void;
+  canMute: boolean;
 }) {
   const { system, signer } = useEventBuilder();
   const [showZap, setShowZap] = useState(false);
+  const [showMuteConfirm, setShowMuteConfirm] = useState(false);
 
   const hasLightningAddress = profile?.lud16 || profile?.lud06;
   const quickReactions = ["🤙", "💯", "😂", "🔥", "🫂"];
@@ -192,6 +247,23 @@ function ChatMessageActions({
 
     const ev = await eb.buildAndSign(signer);
     await system.BroadcastEvent(ev);
+    onClose();
+  }
+
+  function handleMuteClick() {
+    if (isMuted) {
+      // Unmute doesn't need confirmation
+      onUnmute();
+      onClose();
+    } else {
+      // Show confirmation for mute
+      setShowMuteConfirm(true);
+    }
+  }
+
+  function confirmMute() {
+    onMute();
+    setShowMuteConfirm(false);
     onClose();
   }
 
@@ -217,6 +289,30 @@ function ChatMessageActions({
           ]}
         />
       )}
+      {showMuteConfirm && (
+        <Modal id="mute-confirm" onClose={() => setShowMuteConfirm(false)}>
+          <div className="flex flex-col gap-4 items-center">
+            <h2 className="text-xl font-semibold">
+              <FormattedMessage defaultMessage="Mute User" />
+            </h2>
+            <div className="flex items-center gap-3">
+              <Avatar pubkey={event.pubkey} size={48} link={false} />
+              <DisplayName pubkey={event.pubkey} profile={profile} className="font-medium" />
+            </div>
+            <p className="text-foreground-2 text-center">
+              <FormattedMessage defaultMessage="You won't see chat messages from this user. This will be saved to your public mute list." />
+            </p>
+            <div className="flex gap-3 w-full">
+              <SecondaryButton className="flex-1" onClick={() => setShowMuteConfirm(false)}>
+                <FormattedMessage defaultMessage="Cancel" />
+              </SecondaryButton>
+              <PrimaryButton className="flex-1 !bg-delete hover:!bg-delete/90" onClick={confirmMute}>
+                <FormattedMessage defaultMessage="Mute" />
+              </PrimaryButton>
+            </div>
+          </div>
+        </Modal>
+      )}
       <div
         className="absolute right-0 top-0 flex items-center gap-1 bg-foreground-2 rounded-full px-2 py-1 shadow-lg z-10"
         onClick={(e) => e.stopPropagation()}
@@ -235,7 +331,20 @@ function ChatMessageActions({
             className="hover:bg-foreground rounded p-1 transition-colors"
             onClick={() => setShowZap(true)}
           >
-            <Icon name="zap" size={18} className="text-primary" />
+            <Icon name="zap" size={20} className="text-primary" />
+          </button>
+        )}
+        {canMute && (
+          <button
+            className="hover:bg-foreground rounded p-1 transition-colors"
+            onClick={handleMuteClick}
+            title={isMuted ? "Unmute user" : "Mute user"}
+          >
+            <Icon
+              name={isMuted ? "user-plus" : "user-x"}
+              size={20}
+              className={isMuted ? "text-primary" : "text-delete"}
+            />
           </button>
         )}
       </div>
