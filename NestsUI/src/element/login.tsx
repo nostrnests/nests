@@ -13,6 +13,7 @@ import { bech32ToHex, fetchNostrAddress, isHex } from "@snort/shared";
 import { Nip46Signer } from "@snort/system";
 import QrCode from "./qr";
 import Spinner from "./spinner";
+import { useIsMobile, isMobileDevice } from "../hooks/useIsMobile";
 
 type LoginTab = "extension" | "connect" | "nsec";
 
@@ -34,6 +35,8 @@ export default function Login() {
   const navigate = useNavigate();
 
   const hasExtension = "nostr" in window;
+  const isMobile = useIsMobile();
+  const showSignerAppButton = isMobile || isMobileDevice();
 
   const errorCodes = {
     invalid: formatMessage({ defaultMessage: "Invalid login details", id: "7bWt93" }),
@@ -110,6 +113,12 @@ export default function Login() {
     await navigator.clipboard.writeText(connectUri);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  // Open the nostrconnect URI - launches signer app on mobile
+  const handleOpenSignerApp = () => {
+    if (!connectUri) return;
+    window.location.href = connectUri;
   };
 
   // Nsec/bunker login
@@ -282,21 +291,38 @@ export default function Login() {
               </div>
             ) : connectUri ? (
               <>
-                <div className="bg-white p-4 rounded-xl">
-                  <QrCode data={connectUri} width={200} height={200} />
-                </div>
+                {showSignerAppButton ? (
+                  /* Mobile: Show Open Signer App button */
+                  <>
+                    <PrimaryButton onClick={handleOpenSignerApp} className="w-full py-6">
+                      <FormattedMessage defaultMessage="Open Signer App" id="5FXJXC" />
+                    </PrimaryButton>
+                    <p className="text-foreground-2 text-center text-sm">
+                      <FormattedMessage
+                        defaultMessage="This will open your signer app (Amber, etc.) to approve the connection"
+                        id="5eV3lM"
+                      />
+                    </p>
+                  </>
+                ) : (
+                  /* Desktop: Show QR code */
+                  <>
+                    <div className="bg-white p-4 rounded-xl">
+                      <QrCode data={connectUri} width={200} height={200} />
+                    </div>
+                    <p className="text-foreground-2 text-center">
+                      <FormattedMessage defaultMessage="Scan with your signer app" id="D3pCPn" />
+                    </p>
+                  </>
+                )}
                 <div className="flex items-center gap-2 text-foreground-2">
-                  {isWaitingForConnect ? (
+                  {isWaitingForConnect && (
                     <>
                       <Spinner className="w-4 h-4" />
                       <span>
                         <FormattedMessage defaultMessage="Waiting for connection..." id="X0Nuq5" />
                       </span>
                     </>
-                  ) : (
-                    <span>
-                      <FormattedMessage defaultMessage="Scan with your signer app" id="D3pCPn" />
-                    </span>
                   )}
                 </div>
                 <SecondaryButton onClick={handleCopyUri}>
