@@ -218,11 +218,9 @@ export function NostrRoomContextProvider({
             <h2>
               <FormattedMessage defaultMessage="Room Ended" />
             </h2>
-            <Link to="/" className="w-full">
-              <PrimaryButton className="w-full">
-                <FormattedMessage defaultMessage="Back to Lobby" />
-              </PrimaryButton>
-            </Link>
+            <PrimaryButton className="w-full" onClick={() => navigate("/")}>
+              <FormattedMessage defaultMessage="Back to Lobby" />
+            </PrimaryButton>
             {isMine && (
               <SecondaryButton className="w-full" onClick={startRoomNow}>
                 <FormattedMessage defaultMessage="Restart room" />
