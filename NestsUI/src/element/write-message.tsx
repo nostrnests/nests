@@ -160,7 +160,10 @@ function ReactionsButton({ link, fromRef }: { link: NostrLink; fromRef: RefObjec
 
   function ReactIcon({ content }: { content: string }) {
     return (
-      <Button className="cursor-pointer" onClick={async () => await sendReactions(content)}>
+      <Button
+        className="cursor-pointer p-3 hover:bg-foreground rounded-lg transition-colors"
+        onClick={async () => await sendReactions(content)}
+      >
         {content}
       </Button>
     );
@@ -169,7 +172,7 @@ function ReactionsButton({ link, fromRef }: { link: NostrLink; fromRef: RefObjec
   const px = open
     ? createPortal(
         <div
-          className="absolute bg-foreground-2 p-3 grid grid-cols-6 text-2xl rounded-2xl select-none w-[20rem] max-lg:mb-[4dvh] lg:mb-2"
+          className="absolute bg-foreground-2 p-4 grid grid-cols-4 lg:grid-cols-6 text-3xl lg:text-2xl gap-3 lg:gap-2 rounded-2xl select-none max-lg:mb-[4dvh] lg:mb-2"
           style={{
             bottom: window.innerHeight - (pos?.top ?? 0),
             left: pos?.left,
@@ -184,7 +187,7 @@ function ReactionsButton({ link, fromRef }: { link: NostrLink; fromRef: RefObjec
           <ReactIcon content="🤔" />
           <ReactIcon content="🔥" />
           <ReactIcon content="🤡" />
-          <ReactIcon content="🤩" />
+          <ReactIcon content="🫂" />
           <ReactIcon content="😱" />
           <ReactIcon content="🤣" />
           <ReactIcon content="🤯" />
