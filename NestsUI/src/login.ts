@@ -322,17 +322,24 @@ class LoginStore extends ExternalStore<LoginSession> {
     // Wait for the remote signer to connect and get the user's pubkey
     const { userPubkey } = await waitForNostrConnect(params, signal);
 
-    // Create the bunker URL with the user's pubkey and permissions for proper session handling
+    // Create the bunker URL with the user's pubkey, secret, and permissions
     // The bunker:// URL format expects the user's pubkey, not the bunker's pubkey
     const relayParams = params.relays.map((r) => `relay=${encodeURIComponent(r)}`).join("&");
-    const bunkerUrl = `bunker://${userPubkey}?${relayParams}&perms=${encodeURIComponent(NIP46_PERMISSIONS)}`;
+    const bunkerUrl = `bunker://${userPubkey}?${relayParams}&secret=${params.secret}&perms=${encodeURIComponent(NIP46_PERMISSIONS)}`;
 
     // Create the Nip46Signer with our client key
     const clientSigner = new PrivateKeySigner(params.clientSecretKey);
     const signer = new Nip46Signer(bunkerUrl, clientSigner);
-    // Don't await init() - the handshake was already done in waitForNostrConnect
-    // This matches how loadSession handles NIP-46 (line 335)
-    signer.init();
+
+    // Initialize the signer - this will establish its own connection
+    // The remote signer should already have approved the session via nostrconnect
+    try {
+      await signer.init();
+    } catch (e) {
+      // Init might fail if the signer doesn't respond to connect (already connected via nostrconnect)
+      // That's ok - we can still use the signer for signing
+      console.warn("[nostrconnect] Nip46Signer init warning:", e);
+    }
 
     // Login with the signer
     await this.loginWithNip46(signer);
