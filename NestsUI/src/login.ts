@@ -15,7 +15,6 @@ import {
 } from "@snort/system";
 import { useSyncExternalStore } from "react";
 import usePresence from "./hooks/usePresence";
-import { isMobileDevice } from "./hooks/useIsMobile";
 
 /**
  * Wrapper signer that returns the correct user pubkey but delegates signing to Nip46Signer.
@@ -29,6 +28,10 @@ class Nip46SignerWrapper implements EventSigner {
   constructor(inner: Nip46Signer, userPubkey: string) {
     this.#inner = inner;
     this.#userPubkey = userPubkey;
+  }
+
+  get supports(): string[] {
+    return this.#inner.supports;
   }
 
   get privateKey(): string | undefined {
