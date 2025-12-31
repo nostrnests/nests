@@ -4,6 +4,7 @@ import Logo from "../element/logo";
 import { FormattedMessage } from "react-intl";
 import { useLogin } from "../login";
 import Icon from "../icon";
+import HeroBg from "../assets/hero-bg.png";
 
 export default function Home() {
   const login = useLogin();
@@ -37,32 +38,49 @@ export default function Home() {
       </header>
 
       {/* Hero Section */}
-      <section className="flex flex-col items-center justify-center text-center px-4 py-20 lg:py-32">
-        <h1 className="text-4xl lg:text-6xl font-bold mb-6">
-          <FormattedMessage defaultMessage="Your Space for Live Audio" />
-        </h1>
-        <p className="text-xl lg:text-2xl text-gray-400 max-w-3xl mb-6">
-          <FormattedMessage defaultMessage="Nostr Nests is an open audio space for chatting, jamming, micro-conferences, live podcast recordings, and more." />
-        </p>
-        <p className="text-lg text-gray-500 max-w-2xl mb-10">
-          <FormattedMessage defaultMessage="Powered by Nostr and completely decentralized. No algorithms, no gatekeepers, just real conversations." />
-        </p>
-        <div className="flex gap-4 flex-wrap justify-center">
-          <Link to="/lobby">
-            <PrimaryButton className="text-lg px-8 py-3">
-              <div className="flex gap-2 items-center">
-                <Icon name="people" />
-                <FormattedMessage defaultMessage="Explore Rooms" />
-              </div>
-            </PrimaryButton>
-          </Link>
-          {!login.pubkey && (
-            <Link to="/sign-up">
-              <SecondaryButton className="text-lg px-8 py-3">
-                <FormattedMessage defaultMessage="Create Account" />
-              </SecondaryButton>
+      <section
+        className="flex flex-col items-center justify-center text-center px-4 py-20 lg:py-32 relative overflow-hidden min-h-[70vh]"
+        style={{
+          backgroundImage: `url(${HeroBg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+        }}
+      >
+        {/* Dark overlay for readability */}
+        <div className="absolute inset-0 bg-black/60" />
+
+        {/* Gradient fade at edges */}
+        <div className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-background" />
+
+        {/* Content card with glass effect */}
+        <div className="relative z-10 backdrop-blur-sm bg-white/5 rounded-3xl p-8 lg:p-12 border border-white/10 max-w-4xl mx-4 shadow-2xl">
+          <h1 className="text-4xl lg:text-6xl font-bold mb-6 text-white drop-shadow-lg">
+            <FormattedMessage defaultMessage="Your Space for Live Audio" />
+          </h1>
+          <p className="text-xl lg:text-2xl text-gray-200 max-w-3xl mb-6">
+            <FormattedMessage defaultMessage="Nostr Nests is an open audio space for chatting, jamming, micro-conferences, live podcast recordings, and more." />
+          </p>
+          <p className="text-lg text-gray-300 max-w-2xl mb-10 mx-auto">
+            <FormattedMessage defaultMessage="Powered by Nostr and completely decentralized. No algorithms, no gatekeepers, just real conversations." />
+          </p>
+          <div className="flex gap-4 flex-wrap justify-center">
+            <Link to="/lobby">
+              <PrimaryButton className="text-lg px-8 py-3 shadow-lg hover:shadow-primary/25 transition-shadow">
+                <div className="flex gap-2 items-center">
+                  <Icon name="people" />
+                  <FormattedMessage defaultMessage="Explore Rooms" />
+                </div>
+              </PrimaryButton>
             </Link>
-          )}
+            {!login.pubkey && (
+              <Link to="/sign-up">
+                <SecondaryButton className="text-lg px-8 py-3">
+                  <FormattedMessage defaultMessage="Create Account" />
+                </SecondaryButton>
+              </Link>
+            )}
+          </div>
         </div>
       </section>
 
@@ -73,7 +91,7 @@ export default function Home() {
             <UseCaseChip icon="mic" label={<FormattedMessage defaultMessage="Live Podcasts" />} />
             <UseCaseChip icon="people" label={<FormattedMessage defaultMessage="Group Chats" />} />
             <UseCaseChip icon="audio" label={<FormattedMessage defaultMessage="Music Jams" />} />
-            <UseCaseChip icon="share" label={<FormattedMessage defaultMessage="Micro-Conferences" />} />
+            <UseCaseChip icon="share" label={<FormattedMessage defaultMessage="Conferences" />} />
           </div>
         </div>
       </section>
