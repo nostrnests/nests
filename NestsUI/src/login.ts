@@ -525,6 +525,21 @@ export async function loginWithNostrConnect(params: NostrConnectParams, signal?:
   return LoginSystem.loginWithNostrConnect(params, signal);
 }
 
+// Default relays to connect to when fetching user profile data
+const ProfileRelays = [
+  "wss://relay.snort.social",
+  "wss://nos.lol",
+  "wss://relay.damus.io",
+  "wss://relay.primal.net",
+];
+
+// Indexer relays that aggregate NIP-65 relay lists and profile data
+const IndexerRelays = [
+  "wss://purplepag.es",
+  "wss://user.kindpag.es",
+  "wss://relay.nos.social", // nos.social indexer
+];
+
 let lastPubkey: string | undefined;
 /// Update login session with follows/relays
 export function loginHook(system: NostrSystem) {
@@ -535,17 +550,69 @@ export function loginHook(system: NostrSystem) {
 
     if (session.pubkey) {
       system.config.socialGraphInstance.setRoot(session.pubkey);
+
+      // Connect to indexer relays first - these aggregate NIP-65 relay lists
+      for (const relay of IndexerRelays) {
+        try {
+          await system.ConnectToRelay(relay, { read: true, write: false });
+        } catch (e) {
+          console.debug("Failed to connect to indexer relay:", relay, e);
+        }
+      }
+
+      // Connect to common profile relays
+      for (const relay of ProfileRelays) {
+        try {
+          await system.ConnectToRelay(relay, { read: true, write: true });
+        } catch (e) {
+          console.debug("Failed to connect to profile relay:", relay, e);
+        }
+      }
+
+      // Fetch relay list (kind 10002 - NIP-65) from indexers and profile relays
+      const relayRb = new RequestBuilder(`relays:${session.pubkey.slice(0, 12)}`);
+      relayRb.withFilter().authors([session.pubkey]).kinds([EventKind.Relays]).limit(1);
+
+      const relayEvents = await system.Fetch(relayRb);
+      let userRelays: Record<string, RelaySettings> | undefined;
+
+      if (relayEvents.length > 0) {
+        const latestRelayEvent = relayEvents.reduce((acc, v) => (acc.created_at > v.created_at ? acc : v), relayEvents[0]);
+        const relays = parseRelaysFromKind(latestRelayEvent);
+        if (relays) {
+          userRelays = Object.fromEntries(relays.map((a) => [a.url, a.settings]));
+          console.debug("Found user relays from NIP-65:", Object.keys(userRelays));
+
+          // Connect to user's own relays for fetching contact list
+          for (const relay of relays) {
+            try {
+              await system.ConnectToRelay(relay.url, relay.settings);
+            } catch (e) {
+              console.debug("Failed to connect to user relay:", relay.url, e);
+            }
+          }
+        }
+      }
+
+      // Now fetch contact list from all connected relays (including user's own)
       const rb = new RequestBuilder(`login:${session.pubkey.slice(0, 12)}`);
-      rb.withFilter().authors([session.pubkey]).kinds([EventKind.ContactList, EventKind.Relays]);
+      rb.withFilter().authors([session.pubkey]).kinds([EventKind.ContactList]).limit(1);
 
       const evs = await system.Fetch(rb);
       if (evs.length > 0) {
         const fromEvent = evs.reduce((acc, v) => (acc.created_at > v.created_at ? acc : v), evs[0]);
-        const relays = parseRelaysFromKind(fromEvent);
+        console.debug("Loaded contact list with", fromEvent.tags.filter((a) => a[0] === "p").length, "follows");
         LoginSystem.updateSession((s) => {
           s.follows = fromEvent.tags.filter((a) => a[0] === "p") as Array<[string, string]>;
-          s.relays = relays ? Object.fromEntries(relays?.map((a) => [a.url, a.settings])) : undefined;
+          s.relays = userRelays;
         });
+      } else {
+        // No contact list found, but still save relays if we have them
+        if (userRelays) {
+          LoginSystem.updateSession((s) => {
+            s.relays = userRelays;
+          });
+        }
       }
     }
   };
