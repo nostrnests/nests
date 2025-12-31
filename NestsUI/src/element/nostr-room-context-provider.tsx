@@ -55,8 +55,8 @@ export function NostrRoomContextProvider({
   function leaveRoom() {
     // Disconnect in background, don't wait for it
     room.disconnect();
-    // Navigate immediately
-    window.location.href = "/";
+    // Navigate to lobby
+    window.location.href = "/lobby";
   }
 
   // Global spacebar handler for mute toggle
