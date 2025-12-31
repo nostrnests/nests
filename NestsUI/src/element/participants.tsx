@@ -5,16 +5,17 @@ import Icon from "../icon";
 import Avatar from "./avatar";
 import { unixNow } from "@snort/shared";
 import { useUserPresence } from "../hooks/useRoomPresence";
-import { NostrEvent } from "@snort/system";
+import { NostrEvent, NostrLink } from "@snort/system";
 import ProfileCard from "./profile-card";
 import useHoverMenu from "../hooks/useHoverMenu";
 import { useUserRoomReactions } from "../hooks/useRoomReactions";
-import { useEffect } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useNostrRoom } from "../hooks/nostr-room-context";
 import { FormattedMessage } from "react-intl";
 import DisplayName from "./display-name";
 import VuBar from "./vu";
 import ZapButton from "./zap-button";
+import { useHand } from "../login";
 
 export default function NostrParticipants({ event }: { event: NostrEvent }) {
   const participants = useParticipants({
@@ -59,6 +60,12 @@ function NostrParticipant({ p, event }: { p: RemoteParticipant | LocalParticipan
   const permissions = useParticipantPermissions({
     participant: p,
   });
+
+  // Track previous canPublish state to detect when user is moved to stage
+  const wasOnStageRef = useRef(permissions?.canPublish);
+  const link = useMemo(() => NostrLink.fromEvent(event), [event]);
+  const { active: handRaised, toggleHand } = useHand(link);
+
   useEffect(() => {
     if (permissions && p instanceof LocalParticipant) {
       const handler = (lt: LocalTrackPublication) => {
@@ -68,11 +75,18 @@ function NostrParticipant({ p, event }: { p: RemoteParticipant | LocalParticipan
       if (permissions.canPublish && p.audioTrackPublications.size === 0) {
         p.setMicrophoneEnabled(true);
       }
+
+      // Auto-lower hand when moved to stage
+      if (permissions.canPublish && !wasOnStageRef.current && handRaised) {
+        toggleHand();
+      }
+      wasOnStageRef.current = permissions.canPublish;
+
       return () => {
         p.off("localTrackPublished", handler);
       };
     }
-  }, [p, permissions]);
+  }, [p, permissions, handRaised, toggleHand]);
 
   const { handleMouseEnter, handleMouseLeave, isHovering } = useHoverMenu();
   const room = useNostrRoom();
