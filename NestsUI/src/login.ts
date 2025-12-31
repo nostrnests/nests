@@ -1,5 +1,6 @@
 import { ExternalStore } from "@snort/shared";
 import {
+  EventBuilder,
   EventKind,
   EventSigner,
   Nip46Signer,
@@ -13,6 +14,216 @@ import {
 } from "@snort/system";
 import { useSyncExternalStore } from "react";
 import usePresence from "./hooks/usePresence";
+
+// NIP-46 nostrconnect:// types and utilities
+export interface NostrConnectParams {
+  clientSecretKey: Uint8Array;
+  clientPubkey: string;
+  secret: string;
+  relays: string[];
+}
+
+const DEFAULT_NOSTRCONNECT_RELAY = "wss://relay.primal.net";
+
+export function generateNostrConnectParams(relays?: string[]): NostrConnectParams {
+  const clientSecretKey = crypto.getRandomValues(new Uint8Array(32));
+  const clientSigner = new PrivateKeySigner(clientSecretKey);
+  const clientPubkey = clientSigner.getPubKey();
+  const secret = crypto.randomUUID().slice(0, 8);
+
+  return {
+    clientSecretKey,
+    clientPubkey,
+    secret,
+    relays: relays && relays.length > 0 ? relays : [DEFAULT_NOSTRCONNECT_RELAY],
+  };
+}
+
+export function generateNostrConnectURI(params: NostrConnectParams, appName?: string): string {
+  const searchParams = new URLSearchParams();
+
+  for (const relay of params.relays) {
+    searchParams.append("relay", relay);
+  }
+  searchParams.set("secret", params.secret);
+
+  if (appName) {
+    searchParams.set("name", appName);
+  }
+
+  return `nostrconnect://${params.clientPubkey}?${searchParams.toString()}`;
+}
+
+// NIP-46 response event kind
+const NIP46_RESPONSE_KIND = 24133;
+
+/**
+ * Wait for a nostrconnect:// response from a remote signer.
+ * Returns the bunker pubkey and user pubkey on success.
+ */
+export async function waitForNostrConnect(
+  params: NostrConnectParams,
+  signal?: AbortSignal,
+): Promise<{ bunkerPubkey: string; userPubkey: string }> {
+  const clientSigner = new PrivateKeySigner(params.clientSecretKey);
+  const clientPubkey = clientSigner.getPubKey();
+
+  return new Promise((resolve, reject) => {
+    const sockets: WebSocket[] = [];
+    let resolved = false;
+    let bunkerPubkey: string | null = null;
+    const pendingRpc = new Map<string, (result: string) => void>();
+
+    const cleanup = () => {
+      resolved = true;
+      sockets.forEach((ws) => {
+        try {
+          ws.close();
+        } catch {
+          // ignore
+        }
+      });
+    };
+
+    // Send an RPC request to the bunker
+    const sendRpc = async (ws: WebSocket, method: string, rpcParams: string[] = []): Promise<string> => {
+      const id = crypto.randomUUID();
+      const payload = { id, method, params: rpcParams };
+      const encrypted = await clientSigner.nip44Encrypt(JSON.stringify(payload), bunkerPubkey!);
+
+      // Build and sign the event using EventBuilder
+      const eb = new EventBuilder();
+      eb.kind(NIP46_RESPONSE_KIND as EventKind)
+        .content(encrypted)
+        .tag(["p", bunkerPubkey!]);
+
+      const signedEvent = await eb.buildAndSign(clientSigner);
+      ws.send(JSON.stringify(["EVENT", signedEvent]));
+
+      return new Promise((resolveRpc) => {
+        pendingRpc.set(id, resolveRpc);
+      });
+    };
+
+    // Handle abort signal
+    if (signal) {
+      signal.addEventListener("abort", () => {
+        cleanup();
+        reject(new Error("Connection aborted"));
+      });
+    }
+
+    // Connect to each relay
+    for (const relayUrl of params.relays) {
+      try {
+        const ws = new WebSocket(relayUrl);
+        sockets.push(ws);
+
+        ws.onopen = () => {
+          // Subscribe to NIP-46 response events tagged to our client pubkey
+          const subId = `nostrconnect-${params.secret}`;
+          const req = JSON.stringify([
+            "REQ",
+            subId,
+            {
+              kinds: [NIP46_RESPONSE_KIND],
+              "#p": [clientPubkey],
+              limit: 10,
+            },
+          ]);
+          ws.send(req);
+        };
+
+        ws.onmessage = async (e) => {
+          if (resolved) return;
+
+          try {
+            const msg = JSON.parse(e.data);
+            if (msg[0] !== "EVENT") return;
+
+            const event = msg[2];
+            if (event.kind !== NIP46_RESPONSE_KIND) return;
+
+            // Decrypt the content using NIP-44
+            let decrypted: string;
+            try {
+              decrypted = await clientSigner.nip44Decrypt(event.content, event.pubkey);
+            } catch {
+              // Try NIP-04 as fallback
+              try {
+                decrypted = await clientSigner.nip4Decrypt(event.content, event.pubkey);
+              } catch {
+                return; // Can't decrypt, not for us
+              }
+            }
+
+            const message = JSON.parse(decrypted);
+
+            // Check if this is a response to a pending RPC
+            if ("id" in message && "result" in message && pendingRpc.has(message.id)) {
+              const callback = pendingRpc.get(message.id)!;
+              pendingRpc.delete(message.id);
+              callback(message.result);
+              return;
+            }
+
+            // Check if this is a connect request from the remote signer
+            // Format: { id, method: "connect", params: [userPubkey, secret, perms] }
+            if ("method" in message && message.method === "connect") {
+              const userPubkey = message.params[0];
+              const receivedSecret = message.params[1];
+
+              // Validate the secret matches
+              if (receivedSecret === params.secret) {
+                cleanup();
+                resolve({
+                  bunkerPubkey: event.pubkey,
+                  userPubkey,
+                });
+              }
+            }
+            // Handle response format (result field) - need to get pubkey via RPC
+            else if ("result" in message && (message.result === params.secret || message.result === "ack")) {
+              bunkerPubkey = event.pubkey;
+
+              // Now we need to get the actual user pubkey via get_public_key RPC
+              try {
+                const userPubkey = await sendRpc(ws, "get_public_key");
+                cleanup();
+                resolve({
+                  bunkerPubkey: event.pubkey,
+                  userPubkey,
+                });
+              } catch {
+                cleanup();
+                reject(new Error("Failed to get user pubkey from signer"));
+              }
+            }
+          } catch {
+            // Failed to process message
+          }
+        };
+
+        ws.onerror = () => {
+          // Connection error, try other relays
+        };
+
+        ws.onclose = () => {
+          // Remove from active sockets
+          const idx = sockets.indexOf(ws);
+          if (idx >= 0) sockets.splice(idx, 1);
+
+          // If all sockets closed without resolution, reject
+          if (!resolved && sockets.length === 0) {
+            reject(new Error("All relay connections closed"));
+          }
+        };
+      } catch {
+        // Failed to connect to this relay
+      }
+    }
+  });
+}
 
 type LoginTypes = "none" | "nip7" | "nip46" | "nsec";
 export type SupportedLocales = "en-US";
@@ -77,6 +288,29 @@ class LoginStore extends ExternalStore<LoginSession> {
     const pk = await this.#session.signer.getPubKey();
     this.#session.pubkey = pk;
     this.notifyChange();
+  }
+
+  async loginWithNostrConnect(params: NostrConnectParams, signal?: AbortSignal) {
+    if (this.#session.type !== "none") {
+      throw new Error("Already logged in");
+    }
+
+    // Wait for the remote signer to connect and get the user's pubkey
+    const { userPubkey } = await waitForNostrConnect(params, signal);
+
+    // Create the bunker URL with the user's pubkey for proper session persistence
+    // The bunker:// URL format expects the user's pubkey, not the bunker's pubkey
+    const bunkerUrl = `bunker://${userPubkey}?${params.relays.map((r) => `relay=${encodeURIComponent(r)}`).join("&")}`;
+
+    // Create the Nip46Signer with our client key
+    const clientSigner = new PrivateKeySigner(params.clientSecretKey);
+    const signer = new Nip46Signer(bunkerUrl, clientSigner);
+    // Don't await init() - the handshake was already done in waitForNostrConnect
+    // This matches how loadSession handles NIP-46 (line 335)
+    signer.init();
+
+    // Login with the signer
+    await this.loginWithNip46(signer);
   }
 
   loadSession() {
@@ -187,6 +421,10 @@ export function useHand(link: NostrLink) {
 
 export function logout() {
   LoginSystem.logout();
+}
+
+export async function loginWithNostrConnect(params: NostrConnectParams, signal?: AbortSignal) {
+  return LoginSystem.loginWithNostrConnect(params, signal);
 }
 
 let lastPubkey: string | undefined;
