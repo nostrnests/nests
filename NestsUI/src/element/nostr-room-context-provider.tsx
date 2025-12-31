@@ -183,7 +183,10 @@ export function NostrRoomContextProvider({
 
     const signed = await modifier.update(event);
     if (signed) {
-      navigate("#", {
+      // Close any open flyout/modal
+      setFlyout(undefined);
+      // Navigate to the room URL to force a proper state update
+      navigate(`/${link.encode()}`, {
         state: {
           token,
           event: signed,
@@ -207,6 +210,7 @@ export function NostrRoomContextProvider({
         info: roomInfo,
         volume,
         setVolume,
+        leaveRoom,
       }}
     >
       <RoomAudioRenderer volume={volume} />

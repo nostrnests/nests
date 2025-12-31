@@ -2,7 +2,6 @@ import { NostrEvent, NostrLink } from "@snort/system";
 import { ReactNode, useState } from "react";
 import Button, { PrimaryButton, SecondaryButton } from "./button";
 import { unixNow } from "@snort/shared";
-import { useNavigate } from "react-router-dom";
 import BannerEditor from "./banner-editor";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useNostrRoom } from "../hooks/nostr-room-context";
@@ -58,7 +57,7 @@ function EditRoomDetails({ event, onClose }: { event: NostrEvent; onClose: () =>
   const [desc, setDesc] = useState(event.tags.find((a) => a[0] === "description")?.[1] ?? "");
   const [color, setColor] = useState(event.tags.find((a) => a[0] === "color")?.[1]);
   const [image, setImage] = useState(event.tags.find((a) => a[0] === "image")?.[1]);
-  const navigate = useNavigate();
+  const { leaveRoom } = useNostrRoom();
   const { formatMessage } = useIntl();
   const modifier = useEventModifier();
 
@@ -121,7 +120,7 @@ function EditRoomDetails({ event, onClose }: { event: NostrEvent; onClose: () =>
             status[1] = "ended";
             updateOrAddTag(event, "ends", unixNow().toString());
             await modifier.update(event);
-            navigate("/");
+            await leaveRoom();
           }
         }}
       >
