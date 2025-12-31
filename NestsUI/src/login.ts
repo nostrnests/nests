@@ -40,6 +40,16 @@ export function generateNostrConnectParams(relays?: string[]): NostrConnectParam
   };
 }
 
+// NIP-46 permissions needed for the app
+const NIP46_PERMISSIONS = [
+  "sign_event",
+  "nip04_encrypt",
+  "nip04_decrypt",
+  "nip44_encrypt",
+  "nip44_decrypt",
+  "get_public_key",
+].join(",");
+
 export function generateNostrConnectURI(
   params: NostrConnectParams,
   appName?: string,
@@ -55,6 +65,9 @@ export function generateNostrConnectURI(
   if (appName) {
     searchParams.set("name", appName);
   }
+
+  // Request required permissions from the signer
+  searchParams.set("perms", NIP46_PERMISSIONS);
 
   // Add callback URL on mobile web so signer app can redirect back
   const shouldCallback = includeCallback ?? isMobileDevice();
