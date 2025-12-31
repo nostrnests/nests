@@ -15,6 +15,7 @@ import { removeUndefined, sanitizeRelayUrl } from "@snort/shared";
 import { updateRelays } from "../utils";
 import { NostrRoomContextProvider } from "../element/nostr-room-context-provider";
 import { JoinRoom } from "../element/join-room";
+import { useNostrRoom } from "../hooks/nostr-room-context";
 import { useSwipeable } from "react-swipeable";
 import { useChatActivity } from "../hooks/useChatActivity";
 
@@ -91,13 +92,16 @@ export default function Room() {
 }
 
 function ParticipantsPannel({ event }: { event: NostrEvent }) {
-  const navigate = useNavigate();
+  const { setLobbyOpen } = useNostrRoom();
   return (
     <div className={`lg:w-[calc(100vw-${ChatWidth}px)] max-lg:w-screen overflow-y-auto`}>
       <div className="px-4 pt-6">
-        <button className="flex gap-2 items-center text-highlight cursor-pointer" onClick={() => navigate("/")}>
-          <Icon name="chevron" />
-          <FormattedMessage defaultMessage="Lobby" />
+        <button
+          className="flex gap-2 items-center text-highlight cursor-pointer"
+          onClick={() => setLobbyOpen(true)}
+        >
+          <Icon name="people" />
+          <FormattedMessage defaultMessage="Browse Rooms" />
         </button>
       </div>
       <div className="flex flex-col gap-8 mx-auto lg:w-[35rem] max-lg:px-4 mb-[30dvh]">

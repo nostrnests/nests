@@ -30,6 +30,8 @@ export default function RoomCard({
   presenceEvents,
   showDescription,
   showShareMenu,
+  compact,
+  onJoin,
 }: {
   event: NostrEvent;
   inRoom?: boolean;
@@ -39,6 +41,8 @@ export default function RoomCard({
   presenceEvents?: Array<NostrEvent>;
   showDescription?: boolean;
   showShareMenu?: boolean;
+  compact?: boolean;
+  onJoin?: () => void;
 }) {
   const profile = useUserProfile(event.pubkey);
 
@@ -60,6 +64,7 @@ export default function RoomCard({
     const id = event.tags.find((a) => a[0] === "d")?.[1];
     if (id) {
       const { token } = await api.joinRoom(id);
+      onJoin?.();
       navigate(`/${NostrLink.fromEvent(event).encode()}`, {
         state: {
           event: event,
@@ -81,7 +86,8 @@ export default function RoomCard({
     return (
       <div
         className={classNames(
-          "relative px-6 py-4 rounded-3xl flex flex-col gap-3",
+          "relative rounded-3xl flex flex-col",
+          compact ? "px-4 py-3 gap-2" : "px-6 py-4 gap-3",
           { "cursor-pointer": (link ?? true) || join },
           className,
         )}
@@ -135,7 +141,7 @@ export default function RoomCard({
             </Modal>
           )}
         </div>
-        <div className="text-2xl font-semibold">{title}</div>
+        <div className={classNames("font-semibold", compact ? "text-lg" : "text-2xl")}>{title}</div>
         {showDescription && <div className="text-sm">{summary}</div>}
         {!inRoom && (
           <div className="flex gap-2 items-center">

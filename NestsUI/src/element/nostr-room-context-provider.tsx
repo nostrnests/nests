@@ -17,6 +17,7 @@ import { extractStreamInfo, updateOrAddTag } from "../utils";
 import useEventModifier from "../hooks/useEventModifier";
 import { usePageVisibility } from "../hooks/usePageVisibility";
 import { ConnectionState } from "livekit-client";
+import LobbyFlyoutContent from "./lobby-flyout";
 
 export function NostrRoomContextProvider({
   event,
@@ -30,6 +31,7 @@ export function NostrRoomContextProvider({
   children?: ReactNode;
 }) {
   const [flyout, setFlyout] = useState<ReactNode>();
+  const [lobbyOpen, setLobbyOpen] = useState(false);
   const [volume, setVolume] = useState(1);
   const [roomInfo, setRoomInfo] = useState<RoomInfo>();
   const [confirmGuest, setConfirmGuest] = useState(false);
@@ -195,6 +197,8 @@ export function NostrRoomContextProvider({
         presence,
         flyout,
         setFlyout,
+        lobbyOpen,
+        setLobbyOpen,
         info: roomInfo,
         volume,
         setVolume,
@@ -203,6 +207,9 @@ export function NostrRoomContextProvider({
       <RoomAudioRenderer volume={volume} />
       <Flyout side="right" show={flyout !== undefined} onClose={() => setFlyout(undefined)}>
         {flyout}
+      </Flyout>
+      <Flyout side="left" show={lobbyOpen} onClose={() => setLobbyOpen(false)}>
+        <LobbyFlyoutContent />
       </Flyout>
       {children}
       {isEnded && (
