@@ -1,15 +1,19 @@
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { parseNostrLink } from "@snort/system";
+import { EventKind, NostrLink, parseNostrLink, RequestBuilder } from "@snort/system";
 import { useNestsApi } from "../hooks/useNestsApi";
 import Logo from "./logo";
 import RoomCard from "./room-card";
-import { useEventFeed } from "@snort/system-react";
+import { useEventFeed, useRequestBuilder } from "@snort/system-react";
 import { PrimaryButton } from "./button";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 import { removeUndefined, sanitizeRelayUrl } from "@snort/shared";
 import { extractStreamInfo, updateRelays } from "../utils";
 import { RoomState } from "../pages/room";
+import { ROOM_KIND } from "../const";
+
+// Old room kind for backwards compatibility with old naddr links
+const OLD_ROOM_KIND = 30_311 as EventKind;
 
 export function JoinRoom() {
   const { id } = useParams();
@@ -17,11 +21,41 @@ export function JoinRoom() {
   if (link.relays) {
     updateRelays(link.relays);
   }
-  const event = useEventFeed(link);
+
+  // Try to fetch with the original link
+  const originalEvent = useEventFeed(link);
+
+  // If the link has an old kind, also try fetching with the new kind
+  const isOldKind = link.kind === OLD_ROOM_KIND;
+  const newKindSub = useMemo(() => {
+    const rb = new RequestBuilder(`room-migrate:${link.id}`);
+    if (isOldKind && link.author && link.id) {
+      rb.withFilter()
+        .kinds([ROOM_KIND])
+        .authors([link.author])
+        .tag("d", [link.id]);
+    }
+    return rb;
+  }, [isOldKind, link.author, link.id]);
+
+  const newKindResults = useRequestBuilder(newKindSub);
+  const newKindEvent = newKindResults.length > 0 ? newKindResults[0] : undefined;
+
+  // Use whichever event we found
+  const event = originalEvent ?? newKindEvent;
+
   const { service } = extractStreamInfo(event);
   const api = useNestsApi(service);
   const navigate = useNavigate();
   const location = useLocation();
+
+  // If we found the event with the new kind, redirect to the new naddr
+  useEffect(() => {
+    if (!originalEvent && newKindEvent) {
+      const newLink = NostrLink.fromEvent(newKindEvent);
+      navigate(`/${newLink.encode()}`, { replace: true });
+    }
+  }, [originalEvent, newKindEvent, navigate]);
 
   useEffect(() => {
     if (event) {
@@ -38,9 +72,10 @@ export function JoinRoom() {
   }, [event]);
 
   async function joinRoom() {
-    if (!api) return;
-    const { token } = await api.joinRoom(link.id);
-    navigate(`/${link.encode()}`, {
+    if (!api || !event) return;
+    const eventLink = NostrLink.fromEvent(event);
+    const { token } = await api.joinRoom(eventLink.id);
+    navigate(`/${eventLink.encode()}`, {
       state: {
         event,
         token,
