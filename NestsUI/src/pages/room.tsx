@@ -8,16 +8,17 @@ import Icon from "../icon";
 import ChatMessages from "../element/chat-messages";
 import WriteMessage from "../element/write-message";
 import { useLogin } from "../login";
-import { CSSProperties, useContext, useEffect, useMemo, useState } from "react";
+import { CSSProperties, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import classNames from "classnames";
 import { FormattedMessage } from "react-intl";
 import { removeUndefined, sanitizeRelayUrl } from "@snort/shared";
-import { updateRelays } from "../utils";
+import { extractStreamInfo, updateRelays } from "../utils";
 import { NostrRoomContextProvider } from "../element/nostr-room-context-provider";
 import { JoinRoom } from "../element/join-room";
 import { useNostrRoom } from "../hooks/nostr-room-context";
 import { useSwipeable } from "react-swipeable";
 import { useChatActivity } from "../hooks/useChatActivity";
+import { useNestsApi } from "../hooks/useNestsApi";
 
 export interface RoomState {
   event: NostrEvent;
@@ -33,6 +34,10 @@ export default function Room() {
   const room = location.state as RoomState | undefined;
   const link = useMemo(() => (room ? NostrLink.fromEvent(room.event) : undefined), [room]);
   const system = useContext(SnortContext);
+
+  // Track if we've already refreshed the token for this room
+  const tokenRefreshedRef = useRef<string | null>(null);
+  const [freshToken, setFreshToken] = useState<string | null>(null);
 
   // Update URL to match the canonical naddr from the event
   useEffect(() => {
@@ -57,6 +62,45 @@ export default function Room() {
   const roomUpdates = useRequestBuilder(roomSub);
   const event = roomUpdates.length > 0 ? roomUpdates[0] : room?.event;
 
+  const { service } = extractStreamInfo(event);
+  const api = useNestsApi(service);
+
+  // Refresh token on mount to ensure we have a valid token after page reload
+  const refreshToken = useCallback(async () => {
+    if (!event || !link || !api) return null;
+
+    // Only refresh once per room
+    if (tokenRefreshedRef.current === event.id) return null;
+
+    try {
+      console.debug("Refreshing room token...");
+      const { token } = await api.joinRoom(link.id);
+      tokenRefreshedRef.current = event.id;
+      setFreshToken(token);
+
+      // Update location state with fresh token
+      navigate(location.pathname, {
+        state: {
+          event,
+          token,
+        } as RoomState,
+        replace: true,
+      });
+
+      return token;
+    } catch (e) {
+      console.error("Failed to refresh token:", e);
+      return null;
+    }
+  }, [event, link, api, navigate, location.pathname]);
+
+  // Refresh token when component mounts with existing state (e.g., page reload)
+  useEffect(() => {
+    if (room?.token && event && tokenRefreshedRef.current !== event.id) {
+      refreshToken();
+    }
+  }, [room?.token, event, refreshToken]);
+
   useEffect(() => {
     if (event) {
       const relays = removeUndefined(
@@ -71,7 +115,10 @@ export default function Room() {
     }
   }, [event, system]);
 
-  if (!event || !room?.token || !link) return <JoinRoom />;
+  // Use fresh token if available, otherwise fall back to state token
+  const activeToken = freshToken ?? room?.token;
+
+  if (!event || !activeToken || !link) return <JoinRoom />;
 
   const livekitUrl = event?.tags.find(
     (a) => a[0] === "streaming" && (a[1].startsWith("ws+livekit://") || a[1].startsWith("wss+livekit://")),
@@ -79,12 +126,12 @@ export default function Room() {
   const status = event?.tags.find((a) => a[0] === "status")?.[1];
   const isLive = status === "live";
   const serverUrl = (livekitUrl ?? "").replace("+livekit", "");
-  // Use event.id as key to force LiveKitRoom to remount when switching rooms
-  // This ensures the audio connection is properly established for the new room
-  const roomKey = event.id;
+  // Use event.id + token as key to force LiveKitRoom to remount when switching rooms or token changes
+  // This ensures the audio connection is properly established with the correct token
+  const roomKey = `${event.id}-${activeToken}`;
   return (
-    <LiveKitRoom key={roomKey} serverUrl={serverUrl} token={room.token} connect={isLive}>
-      <NostrRoomContextProvider event={event} token={room.token} serverUrl={serverUrl}>
+    <LiveKitRoom key={roomKey} serverUrl={serverUrl} token={activeToken} connect={isLive}>
+      <NostrRoomContextProvider event={event} token={activeToken} serverUrl={serverUrl}>
         <div className="flex overflow-hidden h-[100dvh]">
           <ParticipantsPannel event={event} />
           <ChatPannel link={link} />
