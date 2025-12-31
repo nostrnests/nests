@@ -1,6 +1,6 @@
 import { EventBuilder, EventKind, NostrLink } from "@snort/system";
 import Button, { PrimaryButton } from "./button";
-import { RefObject, useRef, useState } from "react";
+import { RefObject, useEffect, useRef, useState } from "react";
 import useEventBuilder from "../hooks/useEventBuilder";
 import IconButton from "./icon-button";
 import { useLocalParticipant, useRoomContext } from "@livekit/components-react";
@@ -85,8 +85,19 @@ function MenuBar({ link }: { link: NostrLink }) {
   const wallet = useWallet();
   const login = useLogin();
   const { api } = useNostrRoom();
+  const [leavingStage, setLeavingStage] = useState(false);
 
-  const isOnStage = localParticipant.localParticipant.permissions?.canPublish ?? false;
+  const serverSaysOnStage = localParticipant.localParticipant.permissions?.canPublish ?? false;
+  // Use local state to track if we've requested to leave the stage
+  // This prevents the race condition where permissions haven't updated yet
+  const isOnStage = serverSaysOnStage && !leavingStage;
+
+  // Reset leavingStage when server confirms we're off stage
+  useEffect(() => {
+    if (!serverSaysOnStage && leavingStage) {
+      setLeavingStage(false);
+    }
+  }, [serverSaysOnStage, leavingStage]);
 
   async function toggleMute() {
     room.localParticipant.setMicrophoneEnabled(!room.localParticipant.isMicrophoneEnabled);
@@ -95,7 +106,13 @@ function MenuBar({ link }: { link: NostrLink }) {
   async function handleExit() {
     if (isOnStage && login.pubkey) {
       // Leave the stage (move to audience)
-      await api.updatePermissions(link.id, login.pubkey, { can_publish: false });
+      setLeavingStage(true);
+      try {
+        await api.updatePermissions(link.id, login.pubkey, { can_publish: false });
+      } catch (e) {
+        console.error("Failed to leave stage:", e);
+        setLeavingStage(false);
+      }
     } else {
       // Leave the room (go to lobby)
       navigate("/");
