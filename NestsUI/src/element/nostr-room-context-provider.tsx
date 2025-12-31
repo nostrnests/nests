@@ -51,6 +51,38 @@ export function NostrRoomContextProvider({
   const isPlanned = status === "planned";
   useSendPresence(isLive ? link : undefined);
 
+  // Global spacebar handler for mute toggle
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Only handle spacebar
+      if (e.code !== "Space") return;
+
+      // Don't toggle if typing in an input or textarea
+      const target = e.target as HTMLElement;
+      if (
+        target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.isContentEditable
+      ) {
+        return;
+      }
+
+      // Only toggle if user has a microphone track
+      if (room.localParticipant.audioTrackPublications.size === 0) return;
+
+      // Prevent default (which would trigger the focused button)
+      e.preventDefault();
+
+      // Toggle mute
+      room.localParticipant.setMicrophoneEnabled(!room.localParticipant.isMicrophoneEnabled);
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [room]);
+
   // Handle reconnection when page becomes visible after being hidden (mobile wake)
   const { isVisible } = usePageVisibility();
   const wasHiddenRef = useRef(false);
