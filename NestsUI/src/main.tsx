@@ -10,6 +10,8 @@ import { NostrSystem } from "@snort/system";
 import { setLogLevel } from "livekit-client";
 import RoomList from "./pages/room-list";
 import NewRoom from "./pages/new-room";
+import Home from "./pages/home";
+import PrivacyPolicy from "./pages/privacy";
 import SignUp from "./element/sign-up";
 import Login from "./element/login";
 import LoginCallback from "./pages/login-callback";
@@ -50,6 +52,22 @@ async function routeInit() {
 
 const routes = [
   {
+    path: "/",
+    loader: async () => {
+      await routeInit();
+      return null;
+    },
+    element: <Home />,
+  },
+  {
+    path: "/privacy",
+    loader: async () => {
+      await routeInit();
+      return null;
+    },
+    element: <PrivacyPolicy />,
+  },
+  {
     element: <Layout />,
     loader: async () => {
       await routeInit();
@@ -57,12 +75,8 @@ const routes = [
     },
     children: [
       {
-        path: "/",
-        element: (
-          <>
-            <RoomList />
-          </>
-        ),
+        path: "/lobby",
+        element: <RoomList />,
       },
       {
         path: "/sign-up",
