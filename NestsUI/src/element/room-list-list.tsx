@@ -1,12 +1,12 @@
 import { NostrEvent, NostrLink, RequestBuilder } from "@snort/system";
-import { useRequestBuilder } from "@snort/system-react";
-import { useEffect, useMemo, useState } from "react";
+import { SnortContext, useRequestBuilder } from "@snort/system-react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import RoomCard from "./room-card";
 import { PrimaryButton } from "./button";
 import { Link } from "react-router-dom";
 import { ROOM_PRESENCE } from "../const";
 import { FormattedMessage } from "react-intl";
-import { unixNow } from "@snort/shared";
+import { removeUndefined, sanitizeRelayUrl, unixNow } from "@snort/shared";
 import { PRESENCE_TIME } from "../hooks/usePresence";
 import { useLogin } from "../login";
 import Modal from "./modal";
@@ -29,6 +29,33 @@ export function RoomListList({
 }) {
   const login = useLogin();
   const modifier = useEventModifier();
+  const system = useContext(SnortContext);
+
+  // Extract all unique relays from room events' "relays" tags
+  const roomRelays = useMemo(() => {
+    const relaySet = new Set<string>();
+    for (const event of events) {
+      const relaysTag = event.tags.find((t) => t[0] === "relays");
+      if (relaysTag) {
+        const relays = removeUndefined(relaysTag.slice(1).map((r) => sanitizeRelayUrl(r)));
+        relays.forEach((r) => relaySet.add(r));
+      }
+    }
+    return [...relaySet];
+  }, [events]);
+
+  // Connect to room-specific relays for presence queries
+  useEffect(() => {
+    if (roomRelays.length > 0) {
+      console.debug("Connecting to room relays for presence:", roomRelays);
+      roomRelays.forEach((relay) => {
+        system.ConnectToRelay(relay, { read: true, write: false }).catch((e) => {
+          console.debug("Failed to connect to room relay:", relay, e);
+        });
+      });
+    }
+  }, [roomRelays, system]);
+
   const subPresence = useMemo(() => {
     const rb = new RequestBuilder("presence:room-list");
     if (events.length > 0) {
