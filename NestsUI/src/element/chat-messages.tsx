@@ -11,6 +11,8 @@ import Text from "./text";
 import { formatSats } from "../utils";
 import useEventBuilder from "../hooks/useEventBuilder";
 import ZapFlow from "./zap-modal";
+import { useNostrRoom } from "../hooks/nostr-room-context";
+import { ProfilePageContent } from "../pages/profile";
 
 export default function ChatMessages({ link, className, ...props }: { link: NostrLink; className?: string }) {
   const sub = useMemo(() => {
@@ -81,6 +83,7 @@ export default function ChatMessages({ link, className, ...props }: { link: Nost
 function ChatMessage({ event, reactions }: { event: NostrEvent; reactions: NostrEvent[] }) {
   const profile = useUserProfile(event.pubkey);
   const [showActions, setShowActions] = useState(false);
+  const nostrRoom = useNostrRoom();
 
   // Separate reactions and zaps
   const emojiReactions = reactions.filter((r) => r.kind === EventKind.Reaction);
@@ -106,6 +109,12 @@ function ChatMessage({ event, reactions }: { event: NostrEvent; reactions: Nostr
     }, 0);
   }, [zaps]);
 
+  function openProfile() {
+    nostrRoom.setFlyout(
+      <ProfilePageContent link={NostrLink.publicKey(event.pubkey)} flyout={true} showEnded={false} />
+    );
+  }
+
   return (
     <div
       className="grid grid-cols-[32px_auto] gap-2 group relative"
@@ -113,9 +122,14 @@ function ChatMessage({ event, reactions }: { event: NostrEvent; reactions: Nostr
       onMouseLeave={() => setShowActions(false)}
       onClick={() => setShowActions((s) => !s)}
     >
-      <Avatar pubkey={event.pubkey} size={32} link={true} />
+      <div onClick={(e) => { e.stopPropagation(); openProfile(); }} className="cursor-pointer">
+        <Avatar pubkey={event.pubkey} size={32} link={false} />
+      </div>
       <div className="flex flex-col text-sm break-words overflow-hidden min-w-0">
-        <div className="text-medium leading-8">
+        <div
+          className="text-medium leading-8 cursor-pointer hover:text-primary w-fit"
+          onClick={(e) => { e.stopPropagation(); openProfile(); }}
+        >
           <DisplayName pubkey={event.pubkey} profile={profile} />
         </div>
         <Text content={event.content} tags={event.tags} />
