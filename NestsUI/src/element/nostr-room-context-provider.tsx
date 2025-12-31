@@ -1,5 +1,5 @@
 import { RoomAudioRenderer, useLocalParticipant, useRoomContext } from "@livekit/components-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { NostrEvent, NostrLink } from "@snort/system";
 import { useNestsApi } from "../hooks/useNestsApi";
 import { PrimaryButton, SecondaryButton } from "./button";
@@ -46,7 +46,6 @@ export function NostrRoomContextProvider({
   const { status, service } = extractStreamInfo(event);
   const api = useNestsApi(service);
   const isMine = event.pubkey === login.pubkey;
-  const navigate = useNavigate();
 
   const isLive = status === "live";
   const isEnded = status === "ended";
@@ -55,7 +54,8 @@ export function NostrRoomContextProvider({
 
   async function leaveRoom() {
     await room.disconnect();
-    navigate("/");
+    // Use window.location to force a full page navigation and reset all state
+    window.location.href = "/";
   }
 
   // Global spacebar handler for mute toggle
@@ -181,19 +181,9 @@ export function NostrRoomContextProvider({
     updateOrAddTag(event, "status", "live");
     event.tags = event.tags.filter((a) => a[0] !== "ends");
 
-    const signed = await modifier.update(event);
-    if (signed) {
-      // Close any open flyout/modal
-      setFlyout(undefined);
-      // Navigate to the room URL to force a proper state update
-      navigate(`/${link.encode()}`, {
-        state: {
-          token,
-          event: signed,
-        },
-        replace: true,
-      });
-    }
+    await modifier.update(event);
+    // Force a full page reload to reset all state and pick up the updated event
+    window.location.reload();
   }
 
   return (
