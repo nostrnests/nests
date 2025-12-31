@@ -1,11 +1,10 @@
 import { Link } from "react-router-dom";
+import NestsLogo from "../nests-logo.svg";
 
 export default function Logo() {
   return (
     <Link to="/">
-      <div className="w-12 h-12 rounded-2xl bg-foreground flex items-center justify-center text-2xl font-bold select-none">
-        N
-      </div>
+      <img src={NestsLogo} alt="Nests" className="w-12 h-12" />
     </Link>
   );
 }
