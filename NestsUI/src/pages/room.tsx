@@ -60,7 +60,14 @@ export default function Room() {
     return sub;
   }, [link]);
   const roomUpdates = useRequestBuilder(roomSub);
-  const event = roomUpdates.length > 0 ? roomUpdates[0] : room?.event;
+  // Prefer the event with the latest created_at timestamp to handle room restarts
+  const event = useMemo(() => {
+    const subscriptionEvent = roomUpdates.length > 0 ? roomUpdates[0] : undefined;
+    const stateEvent = room?.event;
+    if (!subscriptionEvent) return stateEvent;
+    if (!stateEvent) return subscriptionEvent;
+    return stateEvent.created_at > subscriptionEvent.created_at ? stateEvent : subscriptionEvent;
+  }, [roomUpdates, room?.event]);
 
   const { service } = extractStreamInfo(event);
   const api = useNestsApi(service);

@@ -53,6 +53,11 @@ export function NostrRoomContextProvider({
   const isPlanned = status === "planned";
   useSendPresence(isLive ? link : undefined);
 
+  async function leaveRoom() {
+    await room.disconnect();
+    navigate("/");
+  }
+
   // Global spacebar handler for mute toggle
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -218,11 +223,9 @@ export function NostrRoomContextProvider({
             <h2>
               <FormattedMessage defaultMessage="Room Ended" />
             </h2>
-            <Link to="/" className="w-full">
-              <PrimaryButton className="w-full">
-                <FormattedMessage defaultMessage="Back to Lobby" />
-              </PrimaryButton>
-            </Link>
+            <PrimaryButton className="w-full" onClick={leaveRoom}>
+              <FormattedMessage defaultMessage="Back to Lobby" />
+            </PrimaryButton>
             {isMine && (
               <SecondaryButton className="w-full" onClick={startRoomNow}>
                 <FormattedMessage defaultMessage="Restart room" />
@@ -240,11 +243,9 @@ export function NostrRoomContextProvider({
             <PrimaryButton className="w-full" onClick={startRoomNow}>
               <FormattedMessage defaultMessage="Start room" />
             </PrimaryButton>
-            <Link to="/" className="w-full">
-              <SecondaryButton className="w-full">
-                <FormattedMessage defaultMessage="Back to Lobby" />
-              </SecondaryButton>
-            </Link>
+            <SecondaryButton className="w-full" onClick={leaveRoom}>
+              <FormattedMessage defaultMessage="Back to Lobby" />
+            </SecondaryButton>
           </div>
         </Modal>
       )}
