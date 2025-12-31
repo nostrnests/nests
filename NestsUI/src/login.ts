@@ -11,10 +11,62 @@ import {
   RelaySettings,
   RequestBuilder,
   parseRelaysFromKind,
+  NostrEvent,
 } from "@snort/system";
 import { useSyncExternalStore } from "react";
 import usePresence from "./hooks/usePresence";
 import { isMobileDevice } from "./hooks/useIsMobile";
+
+/**
+ * Wrapper signer that returns the correct user pubkey but delegates signing to Nip46Signer.
+ * This is needed because Nip46Signer.getPubKey() returns the bunker pubkey from the URL,
+ * but we need it to return the actual user's pubkey for event building.
+ */
+class Nip46SignerWrapper implements EventSigner {
+  #inner: Nip46Signer;
+  #userPubkey: string;
+
+  constructor(inner: Nip46Signer, userPubkey: string) {
+    this.#inner = inner;
+    this.#userPubkey = userPubkey;
+  }
+
+  get privateKey(): string | undefined {
+    return this.#inner.privateKey;
+  }
+
+  get relays(): string[] {
+    return this.#inner.relays;
+  }
+
+  init(): Promise<void> {
+    return this.#inner.init();
+  }
+
+  getPubKey(): string | Promise<string> {
+    return this.#userPubkey;
+  }
+
+  nip4Encrypt(content: string, key: string): Promise<string> {
+    return this.#inner.nip4Encrypt(content, key);
+  }
+
+  nip4Decrypt(content: string, otherKey: string): Promise<string> {
+    return this.#inner.nip4Decrypt(content, otherKey);
+  }
+
+  nip44Encrypt(content: string, key: string): Promise<string> {
+    return this.#inner.nip44Encrypt(content, key);
+  }
+
+  nip44Decrypt(content: string, otherKey: string): Promise<string> {
+    return this.#inner.nip44Decrypt(content, otherKey);
+  }
+
+  sign(ev: NostrEvent): Promise<NostrEvent> {
+    return this.#inner.sign(ev);
+  }
+}
 
 // NIP-46 nostrconnect:// types and utilities
 export interface NostrConnectParams {
@@ -258,6 +310,7 @@ export interface LoginData {
   locale?: SupportedLocales;
   privateKey?: string;
   signerRelay?: Array<string>;
+  bunkerPubkey?: string; // The remote signer's pubkey (for NIP-46)
 }
 export interface LoginLoaded {
   update?: (fn: (s: LoginSession) => void) => void;
@@ -320,29 +373,31 @@ class LoginStore extends ExternalStore<LoginSession> {
     }
 
     // Wait for the remote signer to connect and get the user's pubkey
-    const { userPubkey } = await waitForNostrConnect(params, signal);
+    const { bunkerPubkey, userPubkey } = await waitForNostrConnect(params, signal);
 
-    // Create the bunker URL with the user's pubkey, secret, and permissions
-    // The bunker:// URL format expects the user's pubkey, not the bunker's pubkey
+    // Create the bunker URL with the BUNKER's pubkey (not user's pubkey)
+    // The bunker:// URL tells Nip46Signer which pubkey to send RPC requests to
     const relayParams = params.relays.map((r) => `relay=${encodeURIComponent(r)}`).join("&");
-    const bunkerUrl = `bunker://${userPubkey}?${relayParams}&secret=${params.secret}&perms=${encodeURIComponent(NIP46_PERMISSIONS)}`;
+    const bunkerUrl = `bunker://${bunkerPubkey}?${relayParams}`;
 
     // Create the Nip46Signer with our client key
     const clientSigner = new PrivateKeySigner(params.clientSecretKey);
-    const signer = new Nip46Signer(bunkerUrl, clientSigner);
+    const innerSigner = new Nip46Signer(bunkerUrl, clientSigner);
 
-    // Initialize the signer - this will establish its own connection
-    // The remote signer should already have approved the session via nostrconnect
-    try {
-      await signer.init();
-    } catch (e) {
-      // Init might fail if the signer doesn't respond to connect (already connected via nostrconnect)
-      // That's ok - we can still use the signer for signing
-      console.warn("[nostrconnect] Nip46Signer init warning:", e);
-    }
+    // Don't await init() - the handshake was already done in waitForNostrConnect
+    innerSigner.init();
 
-    // Login with the signer
-    await this.loginWithNip46(signer);
+    // Wrap the signer to return the correct user pubkey for event building
+    const signer = new Nip46SignerWrapper(innerSigner, userPubkey);
+
+    // Set up the session directly with the correct pubkeys
+    this.#session.type = "nip46";
+    this.#session.signer = signer;
+    this.#session.privateKey = innerSigner.privateKey;
+    this.#session.signerRelay = innerSigner.relays;
+    this.#session.pubkey = userPubkey; // User's actual pubkey (for identity/display)
+    this.#session.bunkerPubkey = bunkerPubkey; // Remote signer's pubkey (for RPC)
+    this.notifyChange();
   }
 
   loadSession() {
@@ -355,10 +410,17 @@ class LoginStore extends ExternalStore<LoginSession> {
           break;
         }
         case "nip46": {
-          const relayParams = session.signerRelay?.map((a) => `relay=${encodeURIComponent(a)}`).join("&") ?? "";
-          const url = `bunker://${session.pubkey!}?${relayParams}&perms=${encodeURIComponent(NIP46_PERMISSIONS)}`;
-          session.signer = new Nip46Signer(url, new PrivateKeySigner(session.privateKey!));
-          session.signer.init();
+          // Use bunkerPubkey if available (nostrconnect flow), otherwise fall back to pubkey (bunker:// flow)
+          const targetPubkey = session.bunkerPubkey ?? session.pubkey!;
+          const url = `bunker://${targetPubkey}?${session.signerRelay?.map((a) => `relay=${encodeURIComponent(a)}`).join("&")}`;
+          const innerSigner = new Nip46Signer(url, new PrivateKeySigner(session.privateKey!));
+          innerSigner.init();
+          // Wrap the signer if we have bunkerPubkey (nostrconnect flow)
+          if (session.bunkerPubkey) {
+            session.signer = new Nip46SignerWrapper(innerSigner, session.pubkey!);
+          } else {
+            session.signer = innerSigner;
+          }
           break;
         }
         case "nsec": {
