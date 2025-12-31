@@ -69,9 +69,9 @@ export function generateNostrConnectURI(
   // Request required permissions from the signer
   searchParams.set("perms", NIP46_PERMISSIONS);
 
-  // Add callback URL on mobile web so signer app can redirect back
-  const shouldCallback = includeCallback ?? isMobileDevice();
-  if (shouldCallback && typeof window !== "undefined") {
+  // Add callback URL only when explicitly requested (mobile "Open Signer App" button)
+  // Never include callback in QR codes - those are scanned by phones from desktop
+  if (includeCallback && typeof window !== "undefined") {
     searchParams.set("callback", `${window.location.origin}/login/callback`);
   }
 
@@ -322,9 +322,10 @@ class LoginStore extends ExternalStore<LoginSession> {
     // Wait for the remote signer to connect and get the user's pubkey
     const { userPubkey } = await waitForNostrConnect(params, signal);
 
-    // Create the bunker URL with the user's pubkey for proper session persistence
+    // Create the bunker URL with the user's pubkey and permissions for proper session handling
     // The bunker:// URL format expects the user's pubkey, not the bunker's pubkey
-    const bunkerUrl = `bunker://${userPubkey}?${params.relays.map((r) => `relay=${encodeURIComponent(r)}`).join("&")}`;
+    const relayParams = params.relays.map((r) => `relay=${encodeURIComponent(r)}`).join("&");
+    const bunkerUrl = `bunker://${userPubkey}?${relayParams}&perms=${encodeURIComponent(NIP46_PERMISSIONS)}`;
 
     // Create the Nip46Signer with our client key
     const clientSigner = new PrivateKeySigner(params.clientSecretKey);
@@ -347,7 +348,8 @@ class LoginStore extends ExternalStore<LoginSession> {
           break;
         }
         case "nip46": {
-          const url = `bunker://${session.pubkey!}?${session.signerRelay?.map((a) => `relay=${encodeURIComponent(a)}`).join("&")}`;
+          const relayParams = session.signerRelay?.map((a) => `relay=${encodeURIComponent(a)}`).join("&") ?? "";
+          const url = `bunker://${session.pubkey!}?${relayParams}&perms=${encodeURIComponent(NIP46_PERMISSIONS)}`;
           session.signer = new Nip46Signer(url, new PrivateKeySigner(session.privateKey!));
           session.signer.init();
           break;

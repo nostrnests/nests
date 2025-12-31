@@ -117,8 +117,10 @@ export default function Login() {
 
   // Open the nostrconnect URI - launches signer app on mobile
   const handleOpenSignerApp = () => {
-    if (!connectUri) return;
-    window.location.href = connectUri;
+    if (!connectParams) return;
+    // Generate URI with callback for mobile - signer app will redirect back after approval
+    const uriWithCallback = generateNostrConnectURI(connectParams, "Nests", true);
+    window.location.href = uriWithCallback;
   };
 
   // Nsec/bunker login
