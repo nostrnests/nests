@@ -16,6 +16,7 @@ import { updateRelays } from "../utils";
 import { NostrRoomContextProvider } from "../element/nostr-room-context-provider";
 import { JoinRoom } from "../element/join-room";
 import { useSwipeable } from "react-swipeable";
+import { useChatActivity } from "../hooks/useChatActivity";
 
 export interface RoomState {
   event: NostrEvent;
@@ -110,6 +111,7 @@ function ParticipantsPannel({ event }: { event: NostrEvent }) {
 function ChatPannel({ link }: { link: NostrLink }) {
   const [expanded, setExpanded] = useState(false);
   const login = useLogin();
+  const { hasNewMessages } = useChatActivity(link, expanded);
   const cardHeight = login.type === "none" ? 40 : 85;
   const mobileStyles = [
     {
@@ -145,9 +147,14 @@ function ChatPannel({ link }: { link: NostrLink }) {
       {...swipeHandlers}
     >
       <div
-        className={classNames("h-3 min-h-3 bg-foreground-2 w-40 rounded-full mt-2 mx-auto cursor-pointer lg:hidden", {
-          "mb-3": expanded,
-        })}
+        className={classNames(
+          "h-3 min-h-3 w-40 rounded-full mt-2 mx-auto cursor-pointer lg:hidden transition-all",
+          {
+            "mb-3": expanded,
+            "bg-primary animate-pulse": hasNewMessages && !expanded,
+            "bg-foreground-2": !hasNewMessages || expanded,
+          }
+        )}
         onClick={() => setExpanded((s) => !s)}
       ></div>
       <div className={classNames("px-6 py-4 text-xl font-semibold backdrop-blur-sm max-lg:hidden")}>
