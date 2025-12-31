@@ -114,14 +114,13 @@ function EditRoomDetails({ event, onClose }: { event: NostrEvent; onClose: () =>
       <hr />
       <Button
         className="bg-delete rounded-full"
-        onClick={() => {
+        onClick={async () => {
           const status = event.tags.find((a) => a[0] === "status")!;
           if (status[1] !== "ended") {
             status[1] = "ended";
             updateOrAddTag(event, "ends", unixNow().toString());
-            // Update in background, don't wait
-            modifier.update(event);
-            // Leave immediately
+            // Wait for update to broadcast before leaving
+            await modifier.update(event);
             leaveRoom();
           }
         }}
