@@ -76,9 +76,10 @@ export default function Room() {
   )?.[1];
   const status = event?.tags.find((a) => a[0] === "status")?.[1];
   const isLive = status === "live";
+  const serverUrl = (livekitUrl ?? "").replace("+livekit", "");
   return (
-    <LiveKitRoom serverUrl={(livekitUrl ?? "").replace("+livekit", "")} token={room.token} connect={isLive}>
-      <NostrRoomContextProvider event={event} token={room.token}>
+    <LiveKitRoom serverUrl={serverUrl} token={room.token} connect={isLive}>
+      <NostrRoomContextProvider event={event} token={room.token} serverUrl={serverUrl}>
         <div className="flex overflow-hidden h-[100dvh]">
           <ParticipantsPannel event={event} />
           <ChatPannel link={link} />
