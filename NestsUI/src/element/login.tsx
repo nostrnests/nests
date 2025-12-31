@@ -210,10 +210,10 @@ export default function Login() {
         {hasExtension && (
           <button
             onClick={() => setActiveTab("extension")}
-            className={`flex-1 py-2 px-4 text-center ${
+            className={`flex-1 py-3 px-4 text-center text-lg ${
               activeTab === "extension"
                 ? "border-b-2 border-primary text-primary font-semibold"
-                : "text-foreground-3 hover:text-foreground"
+                : "text-foreground-2 hover:text-primary font-medium"
             }`}
           >
             <FormattedMessage defaultMessage="Extension" id="+iV+lb" />
@@ -221,20 +221,20 @@ export default function Login() {
         )}
         <button
           onClick={() => setActiveTab("connect")}
-          className={`flex-1 py-2 px-4 text-center ${
+          className={`flex-1 py-3 px-4 text-center text-lg ${
             activeTab === "connect"
               ? "border-b-2 border-primary text-primary font-semibold"
-              : "text-foreground-3 hover:text-foreground"
+              : "text-foreground-2 hover:text-primary font-medium"
           }`}
         >
           <FormattedMessage defaultMessage="Connect" id="a2xj0Q" />
         </button>
         <button
           onClick={() => setActiveTab("nsec")}
-          className={`flex-1 py-2 px-4 text-center ${
+          className={`flex-1 py-3 px-4 text-center text-lg ${
             activeTab === "nsec"
               ? "border-b-2 border-primary text-primary font-semibold"
-              : "text-foreground-3 hover:text-foreground"
+              : "text-foreground-2 hover:text-primary font-medium"
           }`}
         >
           <FormattedMessage defaultMessage="Nsec" id="ZThfyD" />
