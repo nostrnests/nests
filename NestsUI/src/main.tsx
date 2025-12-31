@@ -12,6 +12,7 @@ import RoomList from "./pages/room-list";
 import NewRoom from "./pages/new-room";
 import SignUp from "./element/sign-up";
 import Login from "./element/login";
+import LoginCallback from "./pages/login-callback";
 import NostrRoute from "./pages/nostr-route";
 
 import { WasmOptimizer, hasWasm, wasmInit } from "./wasm";
@@ -79,6 +80,16 @@ const routes = [
           <div className="flex flex-col items-center justify-center mt-[20dvh]">
             <div className="modal-body">
               <Login />
+            </div>
+          </div>
+        ),
+      },
+      {
+        path: "/login/callback",
+        element: (
+          <div className="flex flex-col items-center justify-center mt-[20dvh]">
+            <div className="modal-body">
+              <LoginCallback />
             </div>
           </div>
         ),

@@ -14,6 +14,7 @@ import {
 } from "@snort/system";
 import { useSyncExternalStore } from "react";
 import usePresence from "./hooks/usePresence";
+import { isMobileDevice } from "./hooks/useIsMobile";
 
 // NIP-46 nostrconnect:// types and utilities
 export interface NostrConnectParams {
@@ -39,7 +40,11 @@ export function generateNostrConnectParams(relays?: string[]): NostrConnectParam
   };
 }
 
-export function generateNostrConnectURI(params: NostrConnectParams, appName?: string): string {
+export function generateNostrConnectURI(
+  params: NostrConnectParams,
+  appName?: string,
+  includeCallback?: boolean,
+): string {
   const searchParams = new URLSearchParams();
 
   for (const relay of params.relays) {
@@ -49,6 +54,12 @@ export function generateNostrConnectURI(params: NostrConnectParams, appName?: st
 
   if (appName) {
     searchParams.set("name", appName);
+  }
+
+  // Add callback URL on mobile web so signer app can redirect back
+  const shouldCallback = includeCallback ?? isMobileDevice();
+  if (shouldCallback && typeof window !== "undefined") {
+    searchParams.set("callback", `${window.location.origin}/login/callback`);
   }
 
   return `nostrconnect://${params.clientPubkey}?${searchParams.toString()}`;
