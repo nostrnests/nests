@@ -10,6 +10,7 @@ import { createPortal } from "react-dom";
 import classNames from "classnames";
 import { RoomOptionsButton } from "./room-menu-bar";
 import { LIVE_CHAT } from "../const";
+import { useNostrRoom } from "../hooks/nostr-room-context";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Track } from "livekit-client";
 import VuBar from "./vu";
@@ -82,9 +83,23 @@ function MenuBar({ link }: { link: NostrLink }) {
   const hand = useHand(link);
   const refMenu = useRef<HTMLDivElement | null>(null);
   const wallet = useWallet();
+  const login = useLogin();
+  const { api } = useNostrRoom();
+
+  const isOnStage = localParticipant.localParticipant.permissions?.canPublish ?? false;
 
   async function toggleMute() {
     room.localParticipant.setMicrophoneEnabled(!room.localParticipant.isMicrophoneEnabled);
+  }
+
+  async function handleExit() {
+    if (isOnStage && login.pubkey) {
+      // Leave the stage (move to audience)
+      await api.updatePermissions(link.id, login.pubkey, { can_publish: false });
+    } else {
+      // Leave the room (go to lobby)
+      navigate("/");
+    }
   }
 
   const desktopContainer = [
@@ -105,10 +120,11 @@ function MenuBar({ link }: { link: NostrLink }) {
           </div>
         )}
         <IconButton
-          className="rounded-full aspect-square bg-foreground-2"
+          className={`rounded-full aspect-square ${isOnStage ? "bg-foreground-2" : "bg-delete"}`}
           name="exit"
           size={25}
-          onClick={() => navigate("/")}
+          onClick={handleExit}
+          title={isOnStage ? "Leave Stage" : "Leave Room"}
         />
         <IconButton
           className={`rounded-full aspect-square${hand.active ? " text-primary" : ""}`}
