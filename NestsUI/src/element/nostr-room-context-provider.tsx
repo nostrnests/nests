@@ -52,9 +52,10 @@ export function NostrRoomContextProvider({
   const isPlanned = status === "planned";
   useSendPresence(isLive ? link : undefined);
 
-  async function leaveRoom() {
-    await room.disconnect();
-    // Use window.location to force a full page navigation and reset all state
+  function leaveRoom() {
+    // Disconnect in background, don't wait for it
+    room.disconnect();
+    // Navigate immediately
     window.location.href = "/";
   }
 
@@ -176,13 +177,14 @@ export function NostrRoomContextProvider({
     });
   }, [link.id, api]);
 
-  async function startRoomNow() {
+  function startRoomNow() {
     updateOrAddTag(event, "starts", unixNow().toString());
     updateOrAddTag(event, "status", "live");
     event.tags = event.tags.filter((a) => a[0] !== "ends");
 
-    await modifier.update(event);
-    // Force a full page reload to reset all state and pick up the updated event
+    // Update in background, don't wait for it
+    modifier.update(event);
+    // Reload immediately
     window.location.reload();
   }
 
