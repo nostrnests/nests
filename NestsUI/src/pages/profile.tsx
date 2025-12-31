@@ -81,12 +81,14 @@ export function ProfilePageContent({
             </div>
           )}
           {meta?.lud16 && <ZapButton pubkey={link.id} iconSize={30} />}
-          <Button className="bg-delete rounded-full">
-            <div className="flex gap-2 items-center">
-              <Icon name="minus-circle" />
-              <FormattedMessage defaultMessage="Block" />
-            </div>
-          </Button>
+          {!isMe && (
+            <Button className="bg-delete rounded-full">
+              <div className="flex gap-2 items-center">
+                <Icon name="minus-circle" />
+                <FormattedMessage defaultMessage="Block" />
+              </div>
+            </Button>
+          )}
         </div>
       </div>
       {followedBy && (followedBy?.size ?? 0) > 0 && (
