@@ -15,7 +15,7 @@ export interface RoomState {
   volume: number;
   setVolume: (n: number) => void;
   api: NestsApi;
-  leaveRoom: () => Promise<void>;
+  leaveRoom: () => void;
 }
 
 export const NostrRoomContext = createContext<RoomState>({
@@ -28,7 +28,7 @@ export const NostrRoomContext = createContext<RoomState>({
   setVolume: () => {},
   volume: 1.0,
   api: new NestsApi(ApiUrl),
-  leaveRoom: async () => {},
+  leaveRoom: () => {},
 });
 
 export function useNostrRoom() {
