@@ -1,5 +1,5 @@
 import { RoomAudioRenderer, useLocalParticipant, useRoomContext } from "@livekit/components-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { NostrEvent, NostrLink } from "@snort/system";
 import { useNestsApi } from "../hooks/useNestsApi";
 import { PrimaryButton, SecondaryButton } from "./button";
@@ -46,7 +46,6 @@ export function NostrRoomContextProvider({
   const { status, service } = extractStreamInfo(event);
   const api = useNestsApi(service);
   const isMine = event.pubkey === login.pubkey;
-  const navigate = useNavigate();
 
   const isLive = status === "live";
   const isEnded = status === "ended";
@@ -184,18 +183,9 @@ export function NostrRoomContextProvider({
     event.tags = event.tags.filter((a) => a[0] !== "ends");
 
     // Wait for update to broadcast
-    const signed = await modifier.update(event);
-    if (signed) {
-      // Navigate with the new event in state - room.tsx will prefer this
-      // over any stale event from the subscription due to newer created_at
-      navigate(`/${link.encode()}`, {
-        state: {
-          token,
-          event: signed,
-        },
-        replace: true,
-      });
-    }
+    await modifier.update(event);
+    // Navigate to room URL - forces full page load to pick up updated event
+    window.location.href = `/${link.encode()}`;
   }
 
   return (
