@@ -177,14 +177,13 @@ export function NostrRoomContextProvider({
     });
   }, [link.id, api]);
 
-  function startRoomNow() {
+  async function startRoomNow() {
     updateOrAddTag(event, "starts", unixNow().toString());
     updateOrAddTag(event, "status", "live");
     event.tags = event.tags.filter((a) => a[0] !== "ends");
 
-    // Update in background, don't wait for it
-    modifier.update(event);
-    // Reload immediately
+    // Wait for update to broadcast before reloading
+    await modifier.update(event);
     window.location.reload();
   }
 
