@@ -4,7 +4,7 @@ import { RefObject, useEffect, useRef, useState } from "react";
 import useEventBuilder from "../hooks/useEventBuilder";
 import IconButton from "./icon-button";
 import { useLocalParticipant, useRoomContext } from "@livekit/components-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useHand, useLogin } from "../login";
 import { createPortal } from "react-dom";
 import classNames from "classnames";
@@ -79,12 +79,11 @@ export default function WriteMessage({ link, className }: { link: NostrLink; cla
 function MenuBar({ link }: { link: NostrLink }) {
   const room = useRoomContext();
   const localParticipant = useLocalParticipant();
-  const navigate = useNavigate();
   const hand = useHand(link);
   const refMenu = useRef<HTMLDivElement | null>(null);
   const wallet = useWallet();
   const login = useLogin();
-  const { api } = useNostrRoom();
+  const { api, leaveRoom } = useNostrRoom();
   const [leavingStage, setLeavingStage] = useState(false);
 
   const serverSaysOnStage = localParticipant.localParticipant.permissions?.canPublish ?? false;
@@ -115,7 +114,7 @@ function MenuBar({ link }: { link: NostrLink }) {
       }
     } else {
       // Leave the room (go to lobby)
-      navigate("/");
+      leaveRoom();
     }
   }
 
