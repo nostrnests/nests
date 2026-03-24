@@ -8,7 +8,7 @@ import { Users } from "lucide-react";
 import type { NostrEvent } from "@nostrify/nostrify";
 
 import { NestTransportProvider } from "@/transport";
-import { RoomContextProvider } from "@/components/RoomContextProvider";
+import { RoomContextProvider, useRoomContext } from "@/components/RoomContextProvider";
 import { ParticipantsGrid } from "@/components/ParticipantsGrid";
 import { ChatMessages } from "@/components/ChatMessages";
 import { WriteMessage } from "@/components/WriteMessage";
@@ -34,6 +34,7 @@ import {
   getRoomImage,
 } from "@/lib/room";
 import { ROOM_KIND, DefaultMoQAuthUrl } from "@/lib/const";
+import { themeToCSS } from "@/lib/ditto-theme";
 import { cn } from "@/lib/utils";
 import type { TransportConfig } from "@/transport";
 
@@ -41,7 +42,16 @@ import NotFound from "./NotFound";
 
 /** Inner room view that has access to transport context */
 function RoomInner({ event }: { event: NostrEvent }) {
-  const roomATag = getRoomATag(event);
+  return (
+    <RoomContextProvider event={event}>
+      <RoomContent event={event} />
+    </RoomContextProvider>
+  );
+}
+
+/** Room content — inside RoomContextProvider so it can access roomTheme */
+function RoomContent({ event }: { event: NostrEvent }) {
+  const { roomTheme, roomATag } = useRoomContext();
   const title = getRoomTitle(event);
   const summary = getRoomSummary(event);
   const color = getRoomColor(event);
@@ -53,98 +63,138 @@ function RoomInner({ event }: { event: NostrEvent }) {
   const { data: presenceList } = useRoomPresence(status === "live" ? roomATag : undefined);
   const participantCount = presenceList?.length ?? 0;
 
+  // Convert room theme to CSS custom properties
+  const roomThemeCSS = useMemo(
+    () => roomTheme ? themeToCSS(roomTheme) : undefined,
+    [roomTheme],
+  );
+
+  // Load custom font if room theme has one
+  useEffect(() => {
+    if (!roomTheme?.font?.url) return;
+    const id = "room-theme-font";
+    if (document.getElementById(id)) return;
+    const link = document.createElement("link");
+    link.id = id;
+    link.rel = "stylesheet";
+    link.href = roomTheme.font.url;
+    document.head.appendChild(link);
+    return () => { document.getElementById(id)?.remove(); };
+  }, [roomTheme?.font?.url]);
+
+  // Build inline style for the themed root
+  const rootStyle = useMemo(() => {
+    if (!roomThemeCSS) return undefined;
+    const style: Record<string, string> = { ...roomThemeCSS };
+    if (roomTheme?.background?.url) {
+      style.backgroundImage = `url(${roomTheme.background.url})`;
+      style.backgroundSize = roomTheme.background.mode === "tile" ? "auto" : "cover";
+      style.backgroundRepeat = roomTheme.background.mode === "tile" ? "repeat" : "no-repeat";
+      style.backgroundPosition = "center";
+      style.backgroundAttachment = "fixed";
+    }
+    return style;
+  }, [roomThemeCSS, roomTheme?.background]);
+
+  // Header style: use theme primary color instead of gradient when themed
+  const headerStyle = useMemo(() => {
+    if (!roomTheme) return undefined;
+    return { backgroundColor: roomTheme.colors.primary };
+  }, [roomTheme]);
+
   return (
-    <RoomContextProvider event={event}>
-      <div className="flex flex-col h-[100dvh] bg-background">
-        {/* Room header / banner */}
-        <div className={cn("shrink-0 relative overflow-hidden", color)}>
-          {image && (
-            <>
-              <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${image})` }} />
-              <div className="absolute inset-0 bg-black/50" />
-            </>
-          )}
-          <div className="relative px-4 py-4 md:px-6 md:py-5">
-            <div className="max-w-5xl mx-auto">
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex-1 min-w-0">
-                  <h1 className="text-white font-bold text-lg md:text-xl leading-tight">{title}</h1>
-                  {summary && (
-                    <p className="text-white/70 text-sm md:text-base mt-1 line-clamp-2">{summary}</p>
-                  )}
-                  <div className="flex items-center gap-3 mt-2">
-                    {status === "live" && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-red-500/90 text-white">
-                        <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
-                        LIVE
-                      </span>
-                    )}
-                    {participantCount > 0 && (
-                      <span className="text-white/60 text-xs md:text-sm flex items-center gap-1">
-                        <Users className="h-3.5 w-3.5" />
-                        {participantCount} listening
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Main content */}
-        <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
-          {/* Participants panel */}
-          <div className="flex-1 overflow-y-auto pb-32 md:pb-20 relative">
-            <div className="max-w-3xl mx-auto">
-              <ParticipantsGrid />
-            </div>
-          </div>
-
-          {/* Desktop: menu bar fixed at bottom of participants pane */}
-          <div className="hidden md:flex fixed bottom-0 left-0 z-30 pointer-events-none" style={{ width: desktopChatExpanded ? "calc(100% - 24rem)" : "100%" }}>
-            <div className="w-full flex justify-center pb-4 pointer-events-auto">
-              <MenuBar onChatToggle={() => setDesktopChatExpanded(!desktopChatExpanded)} chatOpen={desktopChatExpanded} />
-            </div>
-          </div>
-
-          {/* Desktop chat panel - toggled via menu bar chat button */}
-          {!isMobile && desktopChatExpanded && (
-            <div className="border-l border-border flex flex-col shrink-0 w-80 lg:w-96">
-              <div className="px-4 py-2 border-b border-border shrink-0">
-                <h3 className="text-sm font-medium text-muted-foreground">Chat</h3>
-              </div>
-              <ChatMessages roomATag={roomATag} />
-              <WriteMessage roomATag={roomATag} />
-            </div>
-          )}
-        </div>
-
-        {/* Mobile: menu bar with integrated chat button */}
-        {isMobile && (
+    <div className="flex flex-col h-[100dvh] bg-background" style={rootStyle}>
+      {/* Room header / banner */}
+      <div
+        className={cn("shrink-0 relative overflow-hidden", !roomTheme && color)}
+        style={headerStyle}
+      >
+        {image && (
           <>
-            <MenuBar onChatToggle={() => setChatOpen(!chatOpen)} chatOpen={chatOpen} />
-
-            {/* Chat drawer */}
-            <Drawer open={chatOpen} onOpenChange={setChatOpen}>
-              <DrawerContent className="h-[70dvh] max-h-[70dvh]">
-                <DrawerTitle className="sr-only">Chat</DrawerTitle>
-                <div className="flex flex-col h-full overflow-hidden">
-                  <div className="px-4 py-2 border-b border-border shrink-0">
-                    <h3 className="text-sm font-medium text-muted-foreground">Chat</h3>
-                  </div>
-                  <ChatMessages roomATag={roomATag} />
-                  <WriteMessage roomATag={roomATag} />
-                </div>
-              </DrawerContent>
-            </Drawer>
+            <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${image})` }} />
+            <div className="absolute inset-0 bg-black/50" />
           </>
         )}
-
-        {/* Lobby drawer */}
-        <RoomLobbyDrawer />
+        <div className="relative px-4 py-4 md:px-6 md:py-5">
+          <div className="max-w-5xl mx-auto">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex-1 min-w-0">
+                <h1 className="text-white font-bold text-lg md:text-xl leading-tight">{title}</h1>
+                {summary && (
+                  <p className="text-white/70 text-sm md:text-base mt-1 line-clamp-2">{summary}</p>
+                )}
+                <div className="flex items-center gap-3 mt-2">
+                  {status === "live" && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-red-500/90 text-white">
+                      <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
+                      LIVE
+                    </span>
+                  )}
+                  {participantCount > 0 && (
+                    <span className="text-white/60 text-xs md:text-sm flex items-center gap-1">
+                      <Users className="h-3.5 w-3.5" />
+                      {participantCount} listening
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-    </RoomContextProvider>
+
+      {/* Main content */}
+      <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
+        {/* Participants panel */}
+        <div className="flex-1 overflow-y-auto pb-32 md:pb-20 relative">
+          <div className="max-w-3xl mx-auto">
+            <ParticipantsGrid />
+          </div>
+        </div>
+
+        {/* Desktop: menu bar fixed at bottom of participants pane */}
+        <div className="hidden md:flex fixed bottom-0 left-0 z-30 pointer-events-none" style={{ width: desktopChatExpanded ? "calc(100% - 24rem)" : "100%" }}>
+          <div className="w-full flex justify-center pb-4 pointer-events-auto">
+            <MenuBar onChatToggle={() => setDesktopChatExpanded(!desktopChatExpanded)} chatOpen={desktopChatExpanded} />
+          </div>
+        </div>
+
+        {/* Desktop chat panel - toggled via menu bar chat button */}
+        {!isMobile && desktopChatExpanded && (
+          <div className="border-l border-border flex flex-col shrink-0 w-80 lg:w-96">
+            <div className="px-4 py-2 border-b border-border shrink-0">
+              <h3 className="text-sm font-medium text-muted-foreground">Chat</h3>
+            </div>
+            <ChatMessages roomATag={roomATag} />
+            <WriteMessage roomATag={roomATag} />
+          </div>
+        )}
+      </div>
+
+      {/* Mobile: menu bar with integrated chat button */}
+      {isMobile && (
+        <>
+          <MenuBar onChatToggle={() => setChatOpen(!chatOpen)} chatOpen={chatOpen} />
+
+          {/* Chat drawer */}
+          <Drawer open={chatOpen} onOpenChange={setChatOpen}>
+            <DrawerContent className="h-[70dvh] max-h-[70dvh]" style={roomThemeCSS ?? undefined}>
+              <DrawerTitle className="sr-only">Chat</DrawerTitle>
+              <div className="flex flex-col h-full overflow-hidden">
+                <div className="px-4 py-2 border-b border-border shrink-0">
+                  <h3 className="text-sm font-medium text-muted-foreground">Chat</h3>
+                </div>
+                <ChatMessages roomATag={roomATag} />
+                <WriteMessage roomATag={roomATag} />
+              </div>
+            </DrawerContent>
+          </Drawer>
+        </>
+      )}
+
+      {/* Lobby drawer */}
+      <RoomLobbyDrawer />
+    </div>
   );
 }
 

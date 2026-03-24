@@ -14,8 +14,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNostrPublish } from "@/hooks/useNostrPublish";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useMoqServerList } from "@/hooks/useMoqServerList";
+import { ThemeChooser } from "@/components/ThemeChooser";
 import { buildRoomNaddr } from "@/lib/room";
-import { ROOM_KIND, ColorPalette, DefaultMoQAuthUrl, DefaultRelays } from "@/lib/const";
+import type { DittoTheme } from "@/lib/ditto-theme";
+import type { DittoThemeEntry } from "@/hooks/useDittoThemes";
+import { ROOM_KIND, DITTO_THEME, ColorPalette, DefaultMoQAuthUrl, DefaultRelays } from "@/lib/const";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/useToast";
 
@@ -31,6 +34,8 @@ export default function NewRoom() {
   const [color, setColor] = useState(ColorPalette[Math.floor(Math.random() * ColorPalette.length)]);
   const [scheduledTime, setScheduledTime] = useState("");
   const [selectedServer, setSelectedServer] = useState(servers[0] ?? "");
+  const [selectedTheme, setSelectedTheme] = useState<DittoTheme | null>(null);
+  const [selectedThemeEntry, setSelectedThemeEntry] = useState<DittoThemeEntry | null>(null);
 
   useSeoMeta({
     title: "Create Room - Nests",
@@ -59,6 +64,27 @@ export default function NewRoom() {
 
       if (summary.trim()) {
         tags.push(["summary", summary.trim()]);
+      }
+
+      // Add Ditto theme if selected
+      if (selectedTheme) {
+        // If it came from a nostr event, add an a-tag reference
+        if (selectedThemeEntry) {
+          const dTag = selectedThemeEntry.event.tags.find(([t]) => t === "d")?.[1] ?? "";
+          tags.push(["a", `${DITTO_THEME}:${selectedThemeEntry.event.pubkey}:${dTag}`]);
+        }
+        // Always add inline color tags (as primary data or fallback)
+        tags.push(["c", selectedTheme.colors.background, "background"]);
+        tags.push(["c", selectedTheme.colors.text, "text"]);
+        tags.push(["c", selectedTheme.colors.primary, "primary"]);
+        if (selectedTheme.font) {
+          const fontTag = ["f", selectedTheme.font.family];
+          if (selectedTheme.font.url) fontTag.push(selectedTheme.font.url);
+          tags.push(fontTag);
+        }
+        if (selectedTheme.background) {
+          tags.push(["bg", `url ${selectedTheme.background.url}`, `mode ${selectedTheme.background.mode}`]);
+        }
       }
 
       const event = await createEvent({
@@ -152,7 +178,10 @@ export default function NewRoom() {
               </div>
 
               {/* Preview */}
-              <div className={cn("rounded-xl p-5 md:p-6 mt-3", color)}>
+              <div
+                className={cn("rounded-xl p-5 md:p-6 mt-3", !selectedTheme && color)}
+                style={selectedTheme ? { backgroundColor: selectedTheme.colors.primary } : undefined}
+              >
                 <p className="text-white font-semibold text-base md:text-lg">
                   {title || "Room Preview"}
                 </p>
@@ -160,6 +189,21 @@ export default function NewRoom() {
                   <p className="text-white/70 text-sm mt-1">{summary}</p>
                 )}
               </div>
+            </div>
+
+            {/* Room Theme */}
+            <div className="space-y-2">
+              <Label>Room Theme</Label>
+              <p className="text-xs text-muted-foreground">
+                Everyone in the room will see your chosen theme
+              </p>
+              <ThemeChooser
+                selectedTheme={selectedTheme}
+                onSelectTheme={(theme, entry) => {
+                  setSelectedTheme(theme);
+                  setSelectedThemeEntry(entry ?? null);
+                }}
+              />
             </div>
 
             <div className="space-y-2">

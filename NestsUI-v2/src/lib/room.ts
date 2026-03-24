@@ -1,6 +1,6 @@
 import type { NostrEvent } from "@nostrify/nostrify";
 import { nip19 } from "nostr-tools";
-import { ROOM_KIND } from "./const";
+import { ROOM_KIND, DITTO_THEME } from "./const";
 
 /** Get the a-tag value for a room event: "30312:<pubkey>:<d>" */
 export function getRoomATag(event: NostrEvent): string {
@@ -85,4 +85,11 @@ export function buildRoomNaddr(event: NostrEvent): string {
 /** Get the MoQ namespace for a room */
 export function getRoomNamespace(event: NostrEvent): string {
   return `nests/${ROOM_KIND}:${event.pubkey}:${getRoomDTag(event)}`;
+}
+
+/** Get the room's theme reference (a-tag pointing to kind:36767) */
+export function getRoomThemeRef(event: NostrEvent): string | undefined {
+  return event.tags.find(
+    ([t, v]) => t === "a" && v?.startsWith(`${DITTO_THEME}:`),
+  )?.[1];
 }

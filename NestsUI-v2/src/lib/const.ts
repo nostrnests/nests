@@ -17,6 +17,12 @@ export const MOQ_SERVER_LIST = 10112;
 /** Admin command kind (mute/kick) */
 export const ADMIN_COMMAND = 4312;
 
+/** Ditto profile theme (active theme per user) */
+export const DITTO_PROFILE_THEME = 16767;
+
+/** Ditto shareable theme */
+export const DITTO_THEME = 36767;
+
 /** Room participant roles as used in p-tag markers */
 export const ParticipantRole = {
   HOST: "host",

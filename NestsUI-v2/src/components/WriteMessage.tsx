@@ -20,17 +20,14 @@ export function WriteMessage({ roomATag }: WriteMessageProps) {
     const text = message.trim();
     if (!text || !user) return;
 
-    createEvent(
-      {
-        kind: LIVE_CHAT,
-        content: text,
-        tags: [["a", roomATag]],
-        created_at: Math.floor(Date.now() / 1000),
-      },
-      {
-        onSuccess: () => setMessage(""),
-      },
-    );
+    setMessage(""); // Clear immediately for snappy UX
+
+    createEvent({
+      kind: LIVE_CHAT,
+      content: text,
+      tags: [["a", roomATag]],
+      created_at: Math.floor(Date.now() / 1000),
+    });
   };
 
   if (!user) {

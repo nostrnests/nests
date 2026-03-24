@@ -48,7 +48,7 @@ export function RoomOptionsMenu({ roomEvent }: RoomOptionsMenuProps) {
           <DropdownMenuItem asChild>
             <Link to="/settings">
               <Settings className="h-4 w-4 mr-2" />
-              Audio Servers
+              Settings
             </Link>
           </DropdownMenuItem>
         </DropdownMenuContent>

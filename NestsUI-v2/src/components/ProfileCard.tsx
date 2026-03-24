@@ -1,4 +1,4 @@
-import { useState, type PropsWithChildren } from "react";
+import { useState, useMemo, useEffect, type PropsWithChildren } from "react";
 import {
   UserPlus, UserMinus, Shield, ShieldOff, Ban, Zap,
   ArrowUpFromLine, ArrowDownFromLine, Eye, MoreHorizontal,
@@ -27,8 +27,11 @@ import { useEventModifier } from "@/hooks/useEventModifier";
 import { useNostrPublish } from "@/hooks/useNostrPublish";
 import { ZapDialog } from "@/components/ZapDialog";
 import { genUserName } from "@/lib/genUserName";
+import { isEmoji, getEmojiMaskUrl, themeToCSS } from "@/lib/ditto-theme";
+import { useDittoProfile } from "@/hooks/useDittoProfile";
 import { getRoomParticipants, getRoomATag } from "@/lib/room";
 import type { NostrEvent } from "@nostrify/nostrify";
+import { cn } from "@/lib/utils";
 import type { Event } from "nostr-tools";
 
 interface ProfileCardProps {
@@ -58,6 +61,37 @@ export function ProfileCard({ pubkey, roomEvent, children }: PropsWithChildren<P
 
   const lightningAddress = metadata?.lud16 ?? metadata?.lud06;
   const authorEvent = author.data?.event as Event | undefined;
+
+  // Avatar shape from kind:0 — emoji mask
+  const avatarMask = useMemo(() => {
+    try {
+      const parsed = JSON.parse(author.data?.event?.content ?? "{}");
+      if (!isEmoji(parsed.shape)) return undefined;
+      const url = getEmojiMaskUrl(parsed.shape);
+      return url || undefined;
+    } catch {
+      return undefined;
+    }
+  }, [author.data?.event?.content]);
+
+  // Ditto profile theme (kind:16767)
+  const { data: dittoProfile } = useDittoProfile(pubkey);
+  const profileThemeCSS = useMemo(
+    () => dittoProfile ? themeToCSS(dittoProfile) : undefined,
+    [dittoProfile],
+  );
+
+  // Load custom font if profile theme has one
+  useEffect(() => {
+    if (!dittoProfile?.font?.url) return;
+    const id = `ditto-font-${pubkey}`;
+    if (document.getElementById(id)) return;
+    const link = document.createElement("link");
+    link.id = id;
+    link.rel = "stylesheet";
+    link.href = dittoProfile.font.url;
+    document.head.appendChild(link);
+  }, [dittoProfile?.font?.url, pubkey]);
 
   const updateRoomParticipant = (targetPubkey: string, newRole: string | null) => {
     const tags = roomEvent.tags.filter(
@@ -99,12 +133,23 @@ export function ProfileCard({ pubkey, roomEvent, children }: PropsWithChildren<P
         <DropdownMenuContent align="center" className="w-64">
           {/* Profile header inside dropdown */}
           <div className="flex items-center gap-3 p-3">
-            <Avatar className="h-12 w-12 shrink-0">
-              <AvatarImage src={metadata?.picture} alt={displayName} />
-              <AvatarFallback className="text-sm bg-secondary">
-                {displayName.slice(0, 2).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
+            <div>
+              <Avatar
+                className={cn("h-12 w-12 shrink-0", !avatarMask && "rounded-full")}
+                style={avatarMask ? {
+                  WebkitMaskImage: `url(${avatarMask})`,
+                  maskImage: `url(${avatarMask})`,
+                  WebkitMaskSize: "cover",
+                  maskSize: "cover",
+                  borderRadius: 0,
+                } : undefined}
+              >
+                <AvatarImage src={metadata?.picture} alt={displayName} />
+                <AvatarFallback className="text-sm bg-secondary">
+                  {displayName.slice(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+            </div>
             <div className="flex-1 min-w-0">
               <p className="font-semibold text-sm truncate">{displayName}</p>
               {metadata?.nip05 && (
@@ -197,26 +242,59 @@ export function ProfileCard({ pubkey, roomEvent, children }: PropsWithChildren<P
 
       {/* Full Profile Dialog */}
       <Dialog open={profileOpen} onOpenChange={setProfileOpen}>
-        <DialogContent className="sm:max-w-sm">
+        <DialogContent
+          className="sm:max-w-sm overflow-hidden"
+          style={profileThemeCSS ? {
+            ...profileThemeCSS,
+            backgroundColor: `hsl(${profileThemeCSS["--background"]})`,
+            color: `hsl(${profileThemeCSS["--foreground"]})`,
+          } : undefined}
+        >
           <DialogHeader>
             <DialogTitle className="sr-only">Profile</DialogTitle>
             <DialogDescription className="sr-only">Profile details for {displayName}</DialogDescription>
           </DialogHeader>
-          <div className="flex flex-col items-center gap-4 pt-2">
-            {metadata?.banner && (
-              <div className="w-full h-28 rounded-lg overflow-hidden -mt-2 mb-2">
-                <img src={metadata.banner} alt="" className="w-full h-full object-cover" />
+          <div className="flex flex-col items-center gap-4 pt-2 relative">
+            {/* Background: Ditto theme bg, user banner, or nothing */}
+            {dittoProfile?.background?.url ? (
+              <div className="absolute inset-0 -top-6 -mx-6 overflow-hidden">
+                <img
+                  src={dittoProfile.background.url}
+                  alt=""
+                  className="w-full h-full object-cover"
+                />
+                {/* Scrim overlay so text stays readable */}
+                <div
+                  className="absolute inset-0"
+                  style={{ backgroundColor: dittoProfile.colors.background, opacity: 0.75 }}
+                />
               </div>
-            )}
+            ) : metadata?.banner ? (
+              <div className="w-full h-28 rounded-lg overflow-hidden -mt-2 mb-2 relative">
+                <img src={metadata.banner} alt="" className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-background/50" />
+              </div>
+            ) : null}
 
-            <Avatar className="h-24 w-24 border-4 border-background">
-              <AvatarImage src={metadata?.picture} alt={displayName} />
-              <AvatarFallback className="text-xl bg-secondary">
-                {displayName.slice(0, 2).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
+            <div className="relative z-10">
+              <Avatar
+                className={cn("h-24 w-24 border-4 border-background", !avatarMask && "rounded-full")}
+                style={avatarMask ? {
+                  WebkitMaskImage: `url(${avatarMask})`,
+                  maskImage: `url(${avatarMask})`,
+                  WebkitMaskSize: "cover",
+                  maskSize: "cover",
+                  borderRadius: 0,
+                } : undefined}
+              >
+                <AvatarImage src={metadata?.picture} alt={displayName} />
+                <AvatarFallback className="text-xl bg-secondary">
+                  {displayName.slice(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+            </div>
 
-            <div className="text-center space-y-1">
+            <div className="text-center space-y-1 relative z-10">
               <h2 className="text-lg font-semibold">{displayName}</h2>
               {metadata?.nip05 && (
                 <p className="text-sm text-muted-foreground">{metadata.nip05}</p>
@@ -224,13 +302,13 @@ export function ProfileCard({ pubkey, roomEvent, children }: PropsWithChildren<P
             </div>
 
             {metadata?.about && (
-              <p className="text-sm text-muted-foreground text-center px-4 leading-relaxed">
+              <p className="text-sm text-muted-foreground text-center px-4 leading-relaxed relative z-10">
                 {metadata.about}
               </p>
             )}
 
             {lightningAddress && (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground relative z-10">
                 <Zap className="h-4 w-4 text-yellow-500" />
                 <span className="truncate max-w-[200px]">{lightningAddress}</span>
               </div>

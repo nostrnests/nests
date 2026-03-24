@@ -8,8 +8,10 @@ import { useAdminCommands } from "@/hooks/useAdminCommands";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { useLocalParticipant } from "@/transport";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { useRoomTheme } from "@/hooks/useRoomTheme";
 import { getRoomATag } from "@/lib/room";
 import { useToast } from "@/hooks/useToast";
+import { themeToCSS, type DittoTheme } from "@/lib/ditto-theme";
 
 export interface RecentReaction {
   id: string;
@@ -48,6 +50,8 @@ interface RoomContextType {
   leaveRoom: () => void;
   /** Optimistically add a local reaction for immediate display */
   addLocalReaction: (emoji: string, emojiUrl?: string) => void;
+  /** Room's Ditto theme (if any) */
+  roomTheme: DittoTheme | null;
 }
 
 const RoomContext = createContext<RoomContextType | null>(null);
@@ -56,6 +60,13 @@ export function useRoomContext(): RoomContextType {
   const ctx = useContext(RoomContext);
   if (!ctx) throw new Error("useRoomContext must be used within RoomContextProvider");
   return ctx;
+}
+
+/** Safe hook for portalled components (drawers/dialogs) that may or may not be inside room context. */
+export function useOptionalRoomThemeCSS(): Record<string, string> | undefined {
+  const ctx = useContext(RoomContext);
+  if (!ctx?.roomTheme) return undefined;
+  return themeToCSS(ctx.roomTheme);
 }
 
 interface RoomContextProviderProps {
@@ -74,6 +85,7 @@ export function RoomContextProvider({ event, children }: PropsWithChildren<RoomC
 
   const { data: presenceList = [] } = useRoomPresence(roomATag);
   const { data: reactions = [] } = useRoomReactions(roomATag);
+  const { data: roomTheme = null } = useRoomTheme(event);
 
   // Track recent reactions for animations
   const [recentReactions, setRecentReactions] = useState<RecentReaction[]>([]);
@@ -185,6 +197,7 @@ export function RoomContextProvider({ event, children }: PropsWithChildren<RoomC
         isHostOrAdmin,
         leaveRoom,
         addLocalReaction,
+        roomTheme,
       }}
     >
       {children}

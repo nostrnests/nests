@@ -31,6 +31,7 @@ import { useToast } from '@/hooks/useToast';
 import { useZaps } from '@/hooks/useZaps';
 import { useWallet } from '@/hooks/useWallet';
 import { useIsMobile } from '@/hooks/useIsMobile';
+import { useOptionalRoomThemeCSS } from './RoomContextProvider';
 import type { Event } from 'nostr-tools';
 import QRCode from 'qrcode';
 import type { WebLNProvider } from "@webbtc/webln-types";
@@ -251,7 +252,7 @@ export function ZapDialog({ target, children, className }: ZapDialogProps) {
 
   useEffect(() => {
     if (target) {
-      setComment('Zapped with MKStack!');
+      setComment('Zapped with Nests!');
     }
   }, [target]);
 
@@ -348,6 +349,8 @@ export function ZapDialog({ target, children, className }: ZapDialogProps) {
     zap,
   };
 
+  const roomThemeStyle = useOptionalRoomThemeCSS();
+
   if (!user || user.pubkey === target.pubkey || !author?.metadata?.lud06 && !author?.metadata?.lud16) {
     return null;
   }
@@ -383,6 +386,7 @@ export function ZapDialog({ target, children, className }: ZapDialogProps) {
             "transition-all duration-300",
             invoice ? "h-full max-h-screen" : "max-h-[98vh]"
           )}
+          style={roomThemeStyle ?? undefined}
           data-testid="zap-modal"
         >
           <DrawerHeader className="text-center relative">
@@ -439,7 +443,7 @@ export function ZapDialog({ target, children, className }: ZapDialogProps) {
           {children}
         </div>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px] max-h-[95vh] overflow-hidden" data-testid="zap-modal">
+      <DialogContent className="sm:max-w-[425px] max-h-[95vh] overflow-hidden" style={roomThemeStyle ?? undefined} data-testid="zap-modal">
         <DialogHeader>
           <DialogTitle className="text-lg break-words">
             {invoice ? 'Lightning Payment' : 'Send a Zap'}

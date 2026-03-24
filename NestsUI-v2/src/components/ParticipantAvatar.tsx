@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { Mic, MicOff, Hand, Crown, Shield } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -7,6 +7,7 @@ import { useAuthor } from "@/hooks/useAuthor";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useLocalSpeaking, useRemoteSpeaking } from "@/hooks/useSpeakingIndicator";
 import { genUserName } from "@/lib/genUserName";
+import { isEmoji, getEmojiMaskUrl } from "@/lib/ditto-theme";
 import { cn } from "@/lib/utils";
 
 interface ParticipantAvatarProps {
@@ -34,6 +35,18 @@ export function ParticipantAvatar({
   const metadata = author.data?.metadata;
   const displayName = metadata?.display_name ?? metadata?.name ?? genUserName(pubkey);
   const { user } = useCurrentUser();
+
+  // Avatar shape from kind:0 metadata — renders emoji as mask image
+  const avatarMask = useMemo(() => {
+    try {
+      const parsed = JSON.parse(author.data?.event?.content ?? "{}");
+      if (!isEmoji(parsed.shape)) return undefined;
+      const url = getEmojiMaskUrl(parsed.shape);
+      return url || undefined;
+    } catch {
+      return undefined;
+    }
+  }, [author.data?.event?.content]);
 
   // Speaking detection: local for self, remote for others
   const isMe = user?.pubkey === pubkey;
@@ -72,24 +85,53 @@ export function ParticipantAvatar({
   return (
     <div className="flex flex-col items-center gap-1.5 md:gap-2 group" onClick={onClick}>
       <div className="relative" ref={avatarRef}>
-        {/* Speaking ring */}
-        <div
-          className={cn(
-            "rounded-full p-0.5 transition-all duration-300",
-            isSpeaking && isPublishing
-              ? "ring-2 ring-green-400 ring-offset-2 ring-offset-background"
-              : isPublishing
-                ? "ring-1 ring-primary/30 ring-offset-1 ring-offset-background"
-                : "ring-0",
-          )}
-        >
-          <Avatar className={cn(sizeClasses[size], "border-2 border-background cursor-pointer")}>
-            <AvatarImage src={metadata?.picture} alt={displayName} />
-            <AvatarFallback className="text-xs md:text-sm bg-secondary">
-              {displayName.slice(0, 2).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-        </div>
+        {/* Avatar with optional emoji mask shape */}
+        {avatarMask ? (
+          <div
+            className="transition-all duration-300"
+            style={{
+              filter: isSpeaking && isPublishing
+                ? "drop-shadow(0 0 4px rgb(74 222 128)) drop-shadow(0 0 1px rgb(74 222 128))"
+                : isPublishing
+                  ? "drop-shadow(3px 0 0 hsl(var(--background))) drop-shadow(-3px 0 0 hsl(var(--background))) drop-shadow(0 3px 0 hsl(var(--background))) drop-shadow(0 -3px 0 hsl(var(--background)))"
+                  : "drop-shadow(2px 0 0 hsl(var(--background))) drop-shadow(-2px 0 0 hsl(var(--background))) drop-shadow(0 2px 0 hsl(var(--background))) drop-shadow(0 -2px 0 hsl(var(--background)))",
+            }}
+          >
+            <Avatar
+              className={cn(sizeClasses[size], "cursor-pointer")}
+              style={{
+                WebkitMaskImage: `url(${avatarMask})`,
+                maskImage: `url(${avatarMask})`,
+                WebkitMaskSize: "cover",
+                maskSize: "cover",
+                borderRadius: 0,
+              }}
+            >
+              <AvatarImage src={metadata?.picture} alt={displayName} />
+              <AvatarFallback className="text-xs md:text-sm bg-secondary">
+                {displayName.slice(0, 2).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+          </div>
+        ) : (
+          <div
+            className={cn(
+              "rounded-full p-0.5 transition-all duration-300",
+              isSpeaking && isPublishing
+                ? "ring-2 ring-green-400 ring-offset-2 ring-offset-background"
+                : isPublishing
+                  ? "ring-1 ring-primary/30 ring-offset-1 ring-offset-background"
+                  : "ring-0",
+            )}
+          >
+            <Avatar className={cn(sizeClasses[size], "rounded-full border-2 border-background cursor-pointer")}>
+              <AvatarImage src={metadata?.picture} alt={displayName} />
+              <AvatarFallback className="text-xs md:text-sm bg-secondary">
+                {displayName.slice(0, 2).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+          </div>
+        )}
 
         {/* Mic indicator (for speakers) */}
         {isPublishing && (
@@ -118,7 +160,7 @@ export function ParticipantAvatar({
         {/* Reaction rendered via portal so it floats above all containers */}
         {reaction && reactionPos && createPortal(
           <div
-            className="fixed z-[100] react text-4xl md:text-5xl pointer-events-none"
+            className="fixed z-20 react text-4xl md:text-5xl pointer-events-none"
             style={{
               top: reactionPos.top,
               left: reactionPos.left,
