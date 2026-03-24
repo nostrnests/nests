@@ -4,7 +4,7 @@ import { useSeoMeta } from "@unhead/react";
 import { nip19 } from "nostr-tools";
 import { useNostr } from "@nostrify/react";
 import { useQuery } from "@tanstack/react-query";
-import { MessageCircle, PanelRightClose, PanelRightOpen } from "lucide-react";
+import { MessageCircle, PanelRightClose, PanelRightOpen, Users } from "lucide-react";
 import type { NostrEvent } from "@nostrify/nostrify";
 
 import { NestTransportProvider } from "@/transport";
@@ -13,18 +13,15 @@ import { ParticipantsGrid } from "@/components/ParticipantsGrid";
 import { ChatMessages } from "@/components/ChatMessages";
 import { WriteMessage } from "@/components/WriteMessage";
 import { MenuBar } from "@/components/MenuBar";
-import { ReactionOverlay } from "@/components/ReactionOverlay";
 import { RoomLobbyDrawer } from "@/components/RoomLobbyDrawer";
+import { ReactionOverlay } from "@/components/ReactionOverlay";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerTitle,
-} from "@/components/ui/drawer";
+import { Drawer, DrawerContent, DrawerTitle } from "@/components/ui/drawer";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
+import { useRoomPresence } from "@/hooks/useRoomPresence";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { authenticateWithMoqRelay } from "@/transport";
 import {
@@ -36,6 +33,7 @@ import {
   getRoomAuthUrl,
   getRoomNamespace,
   getRoomStatus,
+  getRoomImage,
 } from "@/lib/room";
 import { ROOM_KIND, DefaultMoQAuthUrl } from "@/lib/const";
 import { cn } from "@/lib/utils";
@@ -49,29 +47,49 @@ function RoomInner({ event }: { event: NostrEvent }) {
   const title = getRoomTitle(event);
   const summary = getRoomSummary(event);
   const color = getRoomColor(event);
+  const image = getRoomImage(event);
   const status = getRoomStatus(event);
   const isMobile = useIsMobile();
   const [chatOpen, setChatOpen] = useState(false);
   const [desktopChatExpanded, setDesktopChatExpanded] = useState(true);
+  const { data: presenceList } = useRoomPresence(status === "live" ? roomATag : undefined);
+  const participantCount = presenceList?.length ?? 0;
 
   return (
     <RoomContextProvider event={event}>
       <div className="flex flex-col h-[100dvh] bg-background">
-        {/* Room header card */}
-        <div className={cn("p-3 md:p-4 shrink-0", color)}>
-          <div className="max-w-5xl mx-auto">
-            <div className="flex items-center justify-between">
-              <div className="flex-1 min-w-0">
-                <h1 className="text-white font-semibold text-base md:text-lg truncate">{title}</h1>
-                {summary && (
-                  <p className="text-white/60 text-xs md:text-sm truncate mt-0.5">{summary}</p>
-                )}
+        {/* Room header / banner */}
+        <div className={cn("shrink-0 relative overflow-hidden", color)}>
+          {image && (
+            <>
+              <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${image})` }} />
+              <div className="absolute inset-0 bg-black/50" />
+            </>
+          )}
+          <div className="relative px-4 py-4 md:px-6 md:py-5">
+            <div className="max-w-5xl mx-auto">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <h1 className="text-white font-bold text-lg md:text-xl leading-tight">{title}</h1>
+                  {summary && (
+                    <p className="text-white/70 text-sm md:text-base mt-1 line-clamp-2">{summary}</p>
+                  )}
+                  <div className="flex items-center gap-3 mt-2">
+                    {status === "live" && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-red-500/90 text-white">
+                        <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
+                        LIVE
+                      </span>
+                    )}
+                    {participantCount > 0 && (
+                      <span className="text-white/60 text-xs md:text-sm flex items-center gap-1">
+                        <Users className="h-3.5 w-3.5" />
+                        {participantCount} listening
+                      </span>
+                    )}
+                  </div>
+                </div>
               </div>
-              {status === "live" && (
-                <span className="shrink-0 ml-3 px-2 py-0.5 rounded text-xs font-medium bg-red-500/90 text-white">
-                  LIVE
-                </span>
-              )}
             </div>
           </div>
         </div>
@@ -79,16 +97,16 @@ function RoomInner({ event }: { event: NostrEvent }) {
         {/* Main content */}
         <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
           {/* Participants panel */}
-          <div className="flex-1 overflow-y-auto pb-28 md:pb-0">
-            <div className="max-w-5xl mx-auto">
+          <div className="flex-1 overflow-y-auto pb-32 md:pb-20 relative">
+            <div className="max-w-3xl mx-auto">
               <ParticipantsGrid />
             </div>
+          </div>
 
-            {/* Desktop: floating menu bar inside participants panel */}
-            <div className="hidden md:block sticky bottom-0 pointer-events-none">
-              <div className="pointer-events-auto">
-                <MenuBar />
-              </div>
+          {/* Desktop: menu bar fixed at bottom of participants pane */}
+          <div className="hidden md:flex fixed bottom-0 left-0 z-30 pointer-events-none" style={{ width: desktopChatExpanded ? "calc(100% - 24rem)" : "calc(100% - 3rem)" }}>
+            <div className="w-full flex justify-center pb-4 pointer-events-auto">
+              <MenuBar />
             </div>
           </div>
 
