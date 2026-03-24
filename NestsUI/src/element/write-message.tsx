@@ -77,7 +77,6 @@ function MenuBar({ link }: { link: NostrLink }) {
   const hand = useHand(link);
   const refMenu = useRef<HTMLDivElement | null>(null);
   const wallet = useWallet();
-  const login = useLogin();
   const { leaveRoom } = useNostrRoom();
 
   function toggleMute() {
@@ -85,13 +84,12 @@ function MenuBar({ link }: { link: NostrLink }) {
   }
 
   function handleExit() {
-    if (isPublishing && login.pubkey) {
-      // Leave the stage (stop publishing)
+    if (isPublishing) {
+      // Leave the stage (stop publishing audio, stay in room as listener)
       unpublishMicrophone();
-    } else {
-      // Leave the room
-      leaveRoom();
     }
+    // Always leave the room
+    leaveRoom();
   }
 
   const desktopContainer = [

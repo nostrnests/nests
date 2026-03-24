@@ -25,7 +25,7 @@ export function RoomOptionsButton({ link: _link }: { link: NostrLink }) {
   const [profileEdit, setProfileEdit] = useState(false);
   const [devices, setDevices] = useState(false);
   const [wallet, setWallet] = useState(false);
-  const { isPublishing } = useLocalParticipant();
+  const { isPublishing, unpublishMicrophone } = useLocalParticipant();
   const roomContext = useNostrRoom();
 
   const menuItem = (icon: string, text: ReactNode, onClick: () => void, className?: string) => {
@@ -90,7 +90,7 @@ export function RoomOptionsButton({ link: _link }: { link: NostrLink }) {
             {isPublishing &&
               login.pubkey &&
               menuItem("exit", <FormattedMessage defaultMessage="Leave Stage" />, () => {
-                // TODO: Remove self from p tags via event update
+                unpublishMicrophone();
                 setOpen(false);
               })}
             {menuItem("wallet", <FormattedMessage defaultMessage="Wallet" />, () => {
