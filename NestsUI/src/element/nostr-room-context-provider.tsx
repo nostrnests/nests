@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { NostrEvent, NostrLink } from "@snort/system";
 import { PrimaryButton, SecondaryButton } from "./button";
 import useRoomPresence, { useSendPresence } from "../hooks/useRoomPresence";
@@ -28,6 +28,7 @@ export function NostrRoomContextProvider({
   const [volume, setVolume] = useState(1);
   const [confirmGuest, setConfirmGuest] = useState(false);
   const login = useLogin();
+  const navigate = useNavigate();
   const link = useMemo(() => NostrLink.fromEvent(event), [event]);
   const presence = useRoomPresence(link);
   const reactions = useRoomReactions(link);
@@ -46,8 +47,8 @@ export function NostrRoomContextProvider({
 
   const leaveRoom = useCallback(() => {
     transport.disconnect();
-    window.location.href = "/lobby";
-  }, [transport]);
+    navigate("/lobby");
+  }, [transport, navigate]);
 
   // Global spacebar handler for mute toggle
   useEffect(() => {
@@ -102,7 +103,7 @@ export function NostrRoomContextProvider({
     event.tags = event.tags.filter((a) => a[0] !== "ends");
 
     await modifier.update(event);
-    window.location.href = `/${link.encode()}`;
+    navigate(`/${link.encode()}`);
   }
 
   return (
