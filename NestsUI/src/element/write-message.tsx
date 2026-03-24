@@ -87,9 +87,10 @@ function MenuBar({ link }: { link: NostrLink }) {
     if (isPublishing) {
       // Leave the stage (stop publishing audio, stay in room as listener)
       unpublishMicrophone();
+    } else {
+      // Not on stage -- leave the room entirely
+      leaveRoom();
     }
-    // Always leave the room
-    leaveRoom();
   }
 
   const desktopContainer = [
