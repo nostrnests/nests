@@ -307,7 +307,7 @@ export default function RoomPage() {
     return null;
   }, [id]);
 
-  // Fetch event if not in state
+  // Always fetch the latest event from relays (handles edits/updates)
   const { data: fetchedEvent, isLoading } = useQuery({
     queryKey: ["nostr", "room-event", decoded?.kind, decoded?.pubkey, decoded?.identifier],
     queryFn: async () => {
@@ -317,16 +317,24 @@ export default function RoomPage() {
           kinds: [decoded.kind],
           authors: [decoded.pubkey],
           "#d": [decoded.identifier],
-          limit: 1,
+          limit: 5,
         }],
         { signal: AbortSignal.timeout(5000) },
       );
-      return events[0] ?? null;
+      // Return the most recent version
+      return events.sort((a, b) => b.created_at - a.created_at)[0] ?? null;
     },
-    enabled: !stateEvent && !!decoded,
+    enabled: !!decoded,
+    refetchInterval: 10_000, // Refetch every 10s to pick up edits
   });
 
-  const event = stateEvent ?? fetchedEvent;
+  // Use fetched event if newer than state event, otherwise fall back to state
+  const event = useMemo(() => {
+    if (!fetchedEvent && !stateEvent) return null;
+    if (!fetchedEvent) return stateEvent!;
+    if (!stateEvent) return fetchedEvent;
+    return fetchedEvent.created_at >= stateEvent.created_at ? fetchedEvent : stateEvent;
+  }, [fetchedEvent, stateEvent]);
 
   useSeoMeta({
     title: event ? `${getRoomTitle(event)} - Nests` : "Room - Nests",

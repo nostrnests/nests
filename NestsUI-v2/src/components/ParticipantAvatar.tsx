@@ -2,12 +2,13 @@ import { Mic, MicOff, Hand, Crown, Shield } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuthor } from "@/hooks/useAuthor";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { useLocalSpeaking, useRemoteSpeaking } from "@/hooks/useSpeakingIndicator";
 import { genUserName } from "@/lib/genUserName";
 import { cn } from "@/lib/utils";
 
 interface ParticipantAvatarProps {
   pubkey: string;
-  isSpeaking?: boolean;
   isMuted?: boolean;
   handRaised?: boolean;
   role?: string;
@@ -19,7 +20,6 @@ interface ParticipantAvatarProps {
 
 export function ParticipantAvatar({
   pubkey,
-  isSpeaking = false,
   isMuted = false,
   handRaised = false,
   role,
@@ -31,6 +31,13 @@ export function ParticipantAvatar({
   const author = useAuthor(pubkey);
   const metadata = author.data?.metadata;
   const displayName = metadata?.display_name ?? metadata?.name ?? genUserName(pubkey);
+  const { user } = useCurrentUser();
+
+  // Speaking detection: local for self, remote for others
+  const isMe = user?.pubkey === pubkey;
+  const localSpeaking = useLocalSpeaking();
+  const remoteSpeaking = useRemoteSpeaking(pubkey);
+  const isSpeaking = isMe ? localSpeaking : remoteSpeaking;
 
   const sizeClasses = {
     sm: "h-12 w-12 md:h-14 md:w-14",
@@ -52,10 +59,10 @@ export function ParticipantAvatar({
           className={cn(
             "rounded-full p-0.5 transition-all duration-300",
             isSpeaking && isPublishing
-              ? "speaking-ring bg-primary"
+              ? "ring-2 ring-green-400 ring-offset-2 ring-offset-background"
               : isPublishing
-                ? "bg-primary/30"
-                : "bg-transparent",
+                ? "ring-1 ring-primary/30 ring-offset-1 ring-offset-background"
+                : "ring-0",
           )}
         >
           <Avatar className={cn(sizeClasses[size], "border-2 border-background cursor-pointer")}>
@@ -66,13 +73,13 @@ export function ParticipantAvatar({
           </Avatar>
         </div>
 
-        {/* Mic indicator (only for speakers) */}
+        {/* Mic indicator (for speakers) */}
         {isPublishing && (
           <div
             className={cn(
               "absolute -bottom-0.5 left-1/2 -translate-x-1/2",
               "rounded-full p-1",
-              isMuted ? "bg-destructive" : "bg-primary",
+              isSpeaking ? "bg-green-500" : isMuted ? "bg-destructive" : "bg-primary",
             )}
           >
             {isMuted ? (
@@ -85,12 +92,12 @@ export function ParticipantAvatar({
 
         {/* Hand raised */}
         {handRaised && (
-          <div className="absolute -top-1 -right-1 bg-yellow-500 rounded-full p-1">
+          <div className="absolute -top-1 -right-1 bg-yellow-500 rounded-full p-1 animate-bounce">
             <Hand className={cn(iconSize[size], "text-white")} />
           </div>
         )}
 
-        {/* Reaction overlay */}
+        {/* Reaction overlay on avatar */}
         {reaction && (
           <div className="absolute -top-3 left-1/2 -translate-x-1/2 react text-2xl md:text-3xl">
             {reaction}

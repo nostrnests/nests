@@ -7,6 +7,7 @@ import { usePresence } from "@/hooks/usePresence";
 import { useAdminCommands } from "@/hooks/useAdminCommands";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { useLocalParticipant } from "@/transport";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { getRoomATag } from "@/lib/room";
 import { useToast } from "@/hooks/useToast";
 
@@ -43,6 +44,8 @@ interface RoomContextType {
   isHostOrAdmin: boolean;
   /** Leave the room */
   leaveRoom: () => void;
+  /** Optimistically add a local reaction for immediate display */
+  addLocalReaction: (emoji: string) => void;
 }
 
 const RoomContext = createContext<RoomContextType | null>(null);
@@ -60,6 +63,7 @@ interface RoomContextProviderProps {
 export function RoomContextProvider({ event, children }: PropsWithChildren<RoomContextProviderProps>) {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useCurrentUser();
   const roomATag = getRoomATag(event);
   const { isHost, isAdmin, isSpeaker, isHostOrAdmin } = useIsAdmin(event);
 
@@ -79,14 +83,14 @@ export function RoomContextProvider({ event, children }: PropsWithChildren<RoomC
     const newReactions: RecentReaction[] = [];
 
     for (const r of reactions) {
-      // Only consider reactions from the last 10 seconds that we haven't seen yet
-      if (r.kind === 7 && r.content && (now - r.created_at) < 10 && !seenReactionIdsRef.current.has(r.id)) {
+      // Accept reactions from the last 30 seconds (accounts for query polling delay)
+      if (r.kind === 7 && r.content && (now - r.created_at) < 30 && !seenReactionIdsRef.current.has(r.id)) {
         seenReactionIdsRef.current.add(r.id);
         newReactions.push({
           id: r.id,
           pubkey: r.pubkey,
           emoji: r.content,
-          timestamp: r.created_at,
+          timestamp: now, // Use current time so animation starts fresh
         });
       }
     }
@@ -132,8 +136,20 @@ export function RoomContextProvider({ event, children }: PropsWithChildren<RoomC
   });
 
   const leaveRoom = useCallback(() => {
-    navigate("/");
+    navigate("/lobby");
   }, [navigate]);
+
+  // Optimistically add a local reaction so it shows immediately without waiting for relay round-trip
+  const addLocalReaction = useCallback((emoji: string) => {
+    if (!user) return;
+    const now = Math.floor(Date.now() / 1000);
+    const fakeId = `local-${now}-${Math.random().toString(36).slice(2, 8)}`;
+    seenReactionIdsRef.current.add(fakeId);
+    setRecentReactions((prev) => [
+      ...prev,
+      { id: fakeId, pubkey: user.pubkey, emoji, timestamp: now },
+    ]);
+  }, [user]);
 
   // Watch for admin kick commands
   useAdminCommands({
@@ -162,6 +178,7 @@ export function RoomContextProvider({ event, children }: PropsWithChildren<RoomC
         isSpeaker,
         isHostOrAdmin,
         leaveRoom,
+        addLocalReaction,
       }}
     >
       {children}

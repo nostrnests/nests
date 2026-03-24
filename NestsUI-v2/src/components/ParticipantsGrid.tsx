@@ -3,7 +3,7 @@ import { Separator } from "@/components/ui/separator";
 import { ParticipantAvatar } from "./ParticipantAvatar";
 import { ProfileCard } from "./ProfileCard";
 import { useRoomContext } from "./RoomContextProvider";
-import { useRemoteParticipantList } from "@/transport";
+import { useRemoteParticipantList, useLocalParticipant } from "@/transport";
 import { getRoomParticipants } from "@/lib/room";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 
@@ -11,22 +11,37 @@ export function ParticipantsGrid() {
   const { event, presenceList, participantReactions } = useRoomContext();
   const { user } = useCurrentUser();
   const remoteParticipants = useRemoteParticipantList();
+  const { declinedPublish } = useLocalParticipant();
 
   const roomParticipants = useMemo(() => getRoomParticipants(event), [event]);
 
-  // Build speaker set from event p-tags with roles + host
-  const speakers = useMemo(() => {
-    const speakerSet = new Set<string>();
-    speakerSet.add(event.pubkey); // host is always a speaker
-
+  // Build set of pubkeys that have speaker/admin/host role from p-tags
+  const speakerPubkeys = useMemo(() => {
+    const set = new Set<string>();
+    set.add(event.pubkey); // host is always a speaker
     for (const p of roomParticipants) {
       if (p.role === "speaker" || p.role === "admin") {
-        speakerSet.add(p.pubkey);
+        set.add(p.pubkey);
       }
     }
-
-    return speakerSet;
+    return set;
   }, [event.pubkey, roomParticipants]);
+
+  // Build set of pubkeys who have voluntarily left the stage
+  // (local user via declinedPublish, remote users via presence ["onstage", "0"] tag)
+  const declinedStageSet = useMemo(() => {
+    const declined = new Set<string>();
+    if (user && declinedPublish) {
+      declined.add(user.pubkey);
+    }
+    for (const p of presenceList) {
+      const onstageTag = p.tags.find(([t]) => t === "onstage")?.[1];
+      if (onstageTag === "0") {
+        declined.add(p.pubkey);
+      }
+    }
+    return declined;
+  }, [user, declinedPublish, presenceList]);
 
   // Get role for a pubkey
   const getRole = (pubkey: string): string => {
@@ -39,7 +54,6 @@ export function ParticipantsGrid() {
   const getPresenceInfo = (pubkey: string) => {
     const presence = presenceList.find((e) => e.pubkey === pubkey);
     if (!presence) return { handRaised: false, isMuted: true, isPublishing: false };
-
     return {
       handRaised: presence.tags.find(([t]) => t === "hand")?.[1] === "1",
       isMuted: presence.tags.find(([t]) => t === "muted")?.[1] === "1",
@@ -47,26 +61,32 @@ export function ParticipantsGrid() {
     };
   };
 
-  // Build the list of all known participants (speakers + remote + presence)
+  // Build the list of all known participants
   const allPubkeys = useMemo(() => {
     const set = new Set<string>();
-    // Add speakers from event
-    for (const pk of speakers) set.add(pk);
-    // Add remote audio participants
+    for (const pk of speakerPubkeys) set.add(pk);
     for (const rp of remoteParticipants) set.add(rp.pubkey);
-    // Add presence participants
     for (const e of presenceList) set.add(e.pubkey);
     return set;
-  }, [speakers, remoteParticipants, presenceList]);
+  }, [speakerPubkeys, remoteParticipants, presenceList]);
+
+  // Speakers: have a speaker p-tag AND haven't declined the stage
+  const activeSpeakerSet = useMemo(() => {
+    return new Set(
+      Array.from(allPubkeys).filter(
+        (pk) => speakerPubkeys.has(pk) && !declinedStageSet.has(pk),
+      ),
+    );
+  }, [allPubkeys, speakerPubkeys, declinedStageSet]);
 
   const speakerList = useMemo(
-    () => Array.from(allPubkeys).filter((pk) => speakers.has(pk)),
-    [allPubkeys, speakers],
+    () => Array.from(allPubkeys).filter((pk) => activeSpeakerSet.has(pk)),
+    [allPubkeys, activeSpeakerSet],
   );
 
   const listenerList = useMemo(
-    () => Array.from(allPubkeys).filter((pk) => !speakers.has(pk)),
-    [allPubkeys, speakers],
+    () => Array.from(allPubkeys).filter((pk) => !activeSpeakerSet.has(pk)),
+    [allPubkeys, activeSpeakerSet],
   );
 
   return (

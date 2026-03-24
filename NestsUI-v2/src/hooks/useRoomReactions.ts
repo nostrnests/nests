@@ -22,7 +22,7 @@ export function useRoomReactions(roomATag: string | undefined) {
       return events.sort((a, b) => b.created_at - a.created_at);
     },
     enabled: !!roomATag,
-    refetchInterval: 15_000,
+    refetchInterval: 3_000, // Fast polling for near-realtime reactions
   });
 }
 
