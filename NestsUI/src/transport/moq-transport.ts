@@ -408,7 +408,8 @@ export class MoQAudioTransport implements NestTransport {
     });
 
     // Set up audio pipeline: source -> decoder -> emitter (speaker)
-    const sync = new Watch.Sync();
+    // Use a generous jitter buffer (150ms) to reduce audio underflow warnings
+    const sync = new Watch.Sync({ jitter: 150 as Moq.Time.Milli });
     const audioSource = new Watch.Audio.Source(sync, { broadcast });
     const decoder = new Watch.Audio.Decoder(audioSource, { enabled: true });
     const emitter = new Watch.Audio.Emitter(decoder, {
