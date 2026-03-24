@@ -75,10 +75,25 @@ export default function NostrParticipants({ event }: { event: NostrEvent }) {
     return pubkeys;
   }, [remoteParticipants, login.pubkey, presence]);
 
-  // If the local user declined publishing (left stage voluntarily), show them as a listener
+  // Build a set of pubkeys who have voluntarily left the stage
+  // (local user via declinedPublish flag, remote users via presence ["onstage", "0"] tag)
+  const declinedStageSet = useMemo(() => {
+    const declined = new Set<string>();
+    if (login.pubkey && declinedPublish) {
+      declined.add(login.pubkey);
+    }
+    for (const p of presence) {
+      if (p.tags.find((t) => t[0] === "onstage" && t[1] === "0")) {
+        declined.add(p.pubkey);
+      }
+    }
+    return declined;
+  }, [login.pubkey, declinedPublish, presence]);
+
+  // Filter speakers: remove anyone who voluntarily left the stage
   const speakerSet = new Set(
     allPubkeys.filter((pk) => {
-      if (pk === login.pubkey && declinedPublish) return false;
+      if (declinedStageSet.has(pk)) return false;
       return getSpeakerPubkeys.has(pk);
     }),
   );

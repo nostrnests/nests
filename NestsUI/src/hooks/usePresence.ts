@@ -10,7 +10,7 @@ export default function usePresence(link?: NostrLink) {
   const { signer, system } = useEventBuilder();
   const login = useLogin();
   const hand = login.handMap?.includes(link?.id ?? "");
-  const { isMicEnabled, isPublishing } = useLocalParticipant();
+  const { isMicEnabled, isPublishing, declinedPublish } = useLocalParticipant();
 
   // Check if we're ready to send presence (have a signer or are a guest)
   const isReady = useMemo(() => {
@@ -38,6 +38,10 @@ export default function usePresence(link?: NostrLink) {
       builder.tag(["publishing", "1"]);
       builder.tag(["muted", isMicEnabled ? "0" : "1"]);
     }
+    // Signal that the user has voluntarily left the stage
+    if (declinedPublish) {
+      builder.tag(["onstage", "0"]);
+    }
 
     const ev = await builder.buildAndSign(signer);
     try {
@@ -46,7 +50,7 @@ export default function usePresence(link?: NostrLink) {
     } catch (e) {
       console.debug("Presence broadcast partially failed (some relays may be read-only):", e);
     }
-  }, [signer, link, hand, isMicEnabled, isPublishing, system, login.type]);
+  }, [signer, link, hand, isMicEnabled, isPublishing, declinedPublish, system, login.type]);
 
   return { sendPresence, interval: PRESENCE_TIME, hand, isMicEnabled, isPublishing, isReady };
 }
