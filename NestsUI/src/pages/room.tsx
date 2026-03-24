@@ -50,18 +50,21 @@ export default function Room() {
   const roomSub = useMemo(() => {
     const sub = new RequestBuilder(`room:${link?.id}`);
     if (link) {
-      sub.withFilter().link(link);
+      sub.withOptions({ leaveOpen: true }).withFilter().link(link);
     }
     return sub;
   }, [link]);
   const roomUpdates = useRequestBuilder(roomSub);
-  // Prefer the event with the latest created_at timestamp to handle room restarts
+  // Use the most recent event by created_at from all sources
   const event = useMemo(() => {
-    const subscriptionEvent = roomUpdates.length > 0 ? roomUpdates[0] : undefined;
-    const stateEvent = room?.event;
-    if (!subscriptionEvent) return stateEvent;
-    if (!stateEvent) return subscriptionEvent;
-    return stateEvent.created_at > subscriptionEvent.created_at ? stateEvent : subscriptionEvent;
+    // Collect all candidate events: subscription results + initial state
+    const candidates = [...roomUpdates];
+    if (room?.event) {
+      candidates.push(room.event as typeof candidates[0]);
+    }
+    if (candidates.length === 0) return undefined;
+    // Sort by created_at descending, pick the newest
+    return candidates.sort((a, b) => b.created_at - a.created_at)[0];
   }, [roomUpdates, room?.event]);
 
   useEffect(() => {
