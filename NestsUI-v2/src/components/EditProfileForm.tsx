@@ -1,10 +1,14 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { useAuthor } from '@/hooks/useAuthor';
 import { useNostrPublish } from '@/hooks/useNostrPublish';
+import { useDittoProfile } from '@/hooks/useDittoProfile';
 import { useToast } from '@/hooks/useToast';
 import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   Form,
   FormControl,
@@ -16,19 +20,50 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
+import { ThemeChooser } from '@/components/ThemeChooser';
 import { Loader2, Upload } from 'lucide-react';
-import { NSchema as n, type NostrMetadata } from '@nostrify/nostrify';
+import { NSchema as n, type NostrMetadata, type NostrEvent } from '@nostrify/nostrify';
 import { useQueryClient } from '@tanstack/react-query';
 import { useUploadFile } from '@/hooks/useUploadFile';
+import { isEmoji, getEmojiMaskUrl } from '@/lib/ditto-theme';
+import { DITTO_PROFILE_THEME } from '@/lib/const';
+import type { DittoTheme } from '@/lib/ditto-theme';
+import type { DittoThemeEntry } from '@/hooks/useDittoThemes';
 
 export const EditProfileForm: React.FC = () => {
   const queryClient = useQueryClient();
 
   const { user, metadata } = useCurrentUser();
+  const author = useAuthor(user?.pubkey);
   const { mutateAsync: publishEvent, isPending } = useNostrPublish();
   const { mutateAsync: uploadFile, isPending: isUploading } = useUploadFile();
+  const { data: existingProfileTheme } = useDittoProfile(user?.pubkey);
   const { toast } = useToast();
+
+  // Avatar shape state
+  const [shape, setShape] = useState('');
+  const [profileTheme, setProfileTheme] = useState<DittoTheme | null>(null);
+  const [profileThemeEntry, setProfileThemeEntry] = useState<DittoThemeEntry | null>(null);
+
+  // Parse existing shape from raw event content
+  useEffect(() => {
+    try {
+      const parsed = JSON.parse(author.data?.event?.content ?? '{}');
+      if (isEmoji(parsed.shape)) setShape(parsed.shape);
+    } catch { /* ignore */ }
+  }, [author.data?.event?.content]);
+
+  // Sync profile theme from existing
+  useEffect(() => {
+    if (existingProfileTheme) setProfileTheme(existingProfileTheme);
+  }, [existingProfileTheme]);
+
+  // Shape preview mask
+  const shapeMask = useMemo(() => {
+    if (!isEmoji(shape)) return undefined;
+    const url = getEmojiMaskUrl(shape);
+    return url || undefined;
+  }, [shape]);
 
   // Initialize the form with default values
   const form = useForm<NostrMetadata>({
@@ -40,7 +75,6 @@ export const EditProfileForm: React.FC = () => {
       banner: '',
       website: '',
       nip05: '',
-      bot: false,
     },
   });
 
@@ -54,7 +88,6 @@ export const EditProfileForm: React.FC = () => {
         banner: metadata.banner || '',
         website: metadata.website || '',
         nip05: metadata.nip05 || '',
-        bot: metadata.bot || false,
       });
     }
   }, [metadata, form]);
@@ -90,8 +123,20 @@ export const EditProfileForm: React.FC = () => {
     }
 
     try {
-      // Combine existing metadata with new values
-      const data = { ...metadata, ...values };
+      // Combine existing metadata with new values, preserving extra fields
+      let existingData: Record<string, unknown> = {};
+      try {
+        existingData = JSON.parse(author.data?.event?.content ?? '{}');
+      } catch { /* ignore */ }
+
+      const data: Record<string, unknown> = { ...existingData, ...values };
+
+      // Add shape if set
+      if (shape && isEmoji(shape)) {
+        data.shape = shape;
+      } else {
+        delete data.shape;
+      }
 
       // Clean up empty values
       for (const key in data) {
@@ -106,9 +151,48 @@ export const EditProfileForm: React.FC = () => {
         content: JSON.stringify(data),
       });
 
-      // Invalidate queries to refresh the data
-      queryClient.invalidateQueries({ queryKey: ['logins'] });
-      queryClient.invalidateQueries({ queryKey: ['nostr', 'author', user.pubkey] });
+      // Publish profile theme (kind:16767) if set
+      if (profileTheme) {
+        const themeTags: string[][] = [
+          ["c", profileTheme.colors.background, "background"],
+          ["c", profileTheme.colors.text, "text"],
+          ["c", profileTheme.colors.primary, "primary"],
+        ];
+        if (profileTheme.font) {
+          const fontTag = ["f", profileTheme.font.family];
+          if (profileTheme.font.url) fontTag.push(profileTheme.font.url);
+          themeTags.push(fontTag);
+        }
+        if (profileTheme.background) {
+          themeTags.push(["bg", `url ${profileTheme.background.url}`, `mode ${profileTheme.background.mode}`]);
+        }
+        themeTags.push(["alt", "Ditto profile theme"]);
+
+        await publishEvent({
+          kind: DITTO_PROFILE_THEME,
+          content: "",
+          tags: themeTags,
+        });
+      }
+
+      // Optimistically update the author cache with the new data
+      queryClient.setQueryData(['nostr', 'author', user.pubkey], (old: { event?: NostrEvent; metadata?: NostrMetadata } | undefined) => {
+        const newEvent = {
+          ...(old?.event ?? { kind: 0, pubkey: user.pubkey, id: '', sig: '', tags: [], created_at: Math.floor(Date.now() / 1000) }),
+          content: JSON.stringify(data),
+        };
+        let newMetadata: NostrMetadata | undefined;
+        try {
+          newMetadata = n.json().pipe(n.metadata()).parse(newEvent.content);
+        } catch { /* ignore */ }
+        return { event: newEvent, metadata: newMetadata ?? old?.metadata };
+      });
+
+      // Invalidate to refetch from relay (picks up relay-confirmed data)
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ['nostr', 'author', user.pubkey] });
+        queryClient.invalidateQueries({ queryKey: ['nostr', 'ditto-profile', user.pubkey] });
+      }, 2000);
 
       toast({
         title: 'Success',
@@ -233,30 +317,57 @@ export const EditProfileForm: React.FC = () => {
           />
         </div>
 
-        <FormField
-          control={form.control}
-          name="bot"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-              <div className="space-y-0.5">
-                <FormLabel className="text-base">Bot Account</FormLabel>
-                <FormDescription>
-                  Mark this account as automated or a bot.
-                </FormDescription>
-              </div>
-              <FormControl>
-                <Switch
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
-              </FormControl>
-            </FormItem>
-          )}
-        />
+        {/* Avatar Shape */}
+        <div className="space-y-3">
+          <Label>Avatar Shape</Label>
+          <p className="text-xs text-muted-foreground">
+            Enter an emoji to use as your avatar mask. Leave empty for a circle.
+          </p>
+          <div className="flex items-center gap-4">
+            <Input
+              value={shape}
+              onChange={(e) => setShape(e.target.value.trim())}
+              placeholder="e.g. 🔷 ⭐ ❤️ ⬡"
+              className="w-32"
+            />
+            <div className="shrink-0">
+              <Avatar
+                className="h-14 w-14"
+                style={shapeMask ? {
+                  WebkitMaskImage: `url(${shapeMask})`,
+                  maskImage: `url(${shapeMask})`,
+                  WebkitMaskSize: 'cover',
+                  maskSize: 'cover',
+                  borderRadius: 0,
+                } : undefined}
+              >
+                <AvatarImage src={metadata?.picture} />
+                <AvatarFallback className="bg-secondary text-sm">
+                  {(metadata?.name || '??').slice(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+            </div>
+          </div>
+        </div>
 
-        <Button 
-          type="submit" 
-          className="w-full md:w-auto" 
+        {/* Profile Theme */}
+        <div className="space-y-3">
+          <Label>Profile Theme</Label>
+          <p className="text-xs text-muted-foreground">
+            Choose a theme that others see when they view your profile card.
+          </p>
+          <ThemeChooser
+            selectedTheme={profileTheme}
+            onSelectTheme={(theme, entry) => {
+              setProfileTheme(theme);
+              setProfileThemeEntry(entry ?? null);
+            }}
+          />
+        </div>
+
+        <Button
+          type="submit"
+          className="w-full md:w-auto"
           disabled={isPending || isUploading}
         >
           {(isPending || isUploading) && (
