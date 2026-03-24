@@ -138,16 +138,25 @@ export function RoomListList({
             <div className="flex flex-col gap-2">
               {mineLeftOpen.map((a) => {
                 const { title } = extractStreamInfo(a.event);
-                return (
-                  <div className="px-3 py-4 rounded-xl bg-foreground-2 flex justify-between items-center">
+                 return (
+                  <div key={a.event.id} className="px-3 py-4 rounded-xl bg-foreground-2 flex justify-between items-center">
                     <div className="text-2xl font-medium">{title}</div>
-                    <IconButton
+                     <IconButton
                       name="trash"
                       className="text-delete bg-foreground-2-hover rounded-xl"
                       onClick={async () => {
-                        updateOrAddTag(a.event, "ends", unixNow().toString());
-                        updateOrAddTag(a.event, "status", "ended");
-                        await modifier.update(a.event);
+                        try {
+                          updateOrAddTag(a.event, "ends", unixNow().toString());
+                          updateOrAddTag(a.event, "status", "ended");
+                          const signed = await modifier.update(a.event);
+                          if (signed) {
+                            console.log("Room ended successfully:", signed.id);
+                          } else {
+                            console.error("Failed to end room: signer returned null");
+                          }
+                        } catch (e) {
+                          console.error("Failed to end room:", e);
+                        }
                       }}
                     />
                   </div>

@@ -138,15 +138,17 @@ export class MoQAudioTransport implements NestTransport {
         webtransport: wtOptions,
       });
 
-      // Watch connection status reactively
-      const statusDispose = this.connection.status.subscribe((status) => {
+      // Watch connection status reactively.
+      // Use .watch() instead of .subscribe() so we get the initial value too
+      // (subscribe only fires on changes, watch fires immediately + on changes)
+      const canPublish = config.canPublish;
+      const statusDispose = this.connection.status.watch((status) => {
         console.log("[transport] connection status:", status);
         switch (status) {
           case "connected":
             this.setState("connected");
             this.startAnnouncementWatching();
-            // Auto-publish if this user can publish
-            if (config.canPublish && !this._isPublishing && !this._declinedPublish) {
+            if (canPublish && !this._isPublishing && !this._declinedPublish) {
               console.log("[transport] auto-publishing: connected as speaker");
               this.publishMicrophone().catch((e) =>
                 console.error("[transport] auto-publish failed:", e),
@@ -174,7 +176,18 @@ export class MoQAudioTransport implements NestTransport {
   private _statusDispose: (() => void) | null = null;
 
   disconnect(): void {
-    this.unpublishMicrophone();
+    // Stop publishing without setting declinedPublish (that's only for voluntary leave-stage)
+    if (this.publishBroadcast) {
+      this.publishBroadcast.close();
+      this.publishBroadcast = null;
+    }
+    if (this.microphone) {
+      this.microphone.close();
+      this.microphone = null;
+    }
+    this._isPublishing = false;
+    this._isMicEnabled = false;
+
     this.stopAnnouncementWatching();
     this.cleanupWatchBroadcasts();
 
@@ -195,6 +208,8 @@ export class MoQAudioTransport implements NestTransport {
     this._participants.clear();
     this.notifyParticipantsChange();
     this.setState("disconnected");
+    // Reset declinedPublish on full disconnect (reconnect should auto-publish again)
+    this._declinedPublish = false;
     this.config = null;
   }
 
