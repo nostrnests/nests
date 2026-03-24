@@ -1,0 +1,62 @@
+###
+# Nests Production Stack
+#
+# Services:
+#   nests-web  - Frontend (Vite build served by nginx)
+#   moq-relay  - MoQ audio relay (WebTransport/QUIC)
+#   moq-auth   - NIP-98 auth sidecar (issues JWTs for the relay)
+#
+# Prerequisites:
+#   - TLS certificates for moq-relay (Let's Encrypt or similar)
+#   - Reverse proxy (Caddy/nginx) in front for HTTPS on web + auth
+#
+# Quick start:
+#   1. Copy .env.example to .env and configure your domains
+#   2. Place TLS certs in ./certs/ (fullchain.pem + privkey.pem)
+#   3. docker compose up -d
+#
+# Environment variables (set in .env or pass via docker compose):
+#   NESTS_DOMAIN        - Frontend domain (default: nests.example.com)
+#   MOQ_RELAY_DOMAIN    - MoQ relay domain (default: moq.nests.example.com)
+#   MOQ_AUTH_DOMAIN     - Auth service domain (default: moq-auth.nests.example.com)
+#   MOQ_RELAY_PORT      - MoQ relay port (default: 4443)
+###
+
+services:
+  nests-web:
+    build:
+      context: ./NestsUI-v2
+      args:
+        VITE_MOQ_RELAY_URL: https://${MOQ_RELAY_DOMAIN:-moq.nests.example.com}:${MOQ_RELAY_PORT:-4443}
+        VITE_MOQ_AUTH_URL: https://${MOQ_AUTH_DOMAIN:-moq-auth.nests.example.com}
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+
+  moq-relay:
+    image: ghcr.io/kixelated/moq-relay:latest
+    ports:
+      - "${MOQ_RELAY_PORT:-4443}:4443"
+      - "${MOQ_RELAY_PORT:-4443}:4443/udp"
+    volumes:
+      - ./certs:/certs:ro
+    environment:
+      - MOQ_BIND=0.0.0.0:4443
+      - MOQ_TLS_CERT=/certs/fullchain.pem
+      - MOQ_TLS_KEY=/certs/privkey.pem
+      - MOQ_AUTH_KEY=http://moq-auth:8080/.well-known/jwks.json
+      - MOQ_AUTH_REFRESH_INTERVAL=30
+    depends_on:
+      - moq-auth
+    restart: unless-stopped
+
+  moq-auth:
+    build: ./moq-auth
+    expose:
+      - "8080"
+    ports:
+      - "8090:8080"
+    environment:
+      - PORT=8080
+      - HOST=0.0.0.0
+    restart: unless-stopped
