@@ -60,30 +60,46 @@ export function NostrRoomContextProvider({
     );
   }, [event, login.pubkey]);
 
-  useEffect(() => {
-    if (!isSpeaker || !isLive) return;
-    if (transport.isPublishing || transport.declinedPublish) return;
+  // Use a ref to track speaker status so the callback always has the latest value
+  const isSpeakerRef = useRef(isSpeaker);
+  isSpeakerRef.current = isSpeaker;
 
-    // Subscribe to connection state changes directly on the transport
-    const dispose = transport.onStateChange((state) => {
-      if (state === "connected" && !transport.isPublishing && !transport.declinedPublish) {
-        console.log("[room] auto-publishing: connected as speaker");
+  useEffect(() => {
+    if (!isLive) return;
+
+    const tryAutoPublish = () => {
+      if (isSpeakerRef.current && !transport.isPublishing && !transport.declinedPublish) {
+        console.log("[room] auto-publishing microphone");
         transport.publishMicrophone().catch((e) =>
           console.error("[room] auto-publish failed:", e),
         );
       }
+    };
+
+    // Subscribe to connection state changes
+    const dispose = transport.onStateChange((state) => {
+      if (state === "connected") {
+        tryAutoPublish();
+      }
     });
 
-    // Also check immediately if already connected
-    if (transport.state === "connected" && !transport.isPublishing && !transport.declinedPublish) {
-      console.log("[room] auto-publishing: already connected as speaker");
-      transport.publishMicrophone().catch((e) =>
-        console.error("[room] auto-publish failed:", e),
-      );
+    // Also check immediately (connection might already be established)
+    if (transport.state === "connected") {
+      tryAutoPublish();
     }
 
-    return dispose;
-  }, [isSpeaker, isLive, transport]);
+    // Poll as a safety net (handles React StrictMode double-invoke race)
+    const pollInterval = setInterval(() => {
+      if (transport.state === "connected") {
+        tryAutoPublish();
+      }
+    }, 2000);
+
+    return () => {
+      dispose();
+      clearInterval(pollInterval);
+    };
+  }, [isLive, transport]);
 
   // Global spacebar handler for mute toggle
   useEffect(() => {
