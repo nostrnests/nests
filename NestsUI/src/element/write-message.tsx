@@ -1,6 +1,6 @@
 import { EventBuilder, EventKind, NostrLink } from "@snort/system";
 import Button, { PrimaryButton } from "./button";
-import { RefObject, useRef, useState } from "react";
+import { RefObject, useMemo, useRef, useState } from "react";
 import useEventBuilder from "../hooks/useEventBuilder";
 import IconButton from "./icon-button";
 import { Link } from "react-router-dom";
@@ -8,7 +8,7 @@ import { useHand, useLogin } from "../login";
 import { createPortal } from "react-dom";
 import classNames from "classnames";
 import { RoomOptionsButton } from "./room-menu-bar";
-import { LIVE_CHAT } from "../const";
+import { LIVE_CHAT, ParticipantRole } from "../const";
 import { useNostrRoom } from "../hooks/nostr-room-context";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useWallet } from "../wallet";
@@ -77,16 +77,29 @@ function MenuBar({ link }: { link: NostrLink }) {
   const hand = useHand(link);
   const refMenu = useRef<HTMLDivElement | null>(null);
   const wallet = useWallet();
-  const { leaveRoom } = useNostrRoom();
+  const login = useLogin();
+  const { leaveRoom, event } = useNostrRoom();
+
+  // Check if user is a speaker/admin/host in the room event (not just actively publishing)
+  const isSpeaker = useMemo(() => {
+    if (!login.pubkey || !event) return false;
+    if (event.pubkey === login.pubkey) return true; // host
+    return event.tags.some(
+      (t) => t[0] === "p" && t[1] === login.pubkey && 
+        (t[3] === ParticipantRole.SPEAKER || t[3] === ParticipantRole.ADMIN),
+    );
+  }, [event, login.pubkey]);
 
   function toggleMute() {
     setMicEnabled(!isMicEnabled);
   }
 
   function handleExit() {
-    if (isPublishing) {
+    if (isSpeaker) {
       // Leave the stage (stop publishing audio, stay in room as listener)
-      unpublishMicrophone();
+      if (isPublishing) {
+        unpublishMicrophone();
+      }
     } else {
       // Not on stage -- leave the room entirely
       leaveRoom();
@@ -111,11 +124,11 @@ function MenuBar({ link }: { link: NostrLink }) {
           </div>
         )}
         <IconButton
-          className={`rounded-full aspect-square ${isPublishing ? "bg-foreground-2" : "bg-delete"}`}
+          className={`rounded-full aspect-square ${isSpeaker ? "bg-foreground-2" : "bg-delete"}`}
           name="exit"
           size={25}
           onClick={handleExit}
-          title={isPublishing ? "Leave Stage" : "Leave Room"}
+          title={isSpeaker ? "Leave Stage" : "Leave Room"}
         />
         <IconButton
           className={`rounded-full aspect-square${hand.active ? " text-primary" : ""}`}
