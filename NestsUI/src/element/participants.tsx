@@ -14,7 +14,7 @@ import DisplayName from "./display-name";
 import ZapButton from "./zap-button";
 import { useLogin } from "../login";
 import { useRemoteParticipantList, useLocalParticipant } from "../transport";
-import { useLocalSpeaking } from "../hooks/useSpeakingIndicator";
+import { useLocalSpeaking, useRemoteSpeaking } from "../hooks/useSpeakingIndicator";
 import { ParticipantRole } from "../const";
 
 export default function NostrParticipants({ event }: { event: NostrEvent }) {
@@ -128,7 +128,8 @@ function NostrParticipant({
   const reactions = useUserRoomReactions(pubkey);
   const { isMicEnabled, isPublishing } = useLocalParticipant();
   const localSpeaking = useLocalSpeaking();
-  const isSpeaking = isMe ? localSpeaking : false; // TODO: remote speaking detection via audio stats
+  const remoteSpeaking = useRemoteSpeaking(pubkey);
+  const isSpeaking = isMe ? localSpeaking : remoteSpeaking;
 
   const { handleMouseEnter, handleMouseLeave, isHovering } = useHoverMenu();
 

@@ -91,6 +91,9 @@ export interface NestTransport {
   /** The local microphone MediaStreamTrack (for VU meters / speaking indicators). */
   readonly localAudioTrack: MediaStreamTrack | undefined;
 
+  /** Get the AudioNode for a remote participant's decoded audio (for speaking detection). */
+  getRemoteAudioNode(pubkey: string): AudioNode | undefined;
+
   /** Subscribe to local mic state changes. */
   onLocalStateChange(cb: () => void): Unsubscribe;
 

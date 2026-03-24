@@ -84,6 +84,12 @@ export class MoQAudioTransport implements NestTransport {
     return this.microphone?.source.peek() ?? undefined;
   }
 
+  getRemoteAudioNode(pubkey: string): AudioNode | undefined {
+    const entry = this.watchBroadcasts.get(pubkey);
+    if (!entry) return undefined;
+    return entry.decoder.root.peek() ?? undefined;
+  }
+
   get participants(): ReadonlyMap<string, RemoteParticipant> {
     return this._participants;
   }

@@ -1,5 +1,20 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNestTransport } from "../transport";
+
+const THRESHOLD = -35; // dB threshold for "speaking"
+const ON_FRAMES = 3;   // consecutive frames above threshold to activate
+const OFF_FRAMES = 6;  // consecutive frames below threshold to deactivate
+const POLL_MS = 100;
+
+function analyseVolume(analyser: AnalyserNode, dataArray: Uint8Array<ArrayBuffer>): number {
+  analyser.getByteFrequencyData(dataArray);
+  let sum = 0;
+  for (let i = 0; i < dataArray.length; i++) {
+    sum += dataArray[i];
+  }
+  const avg = sum / dataArray.length;
+  return avg > 0 ? 20 * Math.log10(avg / 255) : -100;
+}
 
 /**
  * Detect whether the local user is currently speaking based on mic audio levels.
@@ -30,9 +45,6 @@ export function useLocalSpeaking(): boolean {
       source.connect(analyser);
 
       const dataArray = new Uint8Array(analyser.frequencyBinCount);
-      const THRESHOLD = -35; // dB threshold for "speaking"
-      const ON_FRAMES = 3;   // consecutive frames above threshold to activate
-      const OFF_FRAMES = 6;  // consecutive frames below threshold to deactivate
       let aboveCount = 0;
       let belowCount = 0;
       let currentSpeaking = false;
@@ -42,13 +54,7 @@ export function useLocalSpeaking(): boolean {
           setSpeaking(false);
           return;
         }
-        analyser.getByteFrequencyData(dataArray);
-        let sum = 0;
-        for (let i = 0; i < dataArray.length; i++) {
-          sum += dataArray[i];
-        }
-        const avg = sum / dataArray.length;
-        const dB = avg > 0 ? 20 * Math.log10(avg / 255) : -100;
+        const dB = analyseVolume(analyser, dataArray);
 
         if (dB > THRESHOLD) {
           aboveCount++;
@@ -65,7 +71,7 @@ export function useLocalSpeaking(): boolean {
             setSpeaking(false);
           }
         }
-      }, 100);
+      }, POLL_MS);
 
       analyserCleanup = () => {
         clearInterval(interval);
@@ -79,6 +85,79 @@ export function useLocalSpeaking(): boolean {
       analyserCleanup?.();
     };
   }, [transport]);
+
+  return speaking;
+}
+
+/**
+ * Detect whether a remote participant is currently speaking based on their
+ * decoded audio output from the @moq/watch pipeline.
+ */
+export function useRemoteSpeaking(pubkey: string): boolean {
+  const transport = useNestTransport();
+  const [speaking, setSpeaking] = useState(false);
+  const analyserRef = useRef<{ analyser: AnalyserNode; dataArray: Uint8Array<ArrayBuffer> } | null>(null);
+
+  useEffect(() => {
+    let aboveCount = 0;
+    let belowCount = 0;
+    let currentSpeaking = false;
+
+    const interval = setInterval(() => {
+      const audioNode = transport.getRemoteAudioNode(pubkey);
+      if (!audioNode) {
+        // Audio node not ready yet, keep polling
+        analyserRef.current = null;
+        return;
+      }
+
+      // Create analyser on first availability (or if node changed)
+      if (!analyserRef.current) {
+        try {
+          const ctx = audioNode.context;
+          const analyser = ctx.createAnalyser();
+          analyser.fftSize = 256;
+          analyser.smoothingTimeConstant = 0.5;
+          audioNode.connect(analyser);
+          analyserRef.current = {
+            analyser,
+            dataArray: new Uint8Array(analyser.frequencyBinCount),
+          };
+        } catch {
+          return;
+        }
+      }
+
+      const { analyser, dataArray } = analyserRef.current;
+      const dB = analyseVolume(analyser, dataArray);
+
+      if (dB > THRESHOLD) {
+        aboveCount++;
+        belowCount = 0;
+        if (!currentSpeaking && aboveCount >= ON_FRAMES) {
+          currentSpeaking = true;
+          setSpeaking(true);
+        }
+      } else {
+        belowCount++;
+        aboveCount = 0;
+        if (currentSpeaking && belowCount >= OFF_FRAMES) {
+          currentSpeaking = false;
+          setSpeaking(false);
+        }
+      }
+    }, POLL_MS);
+
+    return () => {
+      clearInterval(interval);
+      if (analyserRef.current) {
+        try {
+          analyserRef.current.analyser.disconnect();
+        } catch { /* ignore */ }
+        analyserRef.current = null;
+      }
+    };
+  }, [transport, pubkey]);
 
   return speaking;
 }
