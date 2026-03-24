@@ -14,7 +14,19 @@ export function MenuBar() {
   const { isMicEnabled, isPublishing, setMicEnabled, unpublishMicrophone } = useLocalParticipant();
 
   return (
-    <div className="flex items-center justify-between gap-2 px-4 py-3 border-t border-border bg-background/80 backdrop-blur-sm">
+    <div
+      className={cn(
+        "flex items-center justify-between gap-2 border-t border-border",
+        // Mobile: fixed full-width bar at bottom with safe area
+        "fixed bottom-0 left-0 right-0 z-30 bg-background px-4 py-3",
+        "pb-[max(0.75rem,env(safe-area-inset-bottom))]",
+        // Desktop: floating pill centered at bottom of participants panel
+        "md:static md:inset-auto md:z-auto",
+        "md:mx-auto md:mb-4 md:max-w-sm md:w-fit",
+        "md:rounded-full md:border md:border-border/50 md:px-4 md:py-2",
+        "md:bg-background/80 md:backdrop-blur-sm md:shadow-lg md:shadow-black/20",
+      )}
+    >
       <div className="flex items-center gap-1">
         {/* Leave/Exit */}
         <Tooltip>
@@ -22,7 +34,7 @@ export function MenuBar() {
             <Button
               variant="ghost"
               size="icon"
-              className="rounded-full h-10 w-10 text-destructive hover:text-destructive hover:bg-destructive/10"
+              className="rounded-full h-11 w-11 md:h-10 md:w-10 text-destructive hover:text-destructive hover:bg-destructive/10"
               onClick={() => {
                 if (isPublishing) {
                   unpublishMicrophone();
@@ -43,7 +55,7 @@ export function MenuBar() {
               <Button
                 variant="outline"
                 size="sm"
-                className="rounded-full text-xs h-8"
+                className="rounded-full text-xs h-9 md:h-8"
                 onClick={() => unpublishMicrophone()}
               >
                 Leave Stage
@@ -63,7 +75,7 @@ export function MenuBar() {
                 variant="ghost"
                 size="icon"
                 className={cn(
-                  "rounded-full h-10 w-10",
+                  "rounded-full h-11 w-11 md:h-10 md:w-10",
                   handRaised && "bg-yellow-500/20 text-yellow-500",
                 )}
                 onClick={() => setHandRaised(!handRaised)}
@@ -83,7 +95,7 @@ export function MenuBar() {
                 variant="ghost"
                 size="icon"
                 className={cn(
-                  "rounded-full h-10 w-10",
+                  "rounded-full h-11 w-11 md:h-10 md:w-10",
                   !isMicEnabled && "bg-destructive/20 text-destructive",
                 )}
                 onClick={() => setMicEnabled(!isMicEnabled)}

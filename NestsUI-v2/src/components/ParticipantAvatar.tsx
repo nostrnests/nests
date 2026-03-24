@@ -32,20 +32,21 @@ export function ParticipantAvatar({
   const metadata = author.data?.metadata;
   const displayName = metadata?.display_name ?? metadata?.name ?? genUserName(pubkey);
 
+  // Responsive sizes: smaller on mobile, normal on md+
   const sizeClasses = {
-    sm: "h-12 w-12",
-    md: "h-16 w-16",
-    lg: "h-20 w-20",
+    sm: "h-10 w-10 md:h-12 md:w-12",
+    md: "h-12 w-12 md:h-16 md:w-16",
+    lg: "h-14 w-14 md:h-20 md:w-20",
   };
 
   const iconSize = {
     sm: "h-3 w-3",
-    md: "h-3.5 w-3.5",
-    lg: "h-4 w-4",
+    md: "h-3 w-3 md:h-3.5 md:w-3.5",
+    lg: "h-3.5 w-3.5 md:h-4 md:w-4",
   };
 
   return (
-    <div className="flex flex-col items-center gap-1.5 group" onClick={onClick}>
+    <div className="flex flex-col items-center gap-1 md:gap-1.5 group" onClick={onClick}>
       <div className="relative">
         {/* Speaking ring */}
         <div
@@ -60,7 +61,7 @@ export function ParticipantAvatar({
         >
           <Avatar className={cn(sizeClasses[size], "border-2 border-background cursor-pointer")}>
             <AvatarImage src={metadata?.picture} alt={displayName} />
-            <AvatarFallback className="text-xs bg-secondary">
+            <AvatarFallback className="text-[10px] md:text-xs bg-secondary">
               {displayName.slice(0, 2).toUpperCase()}
             </AvatarFallback>
           </Avatar>
@@ -71,7 +72,7 @@ export function ParticipantAvatar({
           <div
             className={cn(
               "absolute -bottom-0.5 left-1/2 -translate-x-1/2",
-              "rounded-full p-1",
+              "rounded-full p-0.5 md:p-1",
               isMuted ? "bg-destructive" : "bg-primary",
             )}
           >
@@ -85,14 +86,14 @@ export function ParticipantAvatar({
 
         {/* Hand raised */}
         {handRaised && (
-          <div className="absolute -top-1 -right-1 bg-yellow-500 rounded-full p-1">
+          <div className="absolute -top-1 -right-1 bg-yellow-500 rounded-full p-0.5 md:p-1">
             <Hand className={cn(iconSize[size], "text-white")} />
           </div>
         )}
 
         {/* Reaction overlay */}
         {reaction && (
-          <div className="absolute -top-2 left-1/2 -translate-x-1/2 react text-2xl">
+          <div className="absolute -top-2 left-1/2 -translate-x-1/2 react text-xl md:text-2xl">
             {reaction}
           </div>
         )}
@@ -121,7 +122,7 @@ export function ParticipantAvatar({
       </div>
 
       {/* Name */}
-      <span className="text-xs text-muted-foreground truncate max-w-[80px] text-center">
+      <span className="text-[10px] md:text-xs text-muted-foreground truncate max-w-[64px] md:max-w-[80px] text-center">
         {displayName}
       </span>
     </div>

@@ -76,20 +76,20 @@ export default function NewRoom() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-[100dvh] bg-background">
       <Header />
 
-      <main className="mx-auto max-w-lg px-4 py-8">
-        <Link to="/" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-6">
+      <main className="mx-auto max-w-lg px-3 md:px-4 py-6 md:py-8">
+        <Link to="/" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-4 md:mb-6">
           <ArrowLeft className="h-4 w-4" />
           Back
         </Link>
 
         <Card>
-          <CardHeader>
-            <CardTitle>Create a Room</CardTitle>
+          <CardHeader className="px-4 md:px-6">
+            <CardTitle className="text-lg md:text-xl">Create a Room</CardTitle>
           </CardHeader>
-          <CardContent className="flex flex-col gap-5">
+          <CardContent className="flex flex-col gap-4 md:gap-5 px-4 md:px-6">
             {!user && (
               <div className="rounded-lg bg-destructive/10 text-destructive text-sm p-3">
                 You must be logged in to create a room.
@@ -104,6 +104,7 @@ export default function NewRoom() {
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="What's the topic?"
                 maxLength={100}
+                className="h-11 md:h-10"
               />
             </div>
 
@@ -115,6 +116,7 @@ export default function NewRoom() {
                 onChange={(e) => setSummary(e.target.value)}
                 placeholder="Tell people what this room is about..."
                 rows={3}
+                className="min-h-[80px]"
               />
             </div>
 
@@ -125,6 +127,7 @@ export default function NewRoom() {
                 type="datetime-local"
                 value={scheduledTime}
                 onChange={(e) => setScheduledTime(e.target.value)}
+                className="h-11 md:h-10"
               />
               <p className="text-xs text-muted-foreground">
                 Leave empty to start the room immediately
@@ -140,7 +143,7 @@ export default function NewRoom() {
                     type="button"
                     onClick={() => setColor(c)}
                     className={cn(
-                      "h-8 w-8 rounded-full transition-all",
+                      "h-9 w-9 md:h-8 md:w-8 rounded-full transition-all",
                       c,
                       color === c && "ring-2 ring-ring ring-offset-2 ring-offset-background",
                     )}
@@ -149,8 +152,8 @@ export default function NewRoom() {
               </div>
 
               {/* Preview */}
-              <div className={cn("rounded-xl p-6 mt-3", color)}>
-                <p className="text-white font-semibold text-lg">
+              <div className={cn("rounded-xl p-5 md:p-6 mt-3", color)}>
+                <p className="text-white font-semibold text-base md:text-lg">
                   {title || "Room Preview"}
                 </p>
                 {summary && (
@@ -168,7 +171,7 @@ export default function NewRoom() {
                     type="button"
                     onClick={() => setSelectedServer(server)}
                     className={cn(
-                      "text-left text-sm px-3 py-2 rounded-lg transition-colors",
+                      "text-left text-sm px-3 py-2.5 md:py-2 rounded-lg transition-colors",
                       selectedServer === server
                         ? "bg-primary/20 text-primary"
                         : "bg-secondary/50 text-muted-foreground hover:bg-secondary",
@@ -183,7 +186,7 @@ export default function NewRoom() {
             <Button
               onClick={handleCreate}
               disabled={!user || !title.trim() || isPending}
-              className="w-full mt-2"
+              className="w-full mt-2 h-12 md:h-11 text-base md:text-sm"
               size="lg"
             >
               {isPending ? "Creating..." : scheduledTime ? "Schedule Room" : "Start Room"}

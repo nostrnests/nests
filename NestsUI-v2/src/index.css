@@ -177,3 +177,15 @@
 .speaking-ring {
   animation: speaking-pulse 1.2s ease-in-out infinite;
 }
+
+/* ============================================================
+   Floating reaction animation (overlay at bottom of room)
+   ============================================================ */
+@keyframes float-up {
+  0% { transform: translateY(0) scale(1); opacity: 1; }
+  100% { transform: translateY(-200px) scale(1.5); opacity: 0; }
+}
+.float-reaction {
+  animation: float-up 2s ease-out forwards;
+  pointer-events: none;
+}

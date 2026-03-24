@@ -13,8 +13,8 @@ function ChatMessage({ event }: { event: NostrEvent }) {
   const displayName = metadata?.display_name ?? metadata?.name ?? genUserName(event.pubkey);
 
   return (
-    <div className="flex gap-2.5 py-2 px-3 hover:bg-secondary/30 rounded-lg transition-colors">
-      <Avatar className="h-7 w-7 shrink-0 mt-0.5">
+    <div className="flex gap-2 md:gap-2.5 py-1.5 md:py-2 px-3 hover:bg-secondary/30 rounded-lg transition-colors">
+      <Avatar className="h-6 w-6 md:h-7 md:w-7 shrink-0 mt-0.5">
         <AvatarImage src={metadata?.picture} alt={displayName} />
         <AvatarFallback className="text-[10px] bg-secondary">
           {displayName.slice(0, 2).toUpperCase()}
@@ -22,14 +22,14 @@ function ChatMessage({ event }: { event: NostrEvent }) {
       </Avatar>
       <div className="flex-1 min-w-0">
         <div className="flex items-baseline gap-2">
-          <span className="text-sm font-medium text-foreground truncate">
+          <span className="text-xs md:text-sm font-medium text-foreground truncate">
             {displayName}
           </span>
           <span className="text-[10px] text-muted-foreground shrink-0">
             {formatDistanceToNow(new Date(event.created_at * 1000), { addSuffix: true })}
           </span>
         </div>
-        <p className="text-sm text-foreground/80 break-words whitespace-pre-wrap">
+        <p className="text-xs md:text-sm text-foreground/80 break-words whitespace-pre-wrap">
           {event.content}
         </p>
       </div>
@@ -61,7 +61,7 @@ export function ChatMessages({ roomATag }: ChatMessagesProps) {
 
   if (messages.length === 0) {
     return (
-      <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">
+      <div className="flex-1 flex items-center justify-center text-muted-foreground text-xs md:text-sm px-4 text-center">
         No messages yet. Say something!
       </div>
     );
@@ -69,7 +69,7 @@ export function ChatMessages({ roomATag }: ChatMessagesProps) {
 
   return (
     <ScrollArea className="flex-1" ref={scrollRef}>
-      <div className="flex flex-col py-2">
+      <div className="flex flex-col py-1 md:py-2">
         {messages.map((event) => (
           <ChatMessage key={event.id} event={event} />
         ))}

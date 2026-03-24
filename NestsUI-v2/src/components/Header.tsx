@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Plus, Settings } from "lucide-react";
+import { Menu, Plus, Settings, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { LoginArea } from "@/components/auth/LoginArea";
@@ -7,6 +8,7 @@ import { cn } from "@/lib/utils";
 
 export function Header() {
   const location = useLocation();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -21,8 +23,8 @@ export function Header() {
           <span className="font-semibold text-lg tracking-tight hidden sm:block">Nests</span>
         </Link>
 
-        {/* Navigation Tabs */}
-        <nav className="flex items-center gap-1">
+        {/* Desktop Navigation Tabs */}
+        <nav className="hidden md:flex items-center gap-1">
           <Link to="/lobby">
             <Button
               variant="ghost"
@@ -50,7 +52,7 @@ export function Header() {
         </nav>
 
         {/* Right side actions */}
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-1 md:gap-2 shrink-0">
           <Tooltip>
             <TooltipTrigger asChild>
               <Link to="/new">
@@ -64,7 +66,7 @@ export function Header() {
 
           <Tooltip>
             <TooltipTrigger asChild>
-              <Link to="/settings">
+              <Link to="/settings" className="hidden md:inline-flex">
                 <Button size="icon" variant="ghost" className="rounded-full h-9 w-9">
                   <Settings className="h-4 w-4" />
                 </Button>
@@ -73,9 +75,58 @@ export function Header() {
             <TooltipContent>Settings</TooltipContent>
           </Tooltip>
 
-          <LoginArea className="max-w-48" />
+          {/* Login area - always visible */}
+          <LoginArea className="max-w-48 hidden sm:inline-flex" />
+
+          {/* Mobile hamburger */}
+          <Button
+            size="icon"
+            variant="ghost"
+            className="rounded-full h-9 w-9 md:hidden"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </Button>
         </div>
       </div>
+
+      {/* Mobile dropdown menu */}
+      {mobileMenuOpen && (
+        <div className="md:hidden border-t border-border/40 bg-background/95 backdrop-blur-xl">
+          <div className="flex flex-col px-4 py-3 gap-1">
+            <Link
+              to="/lobby"
+              onClick={() => setMobileMenuOpen(false)}
+              className={cn(
+                "px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                isActive("/lobby") ? "bg-secondary text-foreground" : "text-muted-foreground hover:text-foreground hover:bg-secondary/50",
+              )}
+            >
+              Rooms
+            </Link>
+            <Link
+              to="/lobby?tab=following"
+              onClick={() => setMobileMenuOpen(false)}
+              className={cn(
+                "px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                location.search.includes("tab=following") ? "bg-secondary text-foreground" : "text-muted-foreground hover:text-foreground hover:bg-secondary/50",
+              )}
+            >
+              Following
+            </Link>
+            <Link
+              to="/settings"
+              onClick={() => setMobileMenuOpen(false)}
+              className="px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
+            >
+              Settings
+            </Link>
+            <div className="pt-2 border-t border-border/40 mt-1 sm:hidden">
+              <LoginArea className="w-full flex" />
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   );
 }

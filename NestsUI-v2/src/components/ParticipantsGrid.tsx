@@ -8,7 +8,7 @@ import { getRoomParticipants } from "@/lib/room";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 export function ParticipantsGrid() {
-  const { event, presenceList } = useRoomContext();
+  const { event, presenceList, participantReactions } = useRoomContext();
   const { user } = useCurrentUser();
   const remoteParticipants = useRemoteParticipantList();
 
@@ -70,14 +70,14 @@ export function ParticipantsGrid() {
   );
 
   return (
-    <div className="flex flex-col gap-6 p-4">
+    <div className="flex flex-col gap-4 md:gap-6 p-3 md:p-4">
       {/* Speakers */}
       {speakerList.length > 0 && (
         <div>
-          <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-4">
+          <h3 className="text-[10px] md:text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3 md:mb-4">
             Speakers
           </h3>
-          <div className="flex flex-wrap gap-6 justify-center">
+          <div className="grid grid-cols-3 md:grid-cols-4 gap-3 md:gap-6 justify-items-center">
             {speakerList.map((pubkey) => {
               const presence = getPresenceInfo(pubkey);
               const role = getRole(pubkey);
@@ -91,6 +91,7 @@ export function ParticipantsGrid() {
                     isPublishing={remote?.isPublishing ?? presence.isPublishing}
                     isMuted={presence.isMuted}
                     handRaised={presence.handRaised}
+                    reaction={participantReactions.get(pubkey)}
                     size="lg"
                   />
                 </ProfileCard>
@@ -108,10 +109,10 @@ export function ParticipantsGrid() {
       {/* Listeners */}
       {listenerList.length > 0 && (
         <div>
-          <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-4">
+          <h3 className="text-[10px] md:text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3 md:mb-4">
             Listeners {listenerList.length > 0 && `(${listenerList.length})`}
           </h3>
-          <div className="flex flex-wrap gap-4 justify-center">
+          <div className="grid grid-cols-3 md:grid-cols-4 gap-2 md:gap-4 justify-items-center">
             {listenerList.map((pubkey) => {
               const presence = getPresenceInfo(pubkey);
 
@@ -120,6 +121,7 @@ export function ParticipantsGrid() {
                   <ParticipantAvatar
                     pubkey={pubkey}
                     handRaised={presence.handRaised}
+                    reaction={participantReactions.get(pubkey)}
                     size="md"
                   />
                 </ProfileCard>

@@ -10,9 +10,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 function RoomGrid({ rooms, isLoading }: { rooms: import("@nostrify/nostrify").NostrEvent[]; isLoading: boolean }) {
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
         {Array.from({ length: 6 }).map((_, i) => (
-          <Skeleton key={i} className="h-[160px] rounded-xl" />
+          <Skeleton key={i} className="h-[140px] md:h-[160px] rounded-xl" />
         ))}
       </div>
     );
@@ -20,7 +20,7 @@ function RoomGrid({ rooms, isLoading }: { rooms: import("@nostrify/nostrify").No
 
   if (rooms.length === 0) {
     return (
-      <div className="text-center py-16">
+      <div className="text-center py-12 md:py-16">
         <p className="text-muted-foreground">No rooms found</p>
         <p className="text-sm text-muted-foreground/60 mt-1">
           Check back later or create your own room
@@ -30,7 +30,7 @@ function RoomGrid({ rooms, isLoading }: { rooms: import("@nostrify/nostrify").No
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
       {rooms.map((event) => (
         <RoomCard key={event.id} event={event} />
       ))}
@@ -68,22 +68,22 @@ export default function Lobby() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-[100dvh] bg-background">
       <Header />
 
-      <main className="mx-auto max-w-5xl px-4 py-6">
+      <main className="mx-auto max-w-5xl px-3 md:px-4 py-4 md:py-6">
         <Tabs value={activeTab} onValueChange={handleTabChange}>
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-4 md:mb-6">
             <TabsList>
-              <TabsTrigger value="browse">Browse Rooms</TabsTrigger>
-              <TabsTrigger value="following">Following</TabsTrigger>
+              <TabsTrigger value="browse" className="text-xs md:text-sm">Browse Rooms</TabsTrigger>
+              <TabsTrigger value="following" className="text-xs md:text-sm">Following</TabsTrigger>
             </TabsList>
           </div>
 
-          <TabsContent value="browse" className="space-y-8">
+          <TabsContent value="browse" className="space-y-6 md:space-y-8">
             {/* Live rooms */}
             <section>
-              <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <h2 className="text-base md:text-lg font-semibold mb-3 md:mb-4 flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
                 Live Now
               </h2>
@@ -93,7 +93,7 @@ export default function Lobby() {
             {/* Planned rooms */}
             {plannedRooms.length > 0 && (
               <section>
-                <h2 className="text-lg font-semibold mb-4">Upcoming</h2>
+                <h2 className="text-base md:text-lg font-semibold mb-3 md:mb-4">Upcoming</h2>
                 <RoomGrid rooms={plannedRooms} isLoading={false} />
               </section>
             )}
@@ -101,7 +101,7 @@ export default function Lobby() {
 
           <TabsContent value="following">
             <section>
-              <h2 className="text-lg font-semibold mb-4">Rooms from people you follow</h2>
+              <h2 className="text-base md:text-lg font-semibold mb-3 md:mb-4">Rooms from people you follow</h2>
               <RoomGrid rooms={followingRooms} isLoading={isLoading} />
             </section>
           </TabsContent>

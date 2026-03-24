@@ -4,6 +4,7 @@ import { useSeoMeta } from "@unhead/react";
 import { nip19 } from "nostr-tools";
 import { useNostr } from "@nostrify/react";
 import { useQuery } from "@tanstack/react-query";
+import { MessageCircle, PanelRightClose, PanelRightOpen } from "lucide-react";
 import type { NostrEvent } from "@nostrify/nostrify";
 
 import { NestTransportProvider } from "@/transport";
@@ -12,10 +13,19 @@ import { ParticipantsGrid } from "@/components/ParticipantsGrid";
 import { ChatMessages } from "@/components/ChatMessages";
 import { WriteMessage } from "@/components/WriteMessage";
 import { MenuBar } from "@/components/MenuBar";
+import { ReactionOverlay } from "@/components/ReactionOverlay";
 import { RoomLobbyDrawer } from "@/components/RoomLobbyDrawer";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
+import { useIsMobile } from "@/hooks/useIsMobile";
 import { authenticateWithMoqRelay } from "@/transport";
 import {
   getRoomTitle,
@@ -40,18 +50,21 @@ function RoomInner({ event }: { event: NostrEvent }) {
   const summary = getRoomSummary(event);
   const color = getRoomColor(event);
   const status = getRoomStatus(event);
+  const isMobile = useIsMobile();
+  const [chatOpen, setChatOpen] = useState(false);
+  const [desktopChatExpanded, setDesktopChatExpanded] = useState(true);
 
   return (
     <RoomContextProvider event={event}>
-      <div className="flex flex-col h-screen bg-background">
+      <div className="flex flex-col h-[100dvh] bg-background">
         {/* Room header card */}
-        <div className={cn("p-4 shrink-0", color)}>
+        <div className={cn("p-3 md:p-4 shrink-0", color)}>
           <div className="max-w-5xl mx-auto">
             <div className="flex items-center justify-between">
               <div className="flex-1 min-w-0">
-                <h1 className="text-white font-semibold text-lg truncate">{title}</h1>
+                <h1 className="text-white font-semibold text-base md:text-lg truncate">{title}</h1>
                 {summary && (
-                  <p className="text-white/60 text-sm truncate mt-0.5">{summary}</p>
+                  <p className="text-white/60 text-xs md:text-sm truncate mt-0.5">{summary}</p>
                 )}
               </div>
               {status === "live" && (
@@ -63,27 +76,117 @@ function RoomInner({ event }: { event: NostrEvent }) {
           </div>
         </div>
 
-        {/* Main content: two-panel layout */}
+        {/* Main content */}
         <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
           {/* Participants panel */}
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto pb-28 md:pb-0">
             <div className="max-w-5xl mx-auto">
               <ParticipantsGrid />
             </div>
+
+            {/* Desktop: floating menu bar inside participants panel */}
+            <div className="hidden md:block sticky bottom-0 pointer-events-none">
+              <div className="pointer-events-auto">
+                <MenuBar />
+              </div>
+            </div>
           </div>
 
-          {/* Chat panel */}
-          <div className="w-full md:w-80 lg:w-96 border-t md:border-t-0 md:border-l border-border flex flex-col h-64 md:h-auto">
-            <div className="px-4 py-2 border-b border-border shrink-0">
-              <h3 className="text-sm font-medium text-muted-foreground">Chat</h3>
+          {/* Desktop chat panel - collapsible */}
+          {!isMobile && (
+            <div
+              className={cn(
+                "border-l border-border flex flex-col shrink-0 transition-[width] duration-300 ease-in-out overflow-hidden",
+                desktopChatExpanded ? "w-80 lg:w-96" : "w-12",
+              )}
+            >
+              {desktopChatExpanded ? (
+                <>
+                  <div className="px-4 py-2 border-b border-border shrink-0 flex items-center justify-between">
+                    <h3 className="text-sm font-medium text-muted-foreground">Chat</h3>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 rounded-full"
+                          onClick={() => setDesktopChatExpanded(false)}
+                        >
+                          <PanelRightClose className="h-4 w-4 text-muted-foreground" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="left">Collapse chat</TooltipContent>
+                    </Tooltip>
+                  </div>
+                  <ChatMessages roomATag={roomATag} />
+                  <WriteMessage roomATag={roomATag} />
+                </>
+              ) : (
+                <div className="flex flex-col items-center py-2 gap-2">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 rounded-full"
+                        onClick={() => setDesktopChatExpanded(true)}
+                      >
+                        <PanelRightOpen className="h-4 w-4 text-muted-foreground" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="left">Expand chat</TooltipContent>
+                  </Tooltip>
+                  <button
+                    onClick={() => setDesktopChatExpanded(true)}
+                    className="flex flex-col items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <MessageCircle className="h-4 w-4" />
+                    <span className="text-[10px] font-medium [writing-mode:vertical-lr] rotate-180">Chat</span>
+                  </button>
+                </div>
+              )}
             </div>
-            <ChatMessages roomATag={roomATag} />
-            <WriteMessage roomATag={roomATag} />
-          </div>
+          )}
         </div>
 
-        {/* Bottom menu bar */}
-        <MenuBar />
+        {/* Reaction overlay */}
+        <ReactionOverlay />
+
+        {/* Mobile: fixed bottom bar with chat handle + menu */}
+        {isMobile && (
+          <>
+            {/* Chat handle bar - sits above menu bar */}
+            <button
+              onClick={() => setChatOpen(true)}
+              className={cn(
+                "fixed bottom-[calc(3.5rem+env(safe-area-inset-bottom))] left-0 right-0 z-20",
+                "flex items-center justify-center gap-2 py-2",
+                "bg-card/95 backdrop-blur-sm border-t border-border",
+              )}
+            >
+              <MessageCircle className="h-4 w-4 text-muted-foreground" />
+              <span className="text-xs font-medium text-muted-foreground">Chat</span>
+              <div className="h-1 w-8 rounded-full bg-muted-foreground/30 ml-1" />
+            </button>
+
+            {/* Mobile menu bar */}
+            <MenuBar />
+
+            {/* Chat drawer */}
+            <Drawer open={chatOpen} onOpenChange={setChatOpen}>
+              <DrawerContent className="h-[70dvh] max-h-[70dvh]">
+                <DrawerTitle className="sr-only">Chat</DrawerTitle>
+                <div className="flex flex-col h-full overflow-hidden">
+                  <div className="px-4 py-2 border-b border-border shrink-0">
+                    <h3 className="text-sm font-medium text-muted-foreground">Chat</h3>
+                  </div>
+                  <ChatMessages roomATag={roomATag} />
+                  <WriteMessage roomATag={roomATag} />
+                </div>
+              </DrawerContent>
+            </Drawer>
+          </>
+        )}
 
         {/* Lobby drawer */}
         <RoomLobbyDrawer />
@@ -102,6 +205,7 @@ function RoomWithTransport({ event }: { event: NostrEvent }) {
   const streamingUrl = getRoomStreamingUrl(event);
   const authUrl = getRoomAuthUrl(event) ?? DefaultMoQAuthUrl;
   const namespace = getRoomNamespace(event);
+  const certFingerprint = import.meta.env.VITE_MOQ_CERT_FINGERPRINT || undefined;
 
   // Authenticate with MoQ relay
   useEffect(() => {
@@ -130,6 +234,7 @@ function RoomWithTransport({ event }: { event: NostrEvent }) {
           identity: user!.pubkey,
           canPublish: isSpeaker,
           token,
+          certFingerprint,
         });
         setAuthError(null);
       } catch (err) {
@@ -143,6 +248,7 @@ function RoomWithTransport({ event }: { event: NostrEvent }) {
           roomNamespace: namespace,
           identity: user!.pubkey,
           canPublish: false,
+          certFingerprint,
         });
       }
     }
@@ -215,7 +321,7 @@ export default function RoomPage() {
 
   if (isLoading && !event) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-[100dvh] bg-background flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <Skeleton className="h-12 w-48 rounded-lg" />
           <Skeleton className="h-4 w-32" />

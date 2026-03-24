@@ -69,6 +69,8 @@ export function RoomCard({ event }: RoomCardProps) {
         "hover:scale-[1.02] hover:shadow-xl hover:shadow-primary/10",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
         "active:scale-[0.99]",
+        // Touch-friendly: ensure min height for comfortable tapping
+        "min-h-[140px] md:min-h-[160px]",
       )}
     >
       {/* Background */}
@@ -83,7 +85,7 @@ export function RoomCard({ event }: RoomCardProps) {
       )}
 
       {/* Content */}
-      <div className="relative p-5 flex flex-col gap-3 min-h-[140px]">
+      <div className="relative p-4 md:p-5 flex flex-col gap-2 md:gap-3 min-h-[140px] md:min-h-[160px]">
         {/* Status badge */}
         <div className="flex items-center justify-between">
           {status === "live" ? (
@@ -113,7 +115,7 @@ export function RoomCard({ event }: RoomCardProps) {
         </div>
 
         {/* Title */}
-        <h3 className="font-semibold text-white text-base leading-tight line-clamp-2">
+        <h3 className="font-semibold text-white text-sm md:text-base leading-tight line-clamp-2">
           {title}
         </h3>
 
