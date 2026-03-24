@@ -76,11 +76,14 @@ export default function NostrParticipants({ event }: { event: NostrEvent }) {
   }, [remoteParticipants, login.pubkey, presence]);
 
   // If the local user declined publishing (left stage voluntarily), show them as a listener
-  const speakers = allPubkeys.filter((pk) => {
-    if (pk === login.pubkey && declinedPublish) return false;
-    return getSpeakerPubkeys.has(pk);
-  });
-  const listeners = allPubkeys.filter((pk) => !getSpeakerPubkeys.has(pk));
+  const speakerSet = new Set(
+    allPubkeys.filter((pk) => {
+      if (pk === login.pubkey && declinedPublish) return false;
+      return getSpeakerPubkeys.has(pk);
+    }),
+  );
+  const speakers = allPubkeys.filter((pk) => speakerSet.has(pk));
+  const listeners = allPubkeys.filter((pk) => !speakerSet.has(pk));
 
   return (
     <>
