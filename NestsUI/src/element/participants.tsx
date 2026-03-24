@@ -165,8 +165,12 @@ function NostrParticipant({
   }
 
   // Determine mic state for display
-  const showMicIcon = isMe ? isPublishing : isSpeaker;
-  const micEnabled = isMe ? isMicEnabled : true; // We can't know remote mic state yet
+  // For remote users, read mute/publishing state from their presence event
+  const remotePublishing = presence?.tags.find((a) => a[0] === "publishing")?.[1] === "1";
+  const remoteMuted = presence?.tags.find((a) => a[0] === "muted")?.[1] === "1";
+
+  const showMicIcon = isMe ? (isPublishing || isSpeaker) : (remotePublishing || isSpeaker);
+  const micEnabled = isMe ? isMicEnabled : !remoteMuted;
 
   return (
     <div className="flex items-center flex-col gap-2" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>

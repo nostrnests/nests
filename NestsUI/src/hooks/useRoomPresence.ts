@@ -28,7 +28,7 @@ export default function useRoomPresence(link?: NostrLink) {
 }
 
 export function useSendPresence(link: NostrLink | undefined) {
-  const { sendPresence, interval, hand, isReady } = usePresence(link);
+  const { sendPresence, interval, hand, isMicEnabled, isPublishing, isReady } = usePresence(link);
   const { isVisible } = usePageVisibility();
   const wasHiddenRef = useRef(false);
   const hasInitialPresenceRef = useRef(false);
@@ -65,12 +65,12 @@ export function useSendPresence(link: NostrLink | undefined) {
     }
   }, [sendPresence, link?.id, interval, isReady]);
 
-  // Send presence when hand state changes
+  // Send presence when hand or mic state changes
   useEffect(() => {
     if (isReady) {
-      sendPresence().catch((e) => console.error("Failed to send presence on hand change:", e));
+      sendPresence().catch((e) => console.error("Failed to send presence on state change:", e));
     }
-  }, [hand, sendPresence, isReady]);
+  }, [hand, isMicEnabled, isPublishing, sendPresence, isReady]);
 
   // Track visibility and send presence immediately when page becomes visible
   useEffect(() => {
