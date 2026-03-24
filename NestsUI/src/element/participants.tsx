@@ -8,6 +8,7 @@ import ProfileCard from "./profile-card";
 import useHoverMenu from "../hooks/useHoverMenu";
 import { useUserRoomReactions } from "../hooks/useRoomReactions";
 import { useEffect, useMemo, useRef } from "react";
+import { useNostrRoom } from "../hooks/nostr-room-context";
 import { FormattedMessage } from "react-intl";
 import DisplayName from "./display-name";
 import ZapButton from "./zap-button";
@@ -18,7 +19,8 @@ import { ParticipantRole } from "../const";
 export default function NostrParticipants({ event }: { event: NostrEvent }) {
   const remoteParticipants = useRemoteParticipantList();
   const login = useLogin();
-  // Build a combined list: local user + remote participants
+  const { presence } = useNostrRoom();
+
   // Determine who is a speaker from the event's p tags
   const getSpeakerPubkeys = useMemo(() => {
     const speakers = new Set<string>();
@@ -39,19 +41,37 @@ export default function NostrParticipants({ event }: { event: NostrEvent }) {
     return speakers;
   }, [event]);
 
-  // All participant pubkeys (remote + local if publishing)
+  // Build participant list from three sources:
+  // 1. Local user (always shown if logged in)
+  // 2. MoQ remote participants (discovered via announcements -- only publishers)
+  // 3. Nostr presence events (all users in the room, including listeners)
   const allPubkeys = useMemo(() => {
+    const seen = new Set<string>();
     const pubkeys: string[] = [];
+
+    const addPubkey = (pk: string) => {
+      if (!pk || seen.has(pk)) return;
+      seen.add(pk);
+      pubkeys.push(pk);
+    };
+
+    // Local user first
     if (login.pubkey) {
-      pubkeys.push(login.pubkey);
+      addPubkey(login.pubkey);
     }
+
+    // MoQ remote participants (publishers)
     for (const p of remoteParticipants) {
-      if (p.pubkey !== login.pubkey) {
-        pubkeys.push(p.pubkey);
-      }
+      addPubkey(p.pubkey);
     }
+
+    // Nostr presence events (listeners + speakers who sent presence)
+    for (const p of presence) {
+      addPubkey(p.pubkey);
+    }
+
     return pubkeys;
-  }, [remoteParticipants, login.pubkey]);
+  }, [remoteParticipants, login.pubkey, presence]);
 
   const speakers = allPubkeys.filter((pk) => getSpeakerPubkeys.has(pk));
   const listeners = allPubkeys.filter((pk) => !getSpeakerPubkeys.has(pk));
