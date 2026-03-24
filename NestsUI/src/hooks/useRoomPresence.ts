@@ -22,7 +22,7 @@ export default function useRoomPresence(link?: NostrLink) {
 
   const presenceEvents = useRequestBuilder(subPresence);
   return useMemo(
-    () => presenceEvents.filter((a) => link?.referencesThis(a) && a.created_at >= unixNow() - PRESENCE_TIME * 1.2),
+    () => presenceEvents.filter((a) => link?.referencesThis(a) && a.created_at >= unixNow() - PRESENCE_TIME * 2.5),
     [link, presenceEvents],
   );
 }

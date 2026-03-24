@@ -91,7 +91,7 @@ export default function Wallet() {
           defaultMessage="{n} sats"
           values={{
             n: (
-              <span className="text-xl font-medium">
+              <span key="balance" className="text-xl font-medium">
                 <FormattedNumber value={balance} />
               </span>
             ),
