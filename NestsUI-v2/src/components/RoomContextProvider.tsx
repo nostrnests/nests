@@ -85,7 +85,11 @@ export function RoomContextProvider({ event, children }: PropsWithChildren<RoomC
 
   const { data: presenceList = [] } = useRoomPresence(roomATag);
   const { data: reactions = [] } = useRoomReactions(roomATag);
-  const { data: roomTheme = null } = useRoomTheme(event);
+  const { data: rawRoomTheme = null } = useRoomTheme(event);
+  // Persist last non-null theme to prevent flash during refetches
+  const lastThemeRef = useRef<DittoTheme | null>(null);
+  if (rawRoomTheme) lastThemeRef.current = rawRoomTheme;
+  const roomTheme = rawRoomTheme ?? lastThemeRef.current;
 
   // Track recent reactions for animations
   const [recentReactions, setRecentReactions] = useState<RecentReaction[]>([]);

@@ -50,7 +50,8 @@ export function useRoomTheme(roomEvent: NostrEvent) {
       return null;
     },
     enabled: !!themeRef,
-    staleTime: 5 * 60 * 1000,
+    staleTime: Infinity, // Never refetch — theme doesn't change during a session
+    gcTime: Infinity,
     retry: 2,
   });
 
