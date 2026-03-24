@@ -2,12 +2,20 @@ import { useState } from "react";
 import { Smile } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNostrPublish } from "@/hooks/useNostrPublish";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useRoomContext } from "./RoomContextProvider";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
-const REACTIONS = ["🤙", "💯", "😂", "😅", "😳", "🤔", "🔥", "🤡", "🫂", "😱", "🤣", "🤯"];
+const EMOJI_CATEGORIES = {
+  favorites: { label: "Favorites", icon: "⭐", emojis: ["🤙", "💯", "🔥", "💜", "❤️", "👏", "🙌", "✨"] },
+  faces: { label: "Faces", icon: "😂", emojis: ["😂", "🤣", "😅", "😳", "🤔", "😱", "🤯", "😍", "🥺", "😤", "🫠", "💀"] },
+  hands: { label: "Hands", icon: "👋", emojis: ["👋", "🤝", "👊", "✌️", "🤘", "🫡", "🙏", "👆"] },
+  symbols: { label: "Symbols", icon: "⚡", emojis: ["⚡", "💎", "🏆", "🎯", "🚀", "💰", "🎉", "🎵"] },
+} as const;
+
+type CategoryKey = keyof typeof EMOJI_CATEGORIES;
 
 interface ReactionsButtonProps {
   roomATag: string;
@@ -21,9 +29,7 @@ export function ReactionsButton({ roomATag }: ReactionsButtonProps) {
 
   const sendReaction = (emoji: string) => {
     if (!user) return;
-    // Show immediately via optimistic injection
     addLocalReaction(emoji);
-    // Also publish to Nostr for other participants
     createEvent({
       kind: 7,
       content: emoji,
@@ -53,18 +59,31 @@ export function ReactionsButton({ roomATag }: ReactionsButtonProps) {
           <Smile className="h-6 w-6" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-3" side="top" align="center">
-        <div className="grid grid-cols-4 md:grid-cols-6 gap-1">
-          {REACTIONS.map((emoji) => (
-            <button
-              key={emoji}
-              onClick={() => sendReaction(emoji)}
-              className="h-12 w-12 flex items-center justify-center text-2xl rounded-lg hover:bg-secondary transition-colors cursor-pointer"
-            >
-              {emoji}
-            </button>
+      <PopoverContent className="w-80 p-3" side="top" align="center">
+        <Tabs defaultValue="favorites">
+          <TabsList className="w-full grid grid-cols-4 h-9 mb-2">
+            {(Object.keys(EMOJI_CATEGORIES) as CategoryKey[]).map((key) => (
+              <TabsTrigger key={key} value={key} className="text-base px-1 py-1">
+                {EMOJI_CATEGORIES[key].icon}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+          {(Object.keys(EMOJI_CATEGORIES) as CategoryKey[]).map((key) => (
+            <TabsContent key={key} value={key} className="mt-0">
+              <div className="grid grid-cols-4 gap-1">
+                {EMOJI_CATEGORIES[key].emojis.map((emoji) => (
+                  <button
+                    key={emoji}
+                    onClick={() => sendReaction(emoji)}
+                    className="h-14 w-full flex items-center justify-center text-3xl rounded-lg hover:bg-secondary transition-colors cursor-pointer"
+                  >
+                    {emoji}
+                  </button>
+                ))}
+              </div>
+            </TabsContent>
           ))}
-        </div>
+        </Tabs>
       </PopoverContent>
     </Popover>
   );

@@ -14,13 +14,13 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/40 bg-background/80 backdrop-blur-xl">
-      <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
+      <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4">
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2 shrink-0">
-          <div className="h-8 w-8 rounded-lg gradient-1 flex items-center justify-center">
-            <span className="text-white font-bold text-sm">N</span>
+        <Link to="/" className="flex items-center gap-2.5 shrink-0">
+          <div className="h-10 w-10 rounded-xl gradient-1 flex items-center justify-center shadow-lg shadow-purple-500/20">
+            <span className="text-white font-bold text-base">N</span>
           </div>
-          <span className="font-semibold text-lg tracking-tight hidden sm:block">Nests</span>
+          <span className="font-bold text-xl tracking-tight hidden sm:block">Nests</span>
         </Link>
 
         {/* Desktop Navigation Tabs */}
@@ -28,9 +28,8 @@ export function Header() {
           <Link to="/lobby">
             <Button
               variant="ghost"
-              size="sm"
               className={cn(
-                "rounded-full text-sm",
+                "rounded-full text-base px-5 h-10",
                 isActive("/lobby") && "bg-secondary text-foreground",
               )}
             >
@@ -40,9 +39,8 @@ export function Header() {
           <Link to="/lobby?tab=following">
             <Button
               variant="ghost"
-              size="sm"
               className={cn(
-                "rounded-full text-sm",
+                "rounded-full text-base px-5 h-10",
                 location.search.includes("tab=following") && "bg-secondary text-foreground",
               )}
             >
@@ -52,12 +50,12 @@ export function Header() {
         </nav>
 
         {/* Right side actions */}
-        <div className="flex items-center gap-1 md:gap-2 shrink-0">
+        <div className="flex items-center gap-2 shrink-0">
           <Tooltip>
             <TooltipTrigger asChild>
               <Link to="/new">
-                <Button size="icon" variant="ghost" className="rounded-full h-9 w-9">
-                  <Plus className="h-5 w-5" />
+                <Button size="icon" variant="ghost" className="rounded-full h-11 w-11">
+                  <Plus className="h-6 w-6" />
                 </Button>
               </Link>
             </TooltipTrigger>
@@ -67,25 +65,25 @@ export function Header() {
           <Tooltip>
             <TooltipTrigger asChild>
               <Link to="/settings" className="hidden md:inline-flex">
-                <Button size="icon" variant="ghost" className="rounded-full h-9 w-9">
-                  <Settings className="h-4 w-4" />
+                <Button size="icon" variant="ghost" className="rounded-full h-11 w-11">
+                  <Settings className="h-5 w-5" />
                 </Button>
               </Link>
             </TooltipTrigger>
             <TooltipContent>Settings</TooltipContent>
           </Tooltip>
 
-          {/* Login area - always visible */}
+          {/* Login area - always visible on desktop */}
           <LoginArea className="max-w-48 hidden sm:inline-flex" />
 
           {/* Mobile hamburger */}
           <Button
             size="icon"
             variant="ghost"
-            className="rounded-full h-9 w-9 md:hidden"
+            className="rounded-full h-11 w-11 md:hidden"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
-            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </Button>
         </div>
       </div>
@@ -98,7 +96,7 @@ export function Header() {
               to="/lobby"
               onClick={() => setMobileMenuOpen(false)}
               className={cn(
-                "px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                "px-4 py-3 rounded-lg text-base font-medium transition-colors",
                 isActive("/lobby") ? "bg-secondary text-foreground" : "text-muted-foreground hover:text-foreground hover:bg-secondary/50",
               )}
             >
@@ -108,7 +106,7 @@ export function Header() {
               to="/lobby?tab=following"
               onClick={() => setMobileMenuOpen(false)}
               className={cn(
-                "px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                "px-4 py-3 rounded-lg text-base font-medium transition-colors",
                 location.search.includes("tab=following") ? "bg-secondary text-foreground" : "text-muted-foreground hover:text-foreground hover:bg-secondary/50",
               )}
             >
@@ -117,7 +115,7 @@ export function Header() {
             <Link
               to="/settings"
               onClick={() => setMobileMenuOpen(false)}
-              className="px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
+              className="px-4 py-3 rounded-lg text-base font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
             >
               Settings
             </Link>

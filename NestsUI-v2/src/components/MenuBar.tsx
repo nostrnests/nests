@@ -14,7 +14,10 @@ const ICON_SIZE = "h-6 w-6";
 export function MenuBar() {
   const { user } = useCurrentUser();
   const { event, roomATag, handRaised, setHandRaised, isSpeaker, leaveRoom } = useRoomContext();
-  const { isMicEnabled, isPublishing, setMicEnabled, unpublishMicrophone } = useLocalParticipant();
+  const { isMicEnabled, isPublishing, setMicEnabled, unpublishMicrophone, declinedPublish } = useLocalParticipant();
+
+  // Show hand raise when not actively on stage (listener or declined stage)
+  const showHandRaise = user && (!isSpeaker || declinedPublish) && !isPublishing;
 
   return (
     <div
@@ -68,8 +71,8 @@ export function MenuBar() {
 
       {/* Right group: Hand / Mute / Reactions / Options */}
       <div className="flex items-center gap-1.5">
-        {/* Hand raise - visible for listeners */}
-        {user && !isSpeaker && (
+        {/* Hand raise - visible for listeners and speakers who left stage */}
+        {showHandRaise && (
           <Tooltip>
             <TooltipTrigger asChild>
               <Button

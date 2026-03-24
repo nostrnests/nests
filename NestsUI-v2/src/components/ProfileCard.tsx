@@ -1,5 +1,8 @@
-import { useState, type PropsWithChildren } from "react";
-import { UserPlus, UserMinus, Shield, ShieldOff, Mic, LogOut, User, Ban, Zap } from "lucide-react";
+import { useState, useRef, useEffect, useCallback, type PropsWithChildren } from "react";
+import {
+  UserPlus, UserMinus, Shield, ShieldOff, Ban, Zap,
+  ArrowUpFromLine, ArrowDownFromLine, Eye,
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,26 +11,34 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import { useAuthor } from "@/hooks/useAuthor";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useFollowing } from "@/hooks/useFollowing";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { useEventModifier } from "@/hooks/useEventModifier";
 import { useNostrPublish } from "@/hooks/useNostrPublish";
+import { useIsMobile } from "@/hooks/useIsMobile";
+import { ZapDialog } from "@/components/ZapDialog";
 import { genUserName } from "@/lib/genUserName";
 import { getRoomParticipants, getRoomATag } from "@/lib/room";
 import type { NostrEvent } from "@nostrify/nostrify";
+import type { Event } from "nostr-tools";
 
 interface ProfileCardProps {
   pubkey: string;
   roomEvent: NostrEvent;
 }
+
+const HOVER_OPEN_DELAY = 200;
+const HOVER_CLOSE_DELAY = 300;
 
 export function ProfileCard({ pubkey, roomEvent, children }: PropsWithChildren<ProfileCardProps>) {
   const { user } = useCurrentUser();
@@ -39,6 +50,12 @@ export function ProfileCard({ pubkey, roomEvent, children }: PropsWithChildren<P
   const { mutate: modifyEvent } = useEventModifier();
   const { mutate: createEvent } = useNostrPublish();
   const [profileOpen, setProfileOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const isMobile = useIsMobile();
+
+  // Hover timer refs
+  const openTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const isSelf = user?.pubkey === pubkey;
   const following = isFollowing(pubkey);
@@ -50,6 +67,44 @@ export function ProfileCard({ pubkey, roomEvent, children }: PropsWithChildren<P
   const isTargetAdmin = participantEntry?.role === "admin";
 
   const lightningAddress = metadata?.lud16 ?? metadata?.lud06;
+
+  // Use the author's kind:0 event as zap target so zaps go to this participant
+  const authorEvent = author.data?.event as Event | undefined;
+
+  // Cleanup timers on unmount
+  useEffect(() => {
+    return () => {
+      if (openTimerRef.current) clearTimeout(openTimerRef.current);
+      if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
+    };
+  }, []);
+
+  const clearTimers = useCallback(() => {
+    if (openTimerRef.current) {
+      clearTimeout(openTimerRef.current);
+      openTimerRef.current = null;
+    }
+    if (closeTimerRef.current) {
+      clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = null;
+    }
+  }, []);
+
+  const handlePointerEnter = useCallback(() => {
+    if (isMobile) return;
+    clearTimers();
+    openTimerRef.current = setTimeout(() => {
+      setDropdownOpen(true);
+    }, HOVER_OPEN_DELAY);
+  }, [isMobile, clearTimers]);
+
+  const handlePointerLeave = useCallback(() => {
+    if (isMobile) return;
+    clearTimers();
+    closeTimerRef.current = setTimeout(() => {
+      setDropdownOpen(false);
+    }, HOVER_CLOSE_DELAY);
+  }, [isMobile, clearTimers]);
 
   const updateRoomParticipant = (targetPubkey: string, newRole: string | null) => {
     const tags = roomEvent.tags.filter(
@@ -71,7 +126,6 @@ export function ProfileCard({ pubkey, roomEvent, children }: PropsWithChildren<P
   const kickUser = (targetPubkey: string) => {
     const roomATag = getRoomATag(roomEvent);
 
-    // Send kind:4312 admin command to kick
     createEvent({
       kind: 4312,
       content: JSON.stringify({ command: "kick", target: targetPubkey }),
@@ -82,15 +136,24 @@ export function ProfileCard({ pubkey, roomEvent, children }: PropsWithChildren<P
       created_at: Math.floor(Date.now() / 1000),
     });
 
-    // Also remove from p-tags
     updateRoomParticipant(targetPubkey, null);
   };
 
   return (
     <>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
-        <DropdownMenuContent align="center" className="w-56">
+      <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
+        <div
+          onPointerEnter={handlePointerEnter}
+          onPointerLeave={handlePointerLeave}
+        >
+          <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
+        </div>
+        <DropdownMenuContent
+          align="center"
+          className="w-56"
+          onPointerEnter={handlePointerEnter}
+          onPointerLeave={handlePointerLeave}
+        >
           {/* Profile header */}
           <div className="flex items-center gap-3 p-3">
             <Avatar className="h-10 w-10">
@@ -110,8 +173,8 @@ export function ProfileCard({ pubkey, roomEvent, children }: PropsWithChildren<P
           <DropdownMenuSeparator />
 
           {/* View Profile */}
-          <DropdownMenuItem onClick={() => setProfileOpen(true)}>
-            <User className="h-4 w-4 mr-2" />
+          <DropdownMenuItem onClick={() => { setProfileOpen(true); setDropdownOpen(false); }}>
+            <Eye className="h-4 w-4 mr-2" />
             View Profile
           </DropdownMenuItem>
 
@@ -132,6 +195,16 @@ export function ProfileCard({ pubkey, roomEvent, children }: PropsWithChildren<P
             </DropdownMenuItem>
           )}
 
+          {/* Zap - wraps the menu item with ZapDialog */}
+          {!isSelf && user && lightningAddress && authorEvent && (
+            <ZapDialog target={authorEvent}>
+              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                <Zap className="h-4 w-4 mr-2" />
+                Zap
+              </DropdownMenuItem>
+            </ZapDialog>
+          )}
+
           {/* Admin actions */}
           {isHostOrAdmin && !isSelf && (
             <>
@@ -140,12 +213,12 @@ export function ProfileCard({ pubkey, roomEvent, children }: PropsWithChildren<P
               {/* Stage management */}
               {!isOnStage ? (
                 <DropdownMenuItem onClick={() => updateRoomParticipant(pubkey, "speaker")}>
-                  <Mic className="h-4 w-4 mr-2" />
+                  <ArrowUpFromLine className="h-4 w-4 mr-2" />
                   Add to Stage
                 </DropdownMenuItem>
               ) : !isTargetHost ? (
                 <DropdownMenuItem onClick={() => updateRoomParticipant(pubkey, null)}>
-                  <LogOut className="h-4 w-4 mr-2" />
+                  <ArrowDownFromLine className="h-4 w-4 mr-2" />
                   Remove from Stage
                 </DropdownMenuItem>
               ) : null}
@@ -185,13 +258,16 @@ export function ProfileCard({ pubkey, roomEvent, children }: PropsWithChildren<P
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {/* Profile Sheet */}
-      <Sheet open={profileOpen} onOpenChange={setProfileOpen}>
-        <SheetContent side="right" className="w-80 sm:w-96">
-          <SheetHeader>
-            <SheetTitle className="sr-only">Profile</SheetTitle>
-          </SheetHeader>
-          <div className="flex flex-col items-center gap-4 pt-4">
+      {/* Profile Dialog */}
+      <Dialog open={profileOpen} onOpenChange={setProfileOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="sr-only">Profile</DialogTitle>
+            <DialogDescription className="sr-only">
+              Profile details for {displayName}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col items-center gap-4 pt-2">
             {/* Banner area */}
             {metadata?.banner && (
               <div className="w-full h-24 rounded-lg overflow-hidden -mt-2 mb-2">
@@ -200,9 +276,9 @@ export function ProfileCard({ pubkey, roomEvent, children }: PropsWithChildren<P
             )}
 
             {/* Avatar */}
-            <Avatar className="h-20 w-20 border-4 border-background">
+            <Avatar className="h-24 w-24 border-4 border-background">
               <AvatarImage src={metadata?.picture} alt={displayName} />
-              <AvatarFallback className="text-lg bg-secondary">
+              <AvatarFallback className="text-xl bg-secondary">
                 {displayName.slice(0, 2).toUpperCase()}
               </AvatarFallback>
             </Avatar>
@@ -230,16 +306,26 @@ export function ProfileCard({ pubkey, roomEvent, children }: PropsWithChildren<P
               </div>
             )}
 
-            {/* Website */}
-            {metadata?.website && (
-              <a
-                href={metadata.website}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm text-primary hover:underline truncate max-w-[200px]"
+            {/* Follow/Unfollow button inside dialog */}
+            {!isSelf && user && (
+              <Button
+                variant={following ? "outline" : "default"}
+                size="sm"
+                className="mt-1"
+                onClick={() => following ? unfollow(pubkey) : follow(pubkey)}
               >
-                {metadata.website}
-              </a>
+                {following ? (
+                  <>
+                    <UserMinus className="h-4 w-4 mr-2" />
+                    Unfollow
+                  </>
+                ) : (
+                  <>
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    Follow
+                  </>
+                )}
+              </Button>
             )}
 
             {/* Pubkey */}
@@ -249,8 +335,8 @@ export function ProfileCard({ pubkey, roomEvent, children }: PropsWithChildren<P
               </p>
             </div>
           </div>
-        </SheetContent>
-      </Sheet>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
