@@ -14,7 +14,7 @@ import { ChatMessages } from "@/components/ChatMessages";
 import { WriteMessage } from "@/components/WriteMessage";
 import { MenuBar } from "@/components/MenuBar";
 import { RoomLobbyDrawer } from "@/components/RoomLobbyDrawer";
-import { ReactionOverlay } from "@/components/ReactionOverlay";
+
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -168,7 +168,7 @@ function RoomInner({ event }: { event: NostrEvent }) {
         </div>
 
         {/* Reaction overlay */}
-        <ReactionOverlay />
+
 
         {/* Mobile: fixed bottom bar with chat handle + menu */}
         {isMobile && (

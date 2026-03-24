@@ -1,7 +1,7 @@
-import { useState, useRef, useEffect, useCallback, type PropsWithChildren } from "react";
+import { useState, type PropsWithChildren } from "react";
 import {
   UserPlus, UserMinus, Shield, ShieldOff, Ban, Zap,
-  ArrowUpFromLine, ArrowDownFromLine, Eye,
+  ArrowUpFromLine, ArrowDownFromLine, Eye, MoreHorizontal,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -25,7 +25,6 @@ import { useFollowing } from "@/hooks/useFollowing";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { useEventModifier } from "@/hooks/useEventModifier";
 import { useNostrPublish } from "@/hooks/useNostrPublish";
-import { useIsMobile } from "@/hooks/useIsMobile";
 import { ZapDialog } from "@/components/ZapDialog";
 import { genUserName } from "@/lib/genUserName";
 import { getRoomParticipants, getRoomATag } from "@/lib/room";
@@ -37,9 +36,6 @@ interface ProfileCardProps {
   roomEvent: NostrEvent;
 }
 
-const HOVER_OPEN_DELAY = 200;
-const HOVER_CLOSE_DELAY = 300;
-
 export function ProfileCard({ pubkey, roomEvent, children }: PropsWithChildren<ProfileCardProps>) {
   const { user } = useCurrentUser();
   const author = useAuthor(pubkey);
@@ -50,12 +46,6 @@ export function ProfileCard({ pubkey, roomEvent, children }: PropsWithChildren<P
   const { mutate: modifyEvent } = useEventModifier();
   const { mutate: createEvent } = useNostrPublish();
   const [profileOpen, setProfileOpen] = useState(false);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const isMobile = useIsMobile();
-
-  // Hover timer refs
-  const openTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const isSelf = user?.pubkey === pubkey;
   const following = isFollowing(pubkey);
@@ -67,54 +57,15 @@ export function ProfileCard({ pubkey, roomEvent, children }: PropsWithChildren<P
   const isTargetAdmin = participantEntry?.role === "admin";
 
   const lightningAddress = metadata?.lud16 ?? metadata?.lud06;
-
-  // Use the author's kind:0 event as zap target so zaps go to this participant
   const authorEvent = author.data?.event as Event | undefined;
-
-  // Cleanup timers on unmount
-  useEffect(() => {
-    return () => {
-      if (openTimerRef.current) clearTimeout(openTimerRef.current);
-      if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
-    };
-  }, []);
-
-  const clearTimers = useCallback(() => {
-    if (openTimerRef.current) {
-      clearTimeout(openTimerRef.current);
-      openTimerRef.current = null;
-    }
-    if (closeTimerRef.current) {
-      clearTimeout(closeTimerRef.current);
-      closeTimerRef.current = null;
-    }
-  }, []);
-
-  const handlePointerEnter = useCallback(() => {
-    if (isMobile) return;
-    clearTimers();
-    openTimerRef.current = setTimeout(() => {
-      setDropdownOpen(true);
-    }, HOVER_OPEN_DELAY);
-  }, [isMobile, clearTimers]);
-
-  const handlePointerLeave = useCallback(() => {
-    if (isMobile) return;
-    clearTimers();
-    closeTimerRef.current = setTimeout(() => {
-      setDropdownOpen(false);
-    }, HOVER_CLOSE_DELAY);
-  }, [isMobile, clearTimers]);
 
   const updateRoomParticipant = (targetPubkey: string, newRole: string | null) => {
     const tags = roomEvent.tags.filter(
       ([t, pk]) => !(t === "p" && pk === targetPubkey),
     );
-
     if (newRole) {
       tags.push(["p", targetPubkey, "", newRole]);
     }
-
     modifyEvent({
       kind: roomEvent.kind,
       content: roomEvent.content,
@@ -125,55 +76,50 @@ export function ProfileCard({ pubkey, roomEvent, children }: PropsWithChildren<P
 
   const kickUser = (targetPubkey: string) => {
     const roomATag = getRoomATag(roomEvent);
-
     createEvent({
       kind: 4312,
-      content: JSON.stringify({ command: "kick", target: targetPubkey }),
+      content: "",
       tags: [
         ["a", roomATag],
         ["p", targetPubkey],
+        ["action", "kick"],
       ],
       created_at: Math.floor(Date.now() / 1000),
     });
-
     updateRoomParticipant(targetPubkey, null);
   };
 
   return (
     <>
-      <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
-        <div
-          onPointerEnter={handlePointerEnter}
-          onPointerLeave={handlePointerLeave}
-        >
-          <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
-        </div>
-        <DropdownMenuContent
-          align="center"
-          className="w-56"
-          onPointerEnter={handlePointerEnter}
-          onPointerLeave={handlePointerLeave}
-        >
-          {/* Profile header */}
+      {/* The avatar with a click-triggered dropdown */}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <div className="cursor-pointer">{children}</div>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="center" className="w-64">
+          {/* Profile header inside dropdown */}
           <div className="flex items-center gap-3 p-3">
-            <Avatar className="h-10 w-10">
+            <Avatar className="h-12 w-12 shrink-0">
               <AvatarImage src={metadata?.picture} alt={displayName} />
-              <AvatarFallback className="text-xs bg-secondary">
+              <AvatarFallback className="text-sm bg-secondary">
                 {displayName.slice(0, 2).toUpperCase()}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
-              <p className="font-medium text-sm truncate">{displayName}</p>
+              <p className="font-semibold text-sm truncate">{displayName}</p>
               {metadata?.nip05 && (
                 <p className="text-xs text-muted-foreground truncate">{metadata.nip05}</p>
+              )}
+              {metadata?.about && (
+                <p className="text-xs text-muted-foreground/70 line-clamp-2 mt-0.5">{metadata.about}</p>
               )}
             </div>
           </div>
 
           <DropdownMenuSeparator />
 
-          {/* View Profile */}
-          <DropdownMenuItem onClick={() => { setProfileOpen(true); setDropdownOpen(false); }}>
+          {/* View Full Profile */}
+          <DropdownMenuItem onClick={() => setProfileOpen(true)}>
             <Eye className="h-4 w-4 mr-2" />
             View Profile
           </DropdownMenuItem>
@@ -182,24 +128,18 @@ export function ProfileCard({ pubkey, roomEvent, children }: PropsWithChildren<P
           {!isSelf && user && (
             <DropdownMenuItem onClick={() => following ? unfollow(pubkey) : follow(pubkey)}>
               {following ? (
-                <>
-                  <UserMinus className="h-4 w-4 mr-2" />
-                  Unfollow
-                </>
+                <><UserMinus className="h-4 w-4 mr-2" />Unfollow</>
               ) : (
-                <>
-                  <UserPlus className="h-4 w-4 mr-2" />
-                  Follow
-                </>
+                <><UserPlus className="h-4 w-4 mr-2" />Follow</>
               )}
             </DropdownMenuItem>
           )}
 
-          {/* Zap - wraps the menu item with ZapDialog */}
+          {/* Zap */}
           {!isSelf && user && lightningAddress && authorEvent && (
             <ZapDialog target={authorEvent}>
               <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                <Zap className="h-4 w-4 mr-2" />
+                <Zap className="h-4 w-4 mr-2 text-yellow-500" />
                 Zap
               </DropdownMenuItem>
             </ZapDialog>
@@ -210,7 +150,6 @@ export function ProfileCard({ pubkey, roomEvent, children }: PropsWithChildren<P
             <>
               <DropdownMenuSeparator />
 
-              {/* Stage management */}
               {!isOnStage ? (
                 <DropdownMenuItem onClick={() => updateRoomParticipant(pubkey, "speaker")}>
                   <ArrowUpFromLine className="h-4 w-4 mr-2" />
@@ -223,7 +162,6 @@ export function ProfileCard({ pubkey, roomEvent, children }: PropsWithChildren<P
                 </DropdownMenuItem>
               ) : null}
 
-              {/* Admin role management (only host can promote/demote) */}
               {isHost && !isTargetHost && (
                 <>
                   {!isTargetAdmin ? (
@@ -240,7 +178,6 @@ export function ProfileCard({ pubkey, roomEvent, children }: PropsWithChildren<P
                 </>
               )}
 
-              {/* Kick (admins can kick non-hosts) */}
               {!isTargetHost && (
                 <>
                   <DropdownMenuSeparator />
@@ -258,24 +195,20 @@ export function ProfileCard({ pubkey, roomEvent, children }: PropsWithChildren<P
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {/* Profile Dialog */}
+      {/* Full Profile Dialog */}
       <Dialog open={profileOpen} onOpenChange={setProfileOpen}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
             <DialogTitle className="sr-only">Profile</DialogTitle>
-            <DialogDescription className="sr-only">
-              Profile details for {displayName}
-            </DialogDescription>
+            <DialogDescription className="sr-only">Profile details for {displayName}</DialogDescription>
           </DialogHeader>
           <div className="flex flex-col items-center gap-4 pt-2">
-            {/* Banner area */}
             {metadata?.banner && (
-              <div className="w-full h-24 rounded-lg overflow-hidden -mt-2 mb-2">
+              <div className="w-full h-28 rounded-lg overflow-hidden -mt-2 mb-2">
                 <img src={metadata.banner} alt="" className="w-full h-full object-cover" />
               </div>
             )}
 
-            {/* Avatar */}
             <Avatar className="h-24 w-24 border-4 border-background">
               <AvatarImage src={metadata?.picture} alt={displayName} />
               <AvatarFallback className="text-xl bg-secondary">
@@ -283,7 +216,6 @@ export function ProfileCard({ pubkey, roomEvent, children }: PropsWithChildren<P
               </AvatarFallback>
             </Avatar>
 
-            {/* Name */}
             <div className="text-center space-y-1">
               <h2 className="text-lg font-semibold">{displayName}</h2>
               {metadata?.nip05 && (
@@ -291,14 +223,12 @@ export function ProfileCard({ pubkey, roomEvent, children }: PropsWithChildren<P
               )}
             </div>
 
-            {/* About */}
             {metadata?.about && (
               <p className="text-sm text-muted-foreground text-center px-4 leading-relaxed">
                 {metadata.about}
               </p>
             )}
 
-            {/* Lightning address */}
             {lightningAddress && (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Zap className="h-4 w-4 text-yellow-500" />
@@ -306,7 +236,6 @@ export function ProfileCard({ pubkey, roomEvent, children }: PropsWithChildren<P
               </div>
             )}
 
-            {/* Follow/Unfollow button inside dialog */}
             {!isSelf && user && (
               <Button
                 variant={following ? "outline" : "default"}
@@ -315,20 +244,13 @@ export function ProfileCard({ pubkey, roomEvent, children }: PropsWithChildren<P
                 onClick={() => following ? unfollow(pubkey) : follow(pubkey)}
               >
                 {following ? (
-                  <>
-                    <UserMinus className="h-4 w-4 mr-2" />
-                    Unfollow
-                  </>
+                  <><UserMinus className="h-4 w-4 mr-2" />Unfollow</>
                 ) : (
-                  <>
-                    <UserPlus className="h-4 w-4 mr-2" />
-                    Follow
-                  </>
+                  <><UserPlus className="h-4 w-4 mr-2" />Follow</>
                 )}
               </Button>
             )}
 
-            {/* Pubkey */}
             <div className="w-full px-4 mt-2">
               <p className="text-[10px] text-muted-foreground/50 font-mono break-all text-center">
                 {pubkey}
