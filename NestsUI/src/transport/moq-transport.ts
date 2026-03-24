@@ -120,7 +120,7 @@ export class MoQAudioTransport implements NestTransport {
         ];
       }
 
-      console.debug("[transport] connecting to", relayUrl.toString().split("?")[0]);
+      console.log("[transport] connecting to", relayUrl.toString().split("?")[0]);
 
       this.connection = new Moq.Connection.Reload({
         url: relayUrl,
@@ -131,7 +131,7 @@ export class MoQAudioTransport implements NestTransport {
 
       // Watch connection status reactively
       const statusDispose = this.connection.status.subscribe((status) => {
-        console.debug("[transport] connection status:", status);
+        console.log("[transport] connection status:", status);
         switch (status) {
           case "connected":
             this.setState("connected");
@@ -189,7 +189,7 @@ export class MoQAudioTransport implements NestTransport {
       throw new Error("Not connected");
     }
 
-    console.debug("[transport] starting microphone publish...");
+    console.log("[transport] starting microphone publish...");
 
     // Create microphone source
     this.microphone = new Publish.Source.Microphone({
@@ -200,15 +200,15 @@ export class MoQAudioTransport implements NestTransport {
     // Log when mic source becomes available
     this.microphone.source.subscribe((track) => {
       if (track) {
-        console.debug("[transport] microphone track acquired:", track.label);
+        console.log("[transport] microphone track acquired:", track.label);
       } else {
-        console.debug("[transport] microphone track: none");
+        console.log("[transport] microphone track: none");
       }
     });
 
     // Create the publishing broadcast under our pubkey name
     const broadcastName = Moq.Path.from(this.config.identity);
-    console.debug("[transport] publishing as:", broadcastName);
+    console.log("[transport] publishing as:", broadcastName);
 
     this.publishBroadcast = new Publish.Broadcast({
       connection: this.connection.established,
@@ -227,7 +227,7 @@ export class MoQAudioTransport implements NestTransport {
 
   unpublishMicrophone(): void {
     if (this.publishBroadcast) {
-      console.debug("[transport] stopping publish");
+      console.log("[transport] stopping publish");
       this.publishBroadcast.close();
       this.publishBroadcast = null;
     }
@@ -350,14 +350,14 @@ export class MoQAudioTransport implements NestTransport {
 
       // Validate it looks like a hex pubkey (64 chars)
       if (!/^[0-9a-f]{64}$/.test(pubkey)) {
-        console.debug("[transport] ignoring non-pubkey announcement:", pubkey);
+        console.log("[transport] ignoring non-pubkey announcement:", pubkey);
         continue;
       }
 
       currentPubkeys.add(pubkey);
 
       if (!this._participants.has(pubkey)) {
-        console.debug("[transport] new participant discovered:", pubkey.slice(0, 8) + "...");
+        console.log("[transport] new participant discovered:", pubkey.slice(0, 8) + "...");
         this._participants.set(pubkey, {
           pubkey,
           isPublishing: true,
@@ -370,7 +370,7 @@ export class MoQAudioTransport implements NestTransport {
     let changed = currentPubkeys.size !== this._participants.size;
     for (const pubkey of this._participants.keys()) {
       if (!currentPubkeys.has(pubkey)) {
-        console.debug("[transport] participant left:", pubkey.slice(0, 8) + "...");
+        console.log("[transport] participant left:", pubkey.slice(0, 8) + "...");
         this._participants.delete(pubkey);
         this.unsubscribeFromParticipant(pubkey);
         changed = true;
@@ -387,7 +387,7 @@ export class MoQAudioTransport implements NestTransport {
 
     const broadcastPath = Moq.Path.from(pubkey);
 
-    console.debug("[transport] subscribing to participant:", pubkey.slice(0, 8) + "...");
+    console.log("[transport] subscribing to participant:", pubkey.slice(0, 8) + "...");
 
     // Create a watch broadcast for this participant
     const broadcast = new Watch.Broadcast({
@@ -412,7 +412,7 @@ export class MoQAudioTransport implements NestTransport {
   private unsubscribeFromParticipant(pubkey: string): void {
     const entry = this.watchBroadcasts.get(pubkey);
     if (entry) {
-      console.debug("[transport] unsubscribing from participant:", pubkey.slice(0, 8) + "...");
+      console.log("[transport] unsubscribing from participant:", pubkey.slice(0, 8) + "...");
       entry.emitter.close();
       entry.decoder.close();
       entry.audioSource.close();

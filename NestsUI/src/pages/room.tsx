@@ -1,6 +1,6 @@
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import NostrParticipants from "../element/participants";
-import { NostrEvent, NostrLink, RequestBuilder } from "@snort/system";
+import { NostrEvent, NostrLink, PrivateKeySigner, RequestBuilder } from "@snort/system";
 import RoomCard from "../element/room-card";
 import { SnortContext, useRequestBuilder } from "@snort/system-react";
 import Icon from "../icon";
@@ -11,7 +11,6 @@ import { CSSProperties, useContext, useEffect, useMemo, useRef, useState } from 
 import classNames from "classnames";
 import { FormattedMessage } from "react-intl";
 import { removeUndefined, sanitizeRelayUrl } from "@snort/shared";
-import { PrivateKeySigner } from "@snort/system";
 import { NostrRoomContextProvider } from "../element/nostr-room-context-provider";
 import { JoinRoom } from "../element/join-room";
 import { useNostrRoom } from "../hooks/nostr-room-context";
@@ -22,7 +21,6 @@ import { DefaultMoQAuthUrl, DefaultMoQServers, ParticipantRole } from "../const"
 
 export interface RoomState {
   event: NostrEvent;
-  token?: string;
 }
 
 const ChatWidth = 450 as const;
@@ -80,25 +78,22 @@ export default function Room() {
     }
   }, [event, system]);
 
-  if (!event || !link) return <JoinRoom />;
-
-  // Extract MoQ relay URL from the room event's streaming tag
-  const streamingUrl = event.tags.find((a) => a[0] === "streaming")?.[1];
-  const authTagUrl = event.tags.find((a) => a[0] === "auth")?.[1];
-  const status = event.tags.find((a) => a[0] === "status")?.[1];
+  // Extract room info from event (safe even when event is undefined)
+  const streamingUrl = event?.tags.find((a) => a[0] === "streaming")?.[1];
+  const authTagUrl = event?.tags.find((a) => a[0] === "auth")?.[1];
+  const status = event?.tags.find((a) => a[0] === "status")?.[1];
   const isLive = status === "live";
 
-  // Determine the MoQ relay server URL and auth URL
   const serverUrl = streamingUrl || DefaultMoQServers[0];
   const authUrl = authTagUrl || DefaultMoQAuthUrl;
 
-  // Build the room namespace from the event's address
-  const roomNamespace = `nests/30312:${event.pubkey}:${link.id}`;
+  const roomNamespace = event && link
+    ? `nests/30312:${event.pubkey}:${link.id}`
+    : null;
 
-  // Check if the current user has publish rights (is host, admin, or speaker)
   const userPubkey = login.pubkey ?? "";
-  const isHost = event.pubkey === userPubkey;
-  const userRole = event.tags.find(
+  const isHost = event ? event.pubkey === userPubkey : false;
+  const userRole = event?.tags.find(
     (t) => t[0] === "p" && t[1] === userPubkey,
   )?.[3];
   const canPublish =
@@ -113,7 +108,6 @@ export default function Room() {
   useEffect(() => {
     if (!isLive || !serverUrl || !roomNamespace) return;
 
-    // Use the user's signer if logged in, otherwise generate an ephemeral keypair (once)
     let signer = login.signer;
     if (!signer) {
       if (!guestSignerRef.current) {
@@ -125,7 +119,7 @@ export default function Room() {
     const doAuth = () => {
       authenticateWithMoqRelay(authUrl, signer!, roomNamespace, canPublish)
         .then((token) => {
-          console.debug("[transport] got MoQ auth token");
+          console.log("[transport] got MoQ auth token");
           setMoqToken(token);
         })
         .catch((e) => {
@@ -133,22 +127,18 @@ export default function Room() {
         });
     };
 
-    // Initial auth
     doAuth();
-
-    // Refresh token every 8 minutes (tokens expire at 10 min)
     const refreshInterval = setInterval(doAuth, 8 * 60 * 1000);
-
     return () => clearInterval(refreshInterval);
-  }, [isLive, serverUrl, roomNamespace, canPublish, login.signer]);
+  }, [isLive, serverUrl, authUrl, roomNamespace, canPublish, login.signer]);
 
   // Build transport config (only when we have a token)
   const certFingerprint = import.meta.env.VITE_MOQ_CERT_FINGERPRINT || undefined;
   const transportConfig: TransportConfig | null =
-    isLive && serverUrl && moqToken
+    isLive && serverUrl && moqToken && roomNamespace
       ? {
           serverUrl,
-          authUrl: DefaultMoQAuthUrl,
+          authUrl,
           roomNamespace,
           identity: userPubkey,
           canPublish,
@@ -157,7 +147,10 @@ export default function Room() {
         }
       : null;
 
-  const roomKey = `${event.id}-${serverUrl}-${moqToken ? "authed" : "pending"}`;
+  const roomKey = event ? `${event.id}-${serverUrl}-${moqToken ? "authed" : "pending"}` : "loading";
+
+  // --- Early return AFTER all hooks ---
+  if (!event || !link) return <JoinRoom />;
 
   return (
     <NestTransportProvider key={roomKey} config={transportConfig} connect={isLive}>
