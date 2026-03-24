@@ -1,3 +1,5 @@
+import { useRef, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { Mic, MicOff, Hand, Crown, Shield } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -39,6 +41,22 @@ export function ParticipantAvatar({
   const remoteSpeaking = useRemoteSpeaking(pubkey);
   const isSpeaking = isMe ? localSpeaking : remoteSpeaking;
 
+  // Track avatar position for portal-based reaction
+  const avatarRef = useRef<HTMLDivElement>(null);
+  const [reactionPos, setReactionPos] = useState<{ top: number; left: number } | null>(null);
+
+  useEffect(() => {
+    if (reaction && avatarRef.current) {
+      const rect = avatarRef.current.getBoundingClientRect();
+      setReactionPos({
+        top: rect.top - 10,
+        left: rect.left + rect.width / 2,
+      });
+    } else {
+      setReactionPos(null);
+    }
+  }, [reaction]);
+
   const sizeClasses = {
     sm: "h-12 w-12 md:h-14 md:w-14",
     md: "h-16 w-16 md:h-18 md:w-18",
@@ -53,7 +71,7 @@ export function ParticipantAvatar({
 
   return (
     <div className="flex flex-col items-center gap-1.5 md:gap-2 group" onClick={onClick}>
-      <div className="relative">
+      <div className="relative" ref={avatarRef}>
         {/* Speaking ring */}
         <div
           className={cn(
@@ -97,11 +115,19 @@ export function ParticipantAvatar({
           </div>
         )}
 
-        {/* Reaction overlay on avatar */}
-        {reaction && (
-          <div className="absolute -top-3 left-1/2 -translate-x-1/2 react text-2xl md:text-3xl">
+        {/* Reaction rendered via portal so it floats above all containers */}
+        {reaction && reactionPos && createPortal(
+          <div
+            className="fixed z-[100] react text-4xl md:text-5xl pointer-events-none"
+            style={{
+              top: reactionPos.top,
+              left: reactionPos.left,
+              transform: "translateX(-50%)",
+            }}
+          >
             {reaction}
-          </div>
+          </div>,
+          document.body,
         )}
 
         {/* Role badge */}
