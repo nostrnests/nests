@@ -219,8 +219,9 @@ export class MoQAudioTransport implements NestTransport {
     this._participants.clear();
     this.notifyParticipantsChange();
     this.setState("disconnected");
-    // Reset declinedPublish on full disconnect (reconnect should auto-publish again)
-    this._declinedPublish = false;
+    // NOTE: do NOT reset _declinedPublish here. It persists across reconnects
+    // so that a user who left the stage stays off stage after token refresh.
+    // It is only reset via resetDeclinedPublish() when re-promoted by host.
     this.config = null;
   }
 

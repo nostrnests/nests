@@ -1,6 +1,6 @@
 import { EventBuilder, EventKind, NostrLink } from "@snort/system";
 import Button, { PrimaryButton } from "./button";
-import { RefObject, useMemo, useRef, useState } from "react";
+import { RefObject, useEffect, useMemo, useRef, useState } from "react";
 import useEventBuilder from "../hooks/useEventBuilder";
 import IconButton from "./icon-button";
 import { Link } from "react-router-dom";
@@ -155,6 +155,11 @@ function ReactionsButton({ link, fromRef }: { link: NostrLink; fromRef: RefObjec
   const [open, setOpen] = useState(false);
   const pos = fromRef.current?.getBoundingClientRect();
   const { system, signer } = useEventBuilder();
+
+  // Close portal on unmount to prevent removeChild errors
+  useEffect(() => {
+    return () => setOpen(false);
+  }, []);
 
   async function sendReactions(content: string) {
     if (!signer) return;

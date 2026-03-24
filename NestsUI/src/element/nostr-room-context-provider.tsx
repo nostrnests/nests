@@ -15,6 +15,7 @@ import useEventModifier from "../hooks/useEventModifier";
 import { usePageVisibility } from "../hooks/usePageVisibility";
 import LobbyFlyoutContent from "./lobby-flyout";
 import { useNestTransport, useLocalParticipant, useConnectionState } from "../transport";
+import { useAdminCommands } from "../hooks/useAdminCommands";
 
 export function NostrRoomContextProvider({
   event,
@@ -50,7 +51,18 @@ export function NostrRoomContextProvider({
     navigate("/lobby");
   }, [transport, navigate]);
 
-
+  // Watch for admin commands (kick) targeting the current user
+  const adminPubkeys = useMemo(() => {
+    const admins = new Set<string>();
+    admins.add(event.pubkey); // host
+    for (const tag of event.tags) {
+      if (tag[0] === "p" && tag[3] === "admin") {
+        admins.add(tag[1]);
+      }
+    }
+    return admins;
+  }, [event]);
+  useAdminCommands(link, adminPubkeys, leaveRoom);
 
   // Global spacebar handler for mute toggle
   useEffect(() => {

@@ -39,18 +39,20 @@ export function useLocalParticipant() {
   const [localState, setLocalState] = useState({
     isMicEnabled: transport.isMicEnabled,
     isPublishing: transport.isPublishing,
+    declinedPublish: transport.declinedPublish,
   });
 
   useEffect(() => {
-    // Sync initial state
     setLocalState({
       isMicEnabled: transport.isMicEnabled,
       isPublishing: transport.isPublishing,
+      declinedPublish: transport.declinedPublish,
     });
     const unsub = transport.onLocalStateChange(() => {
       setLocalState({
         isMicEnabled: transport.isMicEnabled,
         isPublishing: transport.isPublishing,
+        declinedPublish: transport.declinedPublish,
       });
     });
     return unsub;
@@ -72,7 +74,6 @@ export function useLocalParticipant() {
 
   return {
     ...localState,
-    declinedPublish: transport.declinedPublish,
     setMicEnabled,
     publishMicrophone,
     unpublishMicrophone,

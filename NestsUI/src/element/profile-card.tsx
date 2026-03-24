@@ -3,20 +3,22 @@ import { ReactNode } from "react";
 import classNames from "classnames";
 import { useNostrRoom } from "../hooks/nostr-room-context";
 import { ProfilePageContent } from "../pages/profile";
-import { NostrLink } from "@snort/system";
+import { EventBuilder, NostrLink } from "@snort/system";
 import { useIsAdmin } from "../hooks/useIsAdmin";
 import { useLogin } from "../login";
 import { FormattedMessage } from "react-intl";
 import useFollowing from "../hooks/useFollowing";
 import Async from "./async";
+import useEventBuilder from "../hooks/useEventBuilder";
 import useEventModifier from "../hooks/useEventModifier";
-import { ParticipantRole } from "../const";
+import { ADMIN_COMMAND, ParticipantRole } from "../const";
 
 export default function ProfileCard({ pubkey }: { pubkey: string }) {
   const login = useLogin();
   const nostrRoom = useNostrRoom();
   const isLoginAdmin = useIsAdmin();
   const { isFollowing, follow, unfollow } = useFollowing();
+  const { system, signer } = useEventBuilder();
   const modifier = useEventModifier();
 
   const event = nostrRoom.event;
@@ -117,9 +119,20 @@ export default function ProfileCard({ pubkey }: { pubkey: string }) {
               <hr className="mx-4 border-foreground" />
               {menuItem(
                 "minus-circle",
-                <FormattedMessage defaultMessage="Ban user" />,
-                () => {
-                  // TODO: Implement kick via kind:4312 admin command
+                <FormattedMessage defaultMessage="Kick user" />,
+                async () => {
+                  if (!signer) return;
+                  // Send kick admin command (kind:4312)
+                  const roomLink = NostrLink.fromEvent(event);
+                  const eb = new EventBuilder();
+                  eb.kind(ADMIN_COMMAND)
+                    .tag(roomLink.toEventTag()!)
+                    .tag(["p", pubkey])
+                    .tag(["action", "kick"]);
+                  const ev = await eb.buildAndSign(signer);
+                  await system.BroadcastEvent(ev);
+                  // Also remove from stage if they're a speaker
+                  await updateParticipantRole(pubkey, null);
                 },
                 "text-delete hover:text-delete",
               )}

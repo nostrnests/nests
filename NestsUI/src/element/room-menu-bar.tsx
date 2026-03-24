@@ -18,6 +18,11 @@ import { useLocalParticipant } from "../transport";
 export function RoomOptionsButton({ link: _link }: { link: NostrLink }) {
   const [open, setOpen] = useState(false);
   const login = useLogin();
+
+  // Close portal on unmount to prevent removeChild errors
+  useEffect(() => {
+    return () => setOpen(false);
+  }, []);
   const ref = useRef<HTMLButtonElement | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const [share, setShare] = useState(false);

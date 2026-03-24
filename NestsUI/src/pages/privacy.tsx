@@ -55,7 +55,7 @@ export default function PrivacyPolicy() {
                 <FormattedMessage defaultMessage="Audio & Voice Data" />
               </h2>
               <p className="text-gray-400">
-                <FormattedMessage defaultMessage="When participating in audio rooms, your voice is transmitted in real-time through LiveKit servers. This audio data is not recorded or stored by Nostr Nests unless a room host explicitly enables recording. Audio streams are ephemeral and are not retained after a room ends." />
+                <FormattedMessage defaultMessage="When participating in audio rooms, your voice is transmitted in real-time through MoQ (Media over QUIC) relay servers. Audio data is not recorded or stored. Audio streams are ephemeral and are not retained after a room ends. Room hosts choose which MoQ relay to use, and anyone can operate their own relay." />
               </p>
             </section>
 
@@ -73,7 +73,7 @@ export default function PrivacyPolicy() {
                 <FormattedMessage defaultMessage="Third-Party Services" />
               </h2>
               <p className="text-gray-400">
-                <FormattedMessage defaultMessage="Nostr Nests connects to Nostr relays and LiveKit audio servers to function. These services are operated by third parties and may have their own privacy policies. We recommend reviewing the privacy practices of any services you use." />
+                <FormattedMessage defaultMessage="Nostr Nests connects to Nostr relays and MoQ audio relay servers to function. These services may be operated by third parties and may have their own privacy policies. Anyone can run their own MoQ relay server. We recommend reviewing the privacy practices of any services you use." />
               </p>
             </section>
 
