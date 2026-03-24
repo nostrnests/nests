@@ -30,7 +30,12 @@ export function useLocalSpeaking(): boolean {
       source.connect(analyser);
 
       const dataArray = new Uint8Array(analyser.frequencyBinCount);
-      const THRESHOLD = -50; // dB threshold for "speaking"
+      const THRESHOLD = -35; // dB threshold for "speaking"
+      const ON_FRAMES = 3;   // consecutive frames above threshold to activate
+      const OFF_FRAMES = 6;  // consecutive frames below threshold to deactivate
+      let aboveCount = 0;
+      let belowCount = 0;
+      let currentSpeaking = false;
 
       const interval = setInterval(() => {
         if (track.readyState !== "live") {
@@ -38,14 +43,28 @@ export function useLocalSpeaking(): boolean {
           return;
         }
         analyser.getByteFrequencyData(dataArray);
-        // Calculate RMS volume in dB
         let sum = 0;
         for (let i = 0; i < dataArray.length; i++) {
           sum += dataArray[i];
         }
         const avg = sum / dataArray.length;
         const dB = avg > 0 ? 20 * Math.log10(avg / 255) : -100;
-        setSpeaking(dB > THRESHOLD);
+
+        if (dB > THRESHOLD) {
+          aboveCount++;
+          belowCount = 0;
+          if (!currentSpeaking && aboveCount >= ON_FRAMES) {
+            currentSpeaking = true;
+            setSpeaking(true);
+          }
+        } else {
+          belowCount++;
+          aboveCount = 0;
+          if (currentSpeaking && belowCount >= OFF_FRAMES) {
+            currentSpeaking = false;
+            setSpeaking(false);
+          }
+        }
       }, 100);
 
       analyserCleanup = () => {

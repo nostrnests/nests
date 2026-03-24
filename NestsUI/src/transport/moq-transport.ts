@@ -54,6 +54,7 @@ export class MoQAudioTransport implements NestTransport {
   // Announcement subscription
   private announcementPollInterval: ReturnType<typeof setInterval> | null = null;
   private announcementDispose: (() => void) | null = null;
+  private _lastAnnouncedStr = "";
 
   get state(): ConnectionState {
     return this._state;
@@ -358,9 +359,7 @@ export class MoQAudioTransport implements NestTransport {
     this.announcementPollInterval = setInterval(() => {
       if (!this.connection) return;
       const announced = this.connection.announced.peek();
-      if (announced.size === 0) {
-        console.log("[transport] announcement poll: no announcements yet");
-      }
+
       this.processAnnouncements(announced);
     }, 3000);
   }
@@ -379,8 +378,13 @@ export class MoQAudioTransport implements NestTransport {
   private processAnnouncements(announced: Set<Moq.Path.Valid>): void {
     if (!this.config) return;
 
-    if (announced.size > 0) {
-      console.log("[transport] raw announcements:", [...announced]);
+    // Only log when announcements change
+    const announcedStr = [...announced].sort().join(",");
+    if (announcedStr !== this._lastAnnouncedStr) {
+      this._lastAnnouncedStr = announcedStr;
+      if (announced.size > 0) {
+        console.log("[transport] announcements:", [...announced]);
+      }
     }
 
     const currentPubkeys = new Set<string>();
