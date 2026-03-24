@@ -11,6 +11,7 @@ import { CSSProperties, useContext, useEffect, useMemo, useRef, useState } from 
 import classNames from "classnames";
 import { FormattedMessage } from "react-intl";
 import { removeUndefined, sanitizeRelayUrl } from "@snort/shared";
+import { PrivateKeySigner } from "@snort/system";
 import { NostrRoomContextProvider } from "../element/nostr-room-context-provider";
 import { JoinRoom } from "../element/join-room";
 import { useNostrRoom } from "../hooks/nostr-room-context";
@@ -83,11 +84,13 @@ export default function Room() {
 
   // Extract MoQ relay URL from the room event's streaming tag
   const streamingUrl = event.tags.find((a) => a[0] === "streaming")?.[1];
+  const authTagUrl = event.tags.find((a) => a[0] === "auth")?.[1];
   const status = event.tags.find((a) => a[0] === "status")?.[1];
   const isLive = status === "live";
 
-  // Determine the MoQ relay server URL
+  // Determine the MoQ relay server URL and auth URL
   const serverUrl = streamingUrl || DefaultMoQServers[0];
+  const authUrl = authTagUrl || DefaultMoQAuthUrl;
 
   // Build the room namespace from the event's address
   const roomNamespace = `nests/30312:${event.pubkey}:${link.id}`;
@@ -105,28 +108,38 @@ export default function Room() {
 
   // Authenticate with moq-auth to get a JWT token
   const [moqToken, setMoqToken] = useState<string | null>(null);
-  const authAttemptedRef = useRef<string | null>(null);
+  const guestSignerRef = useRef<PrivateKeySigner | null>(null);
 
   useEffect(() => {
     if (!isLive || !serverUrl || !roomNamespace) return;
 
-    const authKey = `${serverUrl}:${roomNamespace}:${canPublish}`;
-    if (authAttemptedRef.current === authKey) return;
-    authAttemptedRef.current = authKey;
+    // Use the user's signer if logged in, otherwise generate an ephemeral keypair (once)
+    let signer = login.signer;
+    if (!signer) {
+      if (!guestSignerRef.current) {
+        guestSignerRef.current = PrivateKeySigner.random();
+      }
+      signer = guestSignerRef.current;
+    }
 
-    if (login.signer) {
-      // Authenticated user: use NIP-98
-      authenticateWithMoqRelay(DefaultMoQAuthUrl, login.signer, roomNamespace, canPublish)
+    const doAuth = () => {
+      authenticateWithMoqRelay(authUrl, signer!, roomNamespace, canPublish)
         .then((token) => {
-          console.debug("Got MoQ auth token");
+          console.debug("[transport] got MoQ auth token");
           setMoqToken(token);
         })
         .catch((e) => {
-          console.error("MoQ auth failed:", e);
-          // Still allow room view (chat works without transport)
+          console.error("[transport] MoQ auth failed:", e);
         });
-    }
-    // TODO: For guests without a signer, generate ephemeral keypair
+    };
+
+    // Initial auth
+    doAuth();
+
+    // Refresh token every 8 minutes (tokens expire at 10 min)
+    const refreshInterval = setInterval(doAuth, 8 * 60 * 1000);
+
+    return () => clearInterval(refreshInterval);
   }, [isLive, serverUrl, roomNamespace, canPublish, login.signer]);
 
   // Build transport config (only when we have a token)

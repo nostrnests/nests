@@ -1,7 +1,7 @@
 import { useCallback, useContext, useMemo, useState } from "react";
 import { PrimaryButton, SecondaryButton } from "../element/button";
 import { Link, Navigate, useNavigate } from "react-router-dom";
-import { DefaultMoQServers, DefaultRelays, ROOM_KIND } from "../const";
+import { DefaultMoQAuthUrl, DefaultMoQServers, DefaultRelays, ROOM_KIND } from "../const";
 import { EventBuilder, NostrLink } from "@snort/system";
 import { sanitizeRelayUrl, unixNow } from "@snort/shared";
 import { SnortContext } from "@snort/system-react";
@@ -44,6 +44,7 @@ export default function NewRoom() {
         .tag(["color", color ?? ""])
         .tag(["image", image ?? ""])
         .tag(["streaming", moqServer])
+        .tag(["auth", DefaultMoQAuthUrl])
         .tag(["status", time ? "planned" : "live"])
         .tag(["starts", time ? String(Math.floor(new Date(time).getTime() / 1000)) : String(unixNow())])
         .tag(["relays", ...relays]);

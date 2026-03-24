@@ -50,9 +50,9 @@ export class MoQAudioTransport implements NestTransport {
   private localStateListeners = new Set<() => void>();
   private participantListeners = new Set<(participants: ReadonlyMap<string, RemoteParticipant>) => void>();
 
-  // Announcement polling
+  // Announcement subscription
   private announcementPollInterval: ReturnType<typeof setInterval> | null = null;
-  private previousAnnounced = new Set<string>();
+  private announcementDispose: (() => void) | null = null;
 
   get state(): ConnectionState {
     return this._state;
@@ -120,6 +120,8 @@ export class MoQAudioTransport implements NestTransport {
         ];
       }
 
+      console.debug("[transport] connecting to", relayUrl.toString().split("?")[0]);
+
       this.connection = new Moq.Connection.Reload({
         url: relayUrl,
         enabled: true,
@@ -127,39 +129,48 @@ export class MoQAudioTransport implements NestTransport {
         webtransport: wtOptions,
       });
 
-      // Watch connection status via signals
-      this.connection.status.subscribe((status) => {
+      // Watch connection status reactively
+      const statusDispose = this.connection.status.subscribe((status) => {
+        console.debug("[transport] connection status:", status);
         switch (status) {
           case "connected":
             this.setState("connected");
-            this.startAnnouncementPolling();
+            this.startAnnouncementWatching();
             break;
           case "connecting":
             this.setState(this._state === "disconnected" ? "connecting" : "reconnecting");
             break;
           case "disconnected":
             this.setState("disconnected");
-            this.stopAnnouncementPolling();
+            this.stopAnnouncementWatching();
             break;
         }
       });
+
+      // Store dispose for cleanup
+      this._statusDispose = statusDispose;
     } catch (err) {
       this.setState("disconnected");
       throw err;
     }
   }
 
+  private _statusDispose: (() => void) | null = null;
+
   disconnect(): void {
     this.unpublishMicrophone();
-    this.stopAnnouncementPolling();
+    this.stopAnnouncementWatching();
     this.cleanupWatchBroadcasts();
 
+    if (this._statusDispose) {
+      this._statusDispose();
+      this._statusDispose = null;
+    }
+
     if (this.connection) {
-      // Close the connection and clean up internal Signals/Effects
       try {
         this.connection.close();
       } catch {
-        // close() may not exist on older versions, fall back to disabling
         this.connection.enabled.set(false);
       }
       this.connection = null;
@@ -178,14 +189,26 @@ export class MoQAudioTransport implements NestTransport {
       throw new Error("Not connected");
     }
 
+    console.debug("[transport] starting microphone publish...");
+
     // Create microphone source
     this.microphone = new Publish.Source.Microphone({
       enabled: true,
       ...(deviceId ? { device: { preferred: deviceId } } : {}),
     });
 
-    // Create the publishing broadcast
+    // Log when mic source becomes available
+    this.microphone.source.subscribe((track) => {
+      if (track) {
+        console.debug("[transport] microphone track acquired:", track.label);
+      } else {
+        console.debug("[transport] microphone track: none");
+      }
+    });
+
+    // Create the publishing broadcast under our pubkey name
     const broadcastName = Moq.Path.from(this.config.identity);
+    console.debug("[transport] publishing as:", broadcastName);
 
     this.publishBroadcast = new Publish.Broadcast({
       connection: this.connection.established,
@@ -204,16 +227,13 @@ export class MoQAudioTransport implements NestTransport {
 
   unpublishMicrophone(): void {
     if (this.publishBroadcast) {
+      console.debug("[transport] stopping publish");
       this.publishBroadcast.close();
       this.publishBroadcast = null;
     }
 
     if (this.microphone) {
-      // Stop the microphone track
-      const track = this.microphone.source.peek();
-      if (track) {
-        track.stop();
-      }
+      this.microphone.close();
       this.microphone = null;
     }
 
@@ -251,7 +271,6 @@ export class MoQAudioTransport implements NestTransport {
 
   setVolume(volume: number): void {
     this._volume = Math.max(0, Math.min(1, volume));
-    // Update volume on all active watch broadcasts
     for (const entry of this.watchBroadcasts.values()) {
       entry.emitter.volume.set(this._volume);
     }
@@ -262,14 +281,9 @@ export class MoQAudioTransport implements NestTransport {
   private setState(state: ConnectionState): void {
     if (this._state === state) return;
     this._state = state;
-    // Defer notification to avoid triggering React state updates during render/commit
     queueMicrotask(() => {
       for (const cb of this.stateListeners) {
-        try {
-          cb(state);
-        } catch {
-          // ignore listener errors
-        }
+        try { cb(state); } catch { /* ignore */ }
       }
     });
   }
@@ -277,11 +291,7 @@ export class MoQAudioTransport implements NestTransport {
   private notifyLocalStateChange(): void {
     queueMicrotask(() => {
       for (const cb of this.localStateListeners) {
-        try {
-          cb();
-        } catch {
-          // ignore
-        }
+        try { cb(); } catch { /* ignore */ }
       }
     });
   }
@@ -289,63 +299,65 @@ export class MoQAudioTransport implements NestTransport {
   private notifyParticipantsChange(): void {
     queueMicrotask(() => {
       for (const cb of this.participantListeners) {
-        try {
-          cb(this._participants);
-        } catch {
-          // ignore
-        }
+        try { cb(this._participants); } catch { /* ignore */ }
       }
     });
   }
 
   /**
-   * Poll for MoQ announcements to discover participants.
-   *
-   * Uses the connection's announced signal to find broadcasts
-   * under the room namespace prefix.
+   * Watch MoQ announcements reactively to discover participants.
+   * Uses both a reactive subscription and a poll interval as fallback.
    */
-  private startAnnouncementPolling(): void {
-    this.stopAnnouncementPolling();
+  private startAnnouncementWatching(): void {
+    this.stopAnnouncementWatching();
 
-    // Poll every 2 seconds for announcement changes
+    if (!this.connection) return;
+
+    // Subscribe reactively to announcement changes
+    this.announcementDispose = this.connection.announced.subscribe((announced) => {
+      this.processAnnouncements(announced);
+    });
+
+    // Also poll as fallback (some changes might not trigger subscription)
     this.announcementPollInterval = setInterval(() => {
-      this.checkAnnouncements();
-    }, 2000);
-
-    // Also check immediately
-    this.checkAnnouncements();
+      if (!this.connection) return;
+      const announced = this.connection.announced.peek();
+      this.processAnnouncements(announced);
+    }, 3000);
   }
 
-  private stopAnnouncementPolling(): void {
+  private stopAnnouncementWatching(): void {
+    if (this.announcementDispose) {
+      this.announcementDispose();
+      this.announcementDispose = null;
+    }
     if (this.announcementPollInterval) {
       clearInterval(this.announcementPollInterval);
       this.announcementPollInterval = null;
     }
   }
 
-  private checkAnnouncements(): void {
-    if (!this.connection || !this.config) return;
-
-    const announced = this.connection.announced.peek();
-    if (!announced) return;
+  private processAnnouncements(announced: Set<Moq.Path.Valid>): void {
+    if (!this.config) return;
 
     const currentPubkeys = new Set<string>();
 
     for (const path of announced) {
-      // Path format: "<participant-pubkey>"
-      // (we're already scoped to the room namespace via the connection URL)
       const pubkey = path as string;
 
       // Skip our own broadcast
       if (pubkey === this.config.identity) continue;
 
       // Validate it looks like a hex pubkey (64 chars)
-      if (!/^[0-9a-f]{64}$/.test(pubkey)) continue;
+      if (!/^[0-9a-f]{64}$/.test(pubkey)) {
+        console.debug("[transport] ignoring non-pubkey announcement:", pubkey);
+        continue;
+      }
 
       currentPubkeys.add(pubkey);
 
       if (!this._participants.has(pubkey)) {
-        // New participant discovered
+        console.debug("[transport] new participant discovered:", pubkey.slice(0, 8) + "...");
         this._participants.set(pubkey, {
           pubkey,
           isPublishing: true,
@@ -355,30 +367,29 @@ export class MoQAudioTransport implements NestTransport {
     }
 
     // Check for participants that left
-    let changed = false;
+    let changed = currentPubkeys.size !== this._participants.size;
     for (const pubkey of this._participants.keys()) {
       if (!currentPubkeys.has(pubkey)) {
+        console.debug("[transport] participant left:", pubkey.slice(0, 8) + "...");
         this._participants.delete(pubkey);
         this.unsubscribeFromParticipant(pubkey);
         changed = true;
       }
     }
 
-    if (changed || currentPubkeys.size !== this.previousAnnounced.size) {
+    if (changed) {
       this.notifyParticipantsChange();
     }
-
-    this.previousAnnounced = currentPubkeys;
   }
 
   private subscribeToParticipant(pubkey: string): void {
     if (!this.connection) return;
 
-    const established = this.connection.established.peek();
-    if (!established) return;
-
     const broadcastPath = Moq.Path.from(pubkey);
 
+    console.debug("[transport] subscribing to participant:", pubkey.slice(0, 8) + "...");
+
+    // Create a watch broadcast for this participant
     const broadcast = new Watch.Broadcast({
       connection: this.connection.established,
       enabled: true,
@@ -386,6 +397,7 @@ export class MoQAudioTransport implements NestTransport {
       reload: true,
     });
 
+    // Set up audio pipeline: source -> decoder -> emitter (speaker)
     const sync = new Watch.Sync();
     const audioSource = new Watch.Audio.Source(sync, { broadcast });
     const decoder = new Watch.Audio.Decoder(audioSource, { enabled: true });
@@ -400,6 +412,11 @@ export class MoQAudioTransport implements NestTransport {
   private unsubscribeFromParticipant(pubkey: string): void {
     const entry = this.watchBroadcasts.get(pubkey);
     if (entry) {
+      console.debug("[transport] unsubscribing from participant:", pubkey.slice(0, 8) + "...");
+      entry.emitter.close();
+      entry.decoder.close();
+      entry.audioSource.close();
+      entry.sync.close();
       entry.broadcast.close();
       this.watchBroadcasts.delete(pubkey);
     }
@@ -407,6 +424,10 @@ export class MoQAudioTransport implements NestTransport {
 
   private cleanupWatchBroadcasts(): void {
     for (const [, entry] of this.watchBroadcasts) {
+      entry.emitter.close();
+      entry.decoder.close();
+      entry.audioSource.close();
+      entry.sync.close();
       entry.broadcast.close();
     }
     this.watchBroadcasts.clear();
