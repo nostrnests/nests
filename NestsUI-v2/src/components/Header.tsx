@@ -73,8 +73,8 @@ export function Header() {
             <TooltipContent>Settings</TooltipContent>
           </Tooltip>
 
-          {/* Login area - always visible on desktop */}
-          <LoginArea className="max-w-48 hidden sm:inline-flex" />
+          {/* Login area */}
+          <LoginArea className="max-w-40 hidden sm:inline-flex" />
 
           {/* Mobile hamburger */}
           <Button

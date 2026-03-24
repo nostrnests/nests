@@ -43,8 +43,8 @@ export function ReactionsButton({ roomATag }: ReactionsButtonProps) {
     return (
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button variant="ghost" size="icon" className="rounded-full h-12 w-12" disabled>
-            <Smile className="h-6 w-6" />
+          <Button variant="ghost" size="icon" className="rounded-full h-14 w-14" disabled>
+            <Smile className="h-7 w-7" />
           </Button>
         </TooltipTrigger>
         <TooltipContent>Log in to react</TooltipContent>
@@ -55,8 +55,8 @@ export function ReactionsButton({ roomATag }: ReactionsButtonProps) {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className="rounded-full h-12 w-12">
-          <Smile className="h-6 w-6" />
+        <Button variant="ghost" size="icon" className="rounded-full h-14 w-14">
+          <Smile className="h-7 w-7" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-80 p-3" side="top" align="center">

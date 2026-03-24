@@ -106,7 +106,7 @@ function RoomInner({ event }: { event: NostrEvent }) {
           {/* Desktop: menu bar fixed at bottom of participants pane */}
           <div className="hidden md:flex fixed bottom-0 left-0 z-30 pointer-events-none" style={{ width: desktopChatExpanded ? "calc(100% - 24rem)" : "calc(100% - 3rem)" }}>
             <div className="w-full flex justify-center pb-4 pointer-events-auto">
-              <MenuBar />
+              <MenuBar onChatToggle={() => setDesktopChatExpanded(!desktopChatExpanded)} chatOpen={desktopChatExpanded} />
             </div>
           </div>
 
@@ -167,28 +167,10 @@ function RoomInner({ event }: { event: NostrEvent }) {
           )}
         </div>
 
-        {/* Reaction overlay */}
-
-
-        {/* Mobile: fixed bottom bar with chat handle + menu */}
+        {/* Mobile: menu bar with integrated chat button */}
         {isMobile && (
           <>
-            {/* Chat handle bar - sits above menu bar */}
-            <button
-              onClick={() => setChatOpen(true)}
-              className={cn(
-                "fixed bottom-[calc(3.5rem+env(safe-area-inset-bottom))] left-0 right-0 z-20",
-                "flex items-center justify-center gap-2 py-2",
-                "bg-card/95 backdrop-blur-sm border-t border-border",
-              )}
-            >
-              <MessageCircle className="h-4 w-4 text-muted-foreground" />
-              <span className="text-xs font-medium text-muted-foreground">Chat</span>
-              <div className="h-1 w-8 rounded-full bg-muted-foreground/30 ml-1" />
-            </button>
-
-            {/* Mobile menu bar */}
-            <MenuBar />
+            <MenuBar onChatToggle={() => setChatOpen(!chatOpen)} chatOpen={chatOpen} />
 
             {/* Chat drawer */}
             <Drawer open={chatOpen} onOpenChange={setChatOpen}>

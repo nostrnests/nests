@@ -28,8 +28,8 @@ export function RoomOptionsMenu({ roomEvent }: RoomOptionsMenuProps) {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className="rounded-full h-12 w-12">
-            <MoreVertical className="h-6 w-6" />
+          <Button variant="ghost" size="icon" className="rounded-full h-14 w-14">
+            <MoreVertical className="h-7 w-7" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-48">

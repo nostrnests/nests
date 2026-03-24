@@ -26,7 +26,7 @@ export default function Index() {
           </Link>
           <div className="flex items-center gap-3">
             <Link to="/lobby">
-              <Button variant="ghost" className="rounded-full">Browse Rooms</Button>
+              <Button variant="ghost" className="rounded-full">Rooms</Button>
             </Link>
             {user ? (
               <Link to="/new">

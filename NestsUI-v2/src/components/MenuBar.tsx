@@ -1,4 +1,4 @@
-import { DoorOpen, Hand, Mic, MicOff, LogOut } from "lucide-react";
+import { DoorOpen, Hand, Mic, MicOff, LogOut, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { ReactionsButton } from "./ReactionsButton";
@@ -8,45 +8,51 @@ import { useLocalParticipant } from "@/transport";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { cn } from "@/lib/utils";
 
-const ICON_BTN = "rounded-full h-12 w-12";
-const ICON_SIZE = "h-6 w-6";
+// Consistent large button sizes for easy tapping
+const BTN = "rounded-full h-14 w-14";
+const ICON = "h-7 w-7";
 
-export function MenuBar() {
+interface MenuBarProps {
+  onChatToggle?: () => void;
+  chatOpen?: boolean;
+}
+
+export function MenuBar({ onChatToggle, chatOpen }: MenuBarProps) {
   const { user } = useCurrentUser();
   const { event, roomATag, handRaised, setHandRaised, isSpeaker, leaveRoom } = useRoomContext();
   const { isMicEnabled, isPublishing, setMicEnabled, unpublishMicrophone, declinedPublish } = useLocalParticipant();
 
-  // Show hand raise when not actively on stage (listener or declined stage)
-  const showHandRaise = user && (!isSpeaker || declinedPublish) && !isPublishing;
+  // Hand raise is always available for any logged-in user
+  const showHandRaise = !!user;
 
   return (
     <div
       className={cn(
-        "flex items-center justify-between gap-2 border-t border-border",
-        // Mobile: fixed full-width bar at bottom with safe area
-        "fixed bottom-0 left-0 right-0 z-30 bg-background px-4 py-2.5",
-        "pb-[max(0.625rem,env(safe-area-inset-bottom))]",
+        "flex items-center justify-between gap-1",
+        // Mobile: fixed full-width bar at bottom
+        "fixed bottom-0 left-0 right-0 z-30 bg-background border-t border-border px-3 py-2",
+        "pb-[max(0.5rem,env(safe-area-inset-bottom))]",
         // Desktop: floating pill centered
         "md:static md:inset-auto md:z-auto",
-        "md:mx-auto md:mb-4 md:max-w-md md:w-fit",
-        "md:rounded-full md:border md:border-border/50 md:px-5 md:py-2.5",
+        "md:mx-auto md:mb-4 md:max-w-lg md:w-fit",
+        "md:rounded-full md:border md:border-border/50 md:px-4 md:py-2",
         "md:bg-background/80 md:backdrop-blur-sm md:shadow-lg md:shadow-black/20",
       )}
     >
-      {/* Left group: Leave room + Leave stage */}
-      <div className="flex items-center gap-1.5">
+      {/* Left: Leave room + Leave stage */}
+      <div className="flex items-center gap-1">
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
               variant="ghost"
               size="icon"
-              className={cn(ICON_BTN, "text-destructive hover:text-destructive hover:bg-destructive/10")}
+              className={cn(BTN, "text-destructive hover:text-destructive hover:bg-destructive/10")}
               onClick={() => {
                 if (isPublishing) unpublishMicrophone();
                 leaveRoom();
               }}
             >
-              <DoorOpen className={ICON_SIZE} />
+              <DoorOpen className={ICON} />
             </Button>
           </TooltipTrigger>
           <TooltipContent>Leave Room</TooltipContent>
@@ -58,10 +64,10 @@ export function MenuBar() {
               <Button
                 variant="ghost"
                 size="icon"
-                className={cn(ICON_BTN, "text-muted-foreground hover:text-foreground")}
+                className={cn(BTN, "text-muted-foreground hover:text-foreground")}
                 onClick={() => unpublishMicrophone()}
               >
-                <LogOut className={ICON_SIZE} />
+                <LogOut className={ICON} />
               </Button>
             </TooltipTrigger>
             <TooltipContent>Leave Stage</TooltipContent>
@@ -69,9 +75,9 @@ export function MenuBar() {
         )}
       </div>
 
-      {/* Right group: Hand / Mute / Reactions / Options */}
-      <div className="flex items-center gap-1.5">
-        {/* Hand raise - visible for listeners and speakers who left stage */}
+      {/* Center + Right: Hand / Mute / Chat / Reactions / Options */}
+      <div className="flex items-center gap-1">
+        {/* Hand raise */}
         {showHandRaise && (
           <Tooltip>
             <TooltipTrigger asChild>
@@ -79,19 +85,19 @@ export function MenuBar() {
                 variant="ghost"
                 size="icon"
                 className={cn(
-                  ICON_BTN,
+                  BTN,
                   handRaised && "bg-yellow-500/20 text-yellow-500 hover:bg-yellow-500/30",
                 )}
                 onClick={() => setHandRaised(!handRaised)}
               >
-                <Hand className={ICON_SIZE} />
+                <Hand className={ICON} />
               </Button>
             </TooltipTrigger>
             <TooltipContent>{handRaised ? "Lower Hand" : "Raise Hand"}</TooltipContent>
           </Tooltip>
         )}
 
-        {/* Mute toggle - visible for speakers */}
+        {/* Mute toggle */}
         {isPublishing && (
           <Tooltip>
             <TooltipTrigger asChild>
@@ -99,15 +105,32 @@ export function MenuBar() {
                 variant="ghost"
                 size="icon"
                 className={cn(
-                  ICON_BTN,
+                  BTN,
                   !isMicEnabled && "bg-destructive/20 text-destructive hover:bg-destructive/30",
                 )}
                 onClick={() => setMicEnabled(!isMicEnabled)}
               >
-                {isMicEnabled ? <Mic className={ICON_SIZE} /> : <MicOff className={ICON_SIZE} />}
+                {isMicEnabled ? <Mic className={ICON} /> : <MicOff className={ICON} />}
               </Button>
             </TooltipTrigger>
             <TooltipContent>{isMicEnabled ? "Mute" : "Unmute"}</TooltipContent>
+          </Tooltip>
+        )}
+
+        {/* Chat toggle */}
+        {onChatToggle && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className={cn(BTN, chatOpen && "bg-primary/20 text-primary")}
+                onClick={onChatToggle}
+              >
+                <MessageCircle className={ICON} />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>{chatOpen ? "Hide Chat" : "Show Chat"}</TooltipContent>
           </Tooltip>
         )}
 
