@@ -96,10 +96,8 @@ function MenuBar({ link }: { link: NostrLink }) {
 
   function handleExit() {
     if (isSpeaker) {
-      // Leave the stage (stop publishing audio, stay in room as listener)
-      if (isPublishing) {
-        unpublishMicrophone();
-      }
+      // Leave the stage: stop publishing audio and stay in room as listener
+      unpublishMicrophone();
     } else {
       // Not on stage -- leave the room entirely
       leaveRoom();

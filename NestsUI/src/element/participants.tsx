@@ -20,6 +20,7 @@ export default function NostrParticipants({ event }: { event: NostrEvent }) {
   const remoteParticipants = useRemoteParticipantList();
   const login = useLogin();
   const { presence } = useNostrRoom();
+  const { declinedPublish } = useLocalParticipant();
 
   // Determine who is a speaker from the event's p tags
   const getSpeakerPubkeys = useMemo(() => {
@@ -73,7 +74,11 @@ export default function NostrParticipants({ event }: { event: NostrEvent }) {
     return pubkeys;
   }, [remoteParticipants, login.pubkey, presence]);
 
-  const speakers = allPubkeys.filter((pk) => getSpeakerPubkeys.has(pk));
+  // If the local user declined publishing (left stage voluntarily), show them as a listener
+  const speakers = allPubkeys.filter((pk) => {
+    if (pk === login.pubkey && declinedPublish) return false;
+    return getSpeakerPubkeys.has(pk);
+  });
   const listeners = allPubkeys.filter((pk) => !getSpeakerPubkeys.has(pk));
 
   return (
