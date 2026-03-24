@@ -79,6 +79,10 @@ export class MoQAudioTransport implements NestTransport {
     return this._volume;
   }
 
+  get localAudioTrack(): MediaStreamTrack | undefined {
+    return this.microphone?.source.peek() ?? undefined;
+  }
+
   get participants(): ReadonlyMap<string, RemoteParticipant> {
     return this._participants;
   }

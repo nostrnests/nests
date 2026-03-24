@@ -14,6 +14,7 @@ import DisplayName from "./display-name";
 import ZapButton from "./zap-button";
 import { useLogin } from "../login";
 import { useRemoteParticipantList, useLocalParticipant } from "../transport";
+import { useLocalSpeaking } from "../hooks/useSpeakingIndicator";
 import { ParticipantRole } from "../const";
 
 export default function NostrParticipants({ event }: { event: NostrEvent }) {
@@ -126,6 +127,8 @@ function NostrParticipant({
   const presence = useUserPresence(pubkey);
   const reactions = useUserRoomReactions(pubkey);
   const { isMicEnabled, isPublishing } = useLocalParticipant();
+  const localSpeaking = useLocalSpeaking();
+  const isSpeaking = isMe ? localSpeaking : false; // TODO: remote speaking detection via audio stats
 
   const { handleMouseEnter, handleMouseLeave, isHovering } = useHoverMenu();
 
@@ -188,15 +191,19 @@ function NostrParticipant({
         )}
         {showMicIcon && (
           <div className="absolute w-[72px] h-[72px] rotate-[135deg]">
-            <div className="bg-foreground rounded-full inline-block mt-[-4px] ml-[-4px] w-8 h-8 flex items-center justify-center">
+            <div className={`bg-foreground rounded-full inline-block mt-[-4px] ml-[-4px] w-8 h-8 flex items-center justify-center ${isSpeaking ? "bg-primary" : ""}`}>
               <div className="flex items-center justify-center relative rotate-[-135deg] w-full h-full overflow-hidden rounded-full">
                 <Icon name={micEnabled ? "mic" : "mic-off"} className="z-20" size={20} />
-                {/* TODO: VU meter needs MediaStreamTrack - will integrate when transport exposes it */}
               </div>
             </div>
           </div>
         )}
-        <Avatar pubkey={pubkey} size={72} className={""} link={false} />
+        <Avatar
+          pubkey={pubkey}
+          size={72}
+          className={isSpeaking ? "ring-2 ring-primary ring-offset-2 ring-offset-background rounded-full transition-all" : "transition-all"}
+          link={false}
+        />
         {isHovering && !isGuest && <ProfileCard pubkey={pubkey} />}
       </div>
       <div className={`text-center ${isHost ? "text-primary" : ""}`}>

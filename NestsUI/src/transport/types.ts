@@ -88,6 +88,9 @@ export interface NestTransport {
   /** Reset the declined-publish flag (e.g., when re-promoted by host). */
   resetDeclinedPublish(): void;
 
+  /** The local microphone MediaStreamTrack (for VU meters / speaking indicators). */
+  readonly localAudioTrack: MediaStreamTrack | undefined;
+
   /** Subscribe to local mic state changes. */
   onLocalStateChange(cb: () => void): Unsubscribe;
 
