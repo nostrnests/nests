@@ -50,56 +50,7 @@ export function NostrRoomContextProvider({
     navigate("/lobby");
   }, [transport, navigate]);
 
-  // Auto-publish microphone when connected as a speaker
-  const isSpeaker = useMemo(() => {
-    if (!login.pubkey) return false;
-    if (event.pubkey === login.pubkey) return true; // host
-    return event.tags.some(
-      (t) => t[0] === "p" && t[1] === login.pubkey &&
-        (t[3] === "speaker" || t[3] === "admin" || t[3] === "host"),
-    );
-  }, [event, login.pubkey]);
 
-  // Use a ref to track speaker status so the callback always has the latest value
-  const isSpeakerRef = useRef(isSpeaker);
-  isSpeakerRef.current = isSpeaker;
-
-  useEffect(() => {
-    if (!isLive) return;
-
-    const tryAutoPublish = () => {
-      if (isSpeakerRef.current && !transport.isPublishing && !transport.declinedPublish) {
-        console.log("[room] auto-publishing microphone");
-        transport.publishMicrophone().catch((e) =>
-          console.error("[room] auto-publish failed:", e),
-        );
-      }
-    };
-
-    // Subscribe to connection state changes
-    const dispose = transport.onStateChange((state) => {
-      if (state === "connected") {
-        tryAutoPublish();
-      }
-    });
-
-    // Also check immediately (connection might already be established)
-    if (transport.state === "connected") {
-      tryAutoPublish();
-    }
-
-    // Poll as a safety net (handles React StrictMode double-invoke race)
-    const pollInterval = setInterval(() => {
-      if (transport.state === "connected") {
-        tryAutoPublish();
-      }
-    }, 2000);
-
-    return () => {
-      dispose();
-      clearInterval(pollInterval);
-    };
-  }, [isLive, transport]);
 
   // Global spacebar handler for mute toggle
   useEffect(() => {

@@ -145,6 +145,13 @@ export class MoQAudioTransport implements NestTransport {
           case "connected":
             this.setState("connected");
             this.startAnnouncementWatching();
+            // Auto-publish if this user can publish
+            if (config.canPublish && !this._isPublishing && !this._declinedPublish) {
+              console.log("[transport] auto-publishing: connected as speaker");
+              this.publishMicrophone().catch((e) =>
+                console.error("[transport] auto-publish failed:", e),
+              );
+            }
             break;
           case "connecting":
             this.setState(this._state === "disconnected" ? "connecting" : "reconnecting");
@@ -332,6 +339,9 @@ export class MoQAudioTransport implements NestTransport {
     this.announcementPollInterval = setInterval(() => {
       if (!this.connection) return;
       const announced = this.connection.announced.peek();
+      if (announced.size === 0) {
+        console.log("[transport] announcement poll: no announcements yet");
+      }
       this.processAnnouncements(announced);
     }, 3000);
   }
@@ -349,6 +359,10 @@ export class MoQAudioTransport implements NestTransport {
 
   private processAnnouncements(announced: Set<Moq.Path.Valid>): void {
     if (!this.config) return;
+
+    if (announced.size > 0) {
+      console.log("[transport] raw announcements:", [...announced]);
+    }
 
     const currentPubkeys = new Set<string>();
 
