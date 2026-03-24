@@ -15,6 +15,8 @@ export interface RecentReaction {
   id: string;
   pubkey: string;
   emoji: string;
+  /** URL for custom emoji images (NIP-30) */
+  emojiUrl?: string;
   timestamp: number;
 }
 
@@ -29,8 +31,8 @@ interface RoomContextType {
   reactions: NostrEvent[];
   /** Recent reactions (within last 5s) for overlay animations */
   recentReactions: RecentReaction[];
-  /** Map of pubkey -> most recent reaction emoji (within 5s) */
-  participantReactions: Map<string, string>;
+  /** Map of pubkey -> most recent reaction (emoji text + optional image URL) */
+  participantReactions: Map<string, { emoji: string; emojiUrl?: string }>;
   /** Whether user's hand is raised */
   handRaised: boolean;
   setHandRaised: (v: boolean) => void;
@@ -45,7 +47,7 @@ interface RoomContextType {
   /** Leave the room */
   leaveRoom: () => void;
   /** Optimistically add a local reaction for immediate display */
-  addLocalReaction: (emoji: string) => void;
+  addLocalReaction: (emoji: string, emojiUrl?: string) => void;
 }
 
 const RoomContext = createContext<RoomContextType | null>(null);
@@ -86,11 +88,15 @@ export function RoomContextProvider({ event, children }: PropsWithChildren<RoomC
       // Accept reactions from the last 30 seconds (accounts for query polling delay)
       if (r.kind === 7 && r.content && (now - r.created_at) < 30 && !seenReactionIdsRef.current.has(r.id)) {
         seenReactionIdsRef.current.add(r.id);
+        // Check for custom emoji URL (NIP-30)
+        const emojiTag = r.tags.find(([t]) => t === "emoji");
+        const emojiUrl = emojiTag?.[2]; // ["emoji", "shortcode", "url"]
         newReactions.push({
           id: r.id,
           pubkey: r.pubkey,
           emoji: r.content,
-          timestamp: now, // Use current time so animation starts fresh
+          emojiUrl,
+          timestamp: now,
         });
       }
     }
@@ -111,12 +117,12 @@ export function RoomContextProvider({ event, children }: PropsWithChildren<RoomC
 
   // Build participant reactions map (most recent reaction within last 5s per pubkey)
   const participantReactions = (() => {
-    const map = new Map<string, string>();
+    const map = new Map<string, { emoji: string; emojiUrl?: string }>();
     const now = Math.floor(Date.now() / 1000);
     // recentReactions are already filtered to recent; pick last per pubkey
     for (const r of recentReactions) {
       if (now - r.timestamp < 5) {
-        map.set(r.pubkey, r.emoji);
+        map.set(r.pubkey, { emoji: r.emoji, emojiUrl: r.emojiUrl });
       }
     }
     return map;
@@ -131,7 +137,7 @@ export function RoomContextProvider({ event, children }: PropsWithChildren<RoomC
     handRaised,
     isPublishing,
     isMuted: !isMicEnabled,
-    onStage: isSpeaker,
+    onStage: isSpeaker && !declinedPublish,
     declinedPublish,
   });
 
@@ -140,14 +146,14 @@ export function RoomContextProvider({ event, children }: PropsWithChildren<RoomC
   }, [navigate]);
 
   // Optimistically add a local reaction so it shows immediately without waiting for relay round-trip
-  const addLocalReaction = useCallback((emoji: string) => {
+  const addLocalReaction = useCallback((emoji: string, emojiUrl?: string) => {
     if (!user) return;
     const now = Math.floor(Date.now() / 1000);
     const fakeId = `local-${now}-${Math.random().toString(36).slice(2, 8)}`;
     seenReactionIdsRef.current.add(fakeId);
     setRecentReactions((prev) => [
       ...prev,
-      { id: fakeId, pubkey: user.pubkey, emoji, timestamp: now },
+      { id: fakeId, pubkey: user.pubkey, emoji, emojiUrl, timestamp: now },
     ]);
   }, [user]);
 

@@ -29,7 +29,11 @@ export function ReactionOverlay() {
           className="absolute bottom-0 float-reaction text-2xl md:text-3xl"
           style={{ left: `${r.left}%` }}
         >
-          {r.emoji}
+          {r.emojiUrl ? (
+            <img src={r.emojiUrl} alt={r.emoji} className="h-8 w-8 md:h-10 md:w-10 object-contain" />
+          ) : (
+            r.emoji
+          )}
         </span>
       ))}
     </div>

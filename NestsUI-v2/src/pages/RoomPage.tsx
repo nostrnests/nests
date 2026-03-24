@@ -4,7 +4,7 @@ import { useSeoMeta } from "@unhead/react";
 import { nip19 } from "nostr-tools";
 import { useNostr } from "@nostrify/react";
 import { useQuery } from "@tanstack/react-query";
-import { MessageCircle, PanelRightClose, PanelRightOpen, Users } from "lucide-react";
+import { Users } from "lucide-react";
 import type { NostrEvent } from "@nostrify/nostrify";
 
 import { NestTransportProvider } from "@/transport";
@@ -16,8 +16,6 @@ import { MenuBar } from "@/components/MenuBar";
 import { RoomLobbyDrawer } from "@/components/RoomLobbyDrawer";
 
 import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Drawer, DrawerContent, DrawerTitle } from "@/components/ui/drawer";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
@@ -104,65 +102,20 @@ function RoomInner({ event }: { event: NostrEvent }) {
           </div>
 
           {/* Desktop: menu bar fixed at bottom of participants pane */}
-          <div className="hidden md:flex fixed bottom-0 left-0 z-30 pointer-events-none" style={{ width: desktopChatExpanded ? "calc(100% - 24rem)" : "calc(100% - 3rem)" }}>
+          <div className="hidden md:flex fixed bottom-0 left-0 z-30 pointer-events-none" style={{ width: desktopChatExpanded ? "calc(100% - 24rem)" : "100%" }}>
             <div className="w-full flex justify-center pb-4 pointer-events-auto">
               <MenuBar onChatToggle={() => setDesktopChatExpanded(!desktopChatExpanded)} chatOpen={desktopChatExpanded} />
             </div>
           </div>
 
-          {/* Desktop chat panel - collapsible */}
-          {!isMobile && (
-            <div
-              className={cn(
-                "border-l border-border flex flex-col shrink-0 transition-[width] duration-300 ease-in-out overflow-hidden",
-                desktopChatExpanded ? "w-80 lg:w-96" : "w-12",
-              )}
-            >
-              {desktopChatExpanded ? (
-                <>
-                  <div className="px-4 py-2 border-b border-border shrink-0 flex items-center justify-between">
-                    <h3 className="text-sm font-medium text-muted-foreground">Chat</h3>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 rounded-full"
-                          onClick={() => setDesktopChatExpanded(false)}
-                        >
-                          <PanelRightClose className="h-4 w-4 text-muted-foreground" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent side="left">Collapse chat</TooltipContent>
-                    </Tooltip>
-                  </div>
-                  <ChatMessages roomATag={roomATag} />
-                  <WriteMessage roomATag={roomATag} />
-                </>
-              ) : (
-                <div className="flex flex-col items-center py-2 gap-2">
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 rounded-full"
-                        onClick={() => setDesktopChatExpanded(true)}
-                      >
-                        <PanelRightOpen className="h-4 w-4 text-muted-foreground" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side="left">Expand chat</TooltipContent>
-                  </Tooltip>
-                  <button
-                    onClick={() => setDesktopChatExpanded(true)}
-                    className="flex flex-col items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    <MessageCircle className="h-4 w-4" />
-                    <span className="text-[10px] font-medium [writing-mode:vertical-lr] rotate-180">Chat</span>
-                  </button>
-                </div>
-              )}
+          {/* Desktop chat panel - toggled via menu bar chat button */}
+          {!isMobile && desktopChatExpanded && (
+            <div className="border-l border-border flex flex-col shrink-0 w-80 lg:w-96">
+              <div className="px-4 py-2 border-b border-border shrink-0">
+                <h3 className="text-sm font-medium text-muted-foreground">Chat</h3>
+              </div>
+              <ChatMessages roomATag={roomATag} />
+              <WriteMessage roomATag={roomATag} />
             </div>
           )}
         </div>
@@ -307,7 +260,7 @@ export default function RoomPage() {
       return events.sort((a, b) => b.created_at - a.created_at)[0] ?? null;
     },
     enabled: !!decoded,
-    refetchInterval: 10_000, // Refetch every 10s to pick up edits
+    refetchInterval: 5_000, // Refetch every 5s for faster stage promotion visibility
   });
 
   // Use fetched event if newer than state event, otherwise fall back to state

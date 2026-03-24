@@ -37,7 +37,7 @@ export function useRoomPresence(roomATag: string | undefined) {
       );
     },
     enabled: !!roomATag,
-    refetchInterval: 15_000,
+    refetchInterval: 5_000, // Fast polling for responsive stage/hand changes
   });
 }
 

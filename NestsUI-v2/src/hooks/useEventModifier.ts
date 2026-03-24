@@ -5,8 +5,8 @@ import type { NostrEvent } from "@nostrify/nostrify";
 
 /**
  * Hook that re-signs and re-publishes a modified Nostr event.
- * Useful for editing room events (kind:30312).
- * Invalidates the room-event query cache after successful publish for fast UI updates.
+ * Optimistically updates the local TanStack Query cache so the UI
+ * reflects changes immediately without waiting for relay round-trip.
  */
 export function useEventModifier() {
   const { nostr } = useNostr();
@@ -24,16 +24,25 @@ export function useEventModifier() {
         created_at: Math.floor(Date.now() / 1000),
       });
 
-      await nostr.event(signed, { signal: AbortSignal.timeout(5000) });
+      // Optimistically update cache BEFORE publishing to relay
+      // This makes the UI update instantly for the local user
+      const dTag = signed.tags.find(([t]) => t === "d")?.[1];
+      if (dTag) {
+        queryClient.setQueryData(
+          ["nostr", "room-event", signed.kind, signed.pubkey, dTag],
+          signed,
+        );
+      }
+
+      // Publish to relay in the background
+      nostr.event(signed, { signal: AbortSignal.timeout(10000) }).catch((err) => {
+        console.error("Failed to publish event to relay:", err);
+      });
+
       return signed;
     },
     onSuccess: (signed) => {
-      // Invalidate room event cache so the UI picks up changes immediately
-      const dTag = signed.tags.find(([t]) => t === "d")?.[1];
-      if (dTag) {
-        queryClient.invalidateQueries({ queryKey: ["nostr", "room-event", signed.kind, signed.pubkey, dTag] });
-      }
-      // Also invalidate the room list
+      // Also invalidate the room list so lobby refreshes
       queryClient.invalidateQueries({ queryKey: ["nostr", "room-list"] });
     },
     onError: (error) => {

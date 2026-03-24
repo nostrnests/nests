@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MoreVertical, Share2, Settings, Pencil } from "lucide-react";
+import { Share2, Settings, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -28,8 +28,8 @@ export function RoomOptionsMenu({ roomEvent }: RoomOptionsMenuProps) {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className="rounded-full h-14 w-14">
-            <MoreVertical className="h-7 w-7" />
+          <Button variant="ghost" size="icon" className="rounded-full h-12 w-12">
+            <Settings className="h-7 w-7" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-48">

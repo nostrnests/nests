@@ -8,7 +8,7 @@ import { getRoomParticipants } from "@/lib/room";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 export function ParticipantsGrid() {
-  const { event, presenceList, participantReactions } = useRoomContext();
+  const { event, presenceList, participantReactions, handRaised: localHandRaised } = useRoomContext();
   const { user } = useCurrentUser();
   const remoteParticipants = useRemoteParticipantList();
   const { declinedPublish } = useLocalParticipant();
@@ -50,8 +50,19 @@ export function ParticipantsGrid() {
     return p?.role ?? "";
   };
 
-  // Get presence info for a pubkey
+  // For the local user, use optimistic local state instead of waiting for relay round-trip
+  const { isMicEnabled: localMicEnabled, isPublishing: localIsPublishing } = useLocalParticipant();
+
   const getPresenceInfo = (pubkey: string) => {
+    // Optimistic: use local state for the current user
+    if (user && pubkey === user.pubkey) {
+      return {
+        handRaised: localHandRaised,
+        isMuted: !localMicEnabled,
+        isPublishing: localIsPublishing,
+      };
+    }
+    // Remote users: read from presence events
     const presence = presenceList.find((e) => e.pubkey === pubkey);
     if (!presence) return { handRaised: false, isMuted: true, isPublishing: false };
     return {

@@ -14,7 +14,7 @@ interface ParticipantAvatarProps {
   isMuted?: boolean;
   handRaised?: boolean;
   role?: string;
-  reaction?: string;
+  reaction?: { emoji: string; emojiUrl?: string };
   isPublishing?: boolean;
   size?: "sm" | "md" | "lg";
   onClick?: () => void;
@@ -125,7 +125,11 @@ export function ParticipantAvatar({
               transform: "translateX(-50%)",
             }}
           >
-            {reaction}
+            {reaction.emojiUrl ? (
+              <img src={reaction.emojiUrl} alt={reaction.emoji} className="h-10 w-10 md:h-12 md:w-12 object-contain" />
+            ) : (
+              reaction.emoji
+            )}
           </div>,
           document.body,
         )}
