@@ -42,6 +42,7 @@ export class MoQAudioTransport implements NestTransport {
   private _state: ConnectionState = "disconnected";
   private _isMicEnabled = false;
   private _isPublishing = false;
+  private _declinedPublish = false;
   private _volume = 1.0;
   private _participants = new Map<string, RemoteParticipant>();
 
@@ -64,6 +65,14 @@ export class MoQAudioTransport implements NestTransport {
 
   get isPublishing(): boolean {
     return this._isPublishing;
+  }
+
+  get declinedPublish(): boolean {
+    return this._declinedPublish;
+  }
+
+  resetDeclinedPublish(): void {
+    this._declinedPublish = false;
   }
 
   get volume(): number {
@@ -239,6 +248,7 @@ export class MoQAudioTransport implements NestTransport {
 
     this._isPublishing = false;
     this._isMicEnabled = false;
+    this._declinedPublish = true;
     this.notifyLocalStateChange();
   }
 

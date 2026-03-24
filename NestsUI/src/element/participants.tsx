@@ -120,16 +120,24 @@ function NostrParticipant({
   const profile = useUserProfile(isGuest ? undefined : pubkey);
   const presence = useUserPresence(pubkey);
   const reactions = useUserRoomReactions(pubkey);
-  const { isMicEnabled, isPublishing, publishMicrophone } = useLocalParticipant();
+  const { isMicEnabled, isPublishing, publishMicrophone, declinedPublish, resetDeclinedPublish } = useLocalParticipant();
   const connectionState = useConnectionState();
   const link = useMemo(() => NostrLink.fromEvent(event), [event]);
   const { active: handRaised, toggleHand } = useHand(link);
 
-  // Track previous speaker state to detect promotion
+  // Track previous speaker state to detect fresh promotion
   const wasOnStageRef = useRef(isSpeaker);
 
+  // Reset declined flag when freshly promoted (host re-added to stage)
   useEffect(() => {
-    if (isMe && isSpeaker && connectionState === "connected") {
+    if (isMe && isSpeaker && !wasOnStageRef.current) {
+      resetDeclinedPublish();
+    }
+    wasOnStageRef.current = isSpeaker;
+  }, [isMe, isSpeaker, resetDeclinedPublish]);
+
+  useEffect(() => {
+    if (isMe && isSpeaker && connectionState === "connected" && !declinedPublish) {
       // Auto-publish mic when promoted to speaker and transport is connected
       if (!isPublishing) {
         publishMicrophone().catch((e) =>
@@ -138,12 +146,11 @@ function NostrParticipant({
       }
 
       // Auto-lower hand when moved to stage
-      if (!wasOnStageRef.current && handRaised) {
+      if (handRaised) {
         toggleHand();
       }
-      wasOnStageRef.current = isSpeaker;
     }
-  }, [isMe, isSpeaker, isPublishing, connectionState, handRaised, toggleHand, publishMicrophone]);
+  }, [isMe, isSpeaker, isPublishing, connectionState, declinedPublish, handRaised, toggleHand, publishMicrophone]);
 
   const { handleMouseEnter, handleMouseLeave, isHovering } = useHoverMenu();
 

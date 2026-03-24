@@ -82,6 +82,12 @@ export interface NestTransport {
   /** Whether we are currently publishing audio. */
   readonly isPublishing: boolean;
 
+  /** Whether the user voluntarily left the stage (prevents auto-re-publish). */
+  readonly declinedPublish: boolean;
+
+  /** Reset the declined-publish flag (e.g., when re-promoted by host). */
+  resetDeclinedPublish(): void;
+
   /** Subscribe to local mic state changes. */
   onLocalStateChange(cb: () => void): Unsubscribe;
 

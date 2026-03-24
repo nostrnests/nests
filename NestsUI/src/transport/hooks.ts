@@ -68,11 +68,15 @@ export function useLocalParticipant() {
 
   const unpublishMicrophone = useCallback(() => transport.unpublishMicrophone(), [transport]);
 
+  const resetDeclinedPublish = useCallback(() => transport.resetDeclinedPublish(), [transport]);
+
   return {
     ...localState,
+    declinedPublish: transport.declinedPublish,
     setMicEnabled,
     publishMicrophone,
     unpublishMicrophone,
+    resetDeclinedPublish,
   };
 }
 
