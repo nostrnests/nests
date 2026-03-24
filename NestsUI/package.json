@@ -13,9 +13,10 @@
     "pre:commit": "yarn intl-extract && yarn intl-compile && yarn prettier --write ."
   },
   "dependencies": {
-    "@livekit/components-react": "^2.9.15",
-    "@livekit/components-styles": "^1.1.6",
-    "@livekit/protocol": "^1.43.0",
+    "@moq/hang": "^0.2.0",
+    "@moq/lite": "^0.1.7",
+    "@moq/publish": "^0.2.3",
+    "@moq/watch": "^0.2.3",
     "@scure/base": "^2.0.0",
     "@snort/shared": "^2.0.0-pre.3",
     "@snort/system": "^2.0.0-pre.8",
@@ -27,7 +28,6 @@
     "classnames": "^2.5.1",
     "dayjs": "^1.11.19",
     "ical-generator": "^10.0.0",
-    "livekit-client": "^2.15.15",
     "qr-code-styling": "^1.9.2",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
@@ -41,7 +41,8 @@
     "workbox-expiration": "^7.3.0",
     "workbox-precaching": "^7.3.0",
     "workbox-routing": "^7.3.0",
-    "workbox-strategies": "^7.3.0"
+    "workbox-strategies": "^7.3.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@formatjs/cli": "^6.7.4",

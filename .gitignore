@@ -5,3 +5,13 @@ riderModule.iml
 /_ReSharper.Caches/
 .idea/
 recordings/
+
+# MoQ auth service
+moq-auth/node_modules/
+moq-auth/dist/
+
+# Dev TLS certs (self-signed, regenerated per machine)
+dev-config/certs/
+
+# Environment overrides
+NestsUI/.env.development

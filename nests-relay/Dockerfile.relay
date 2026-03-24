@@ -1,0 +1,10 @@
+# Build moq-relay from source
+FROM rust:1.86-bookworm AS builder
+RUN cargo install moq-relay --version 0.10.10
+
+# Minimal runtime image
+FROM debian:bookworm-slim
+RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
+COPY --from=builder /usr/local/cargo/bin/moq-relay /usr/local/bin/moq-relay
+EXPOSE 443/tcp 443/udp
+ENTRYPOINT ["moq-relay"]

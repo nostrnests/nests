@@ -1,4 +1,3 @@
-import { LiveKitRoom } from "@livekit/components-react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import NostrParticipants from "../element/participants";
 import { NostrEvent, NostrLink, RequestBuilder } from "@snort/system";
@@ -8,21 +7,21 @@ import Icon from "../icon";
 import ChatMessages from "../element/chat-messages";
 import WriteMessage from "../element/write-message";
 import { useLogin } from "../login";
-import { CSSProperties, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { CSSProperties, useContext, useEffect, useMemo, useRef, useState } from "react";
 import classNames from "classnames";
 import { FormattedMessage } from "react-intl";
 import { removeUndefined, sanitizeRelayUrl } from "@snort/shared";
-import { extractStreamInfo, updateRelays } from "../utils";
 import { NostrRoomContextProvider } from "../element/nostr-room-context-provider";
 import { JoinRoom } from "../element/join-room";
 import { useNostrRoom } from "../hooks/nostr-room-context";
 import { useSwipeable } from "react-swipeable";
 import { useChatActivity } from "../hooks/useChatActivity";
-import { useNestsApi } from "../hooks/useNestsApi";
+import { NestTransportProvider, authenticateWithMoqRelay, type TransportConfig } from "../transport";
+import { DefaultMoQAuthUrl, DefaultMoQServers, ParticipantRole } from "../const";
 
 export interface RoomState {
   event: NostrEvent;
-  token: string;
+  token?: string;
 }
 
 const ChatWidth = 450 as const;
@@ -34,10 +33,7 @@ export default function Room() {
   const room = location.state as RoomState | undefined;
   const link = useMemo(() => (room ? NostrLink.fromEvent(room.event) : undefined), [room]);
   const system = useContext(SnortContext);
-
-  // Track if we've already refreshed the token for this room
-  const tokenRefreshedRef = useRef<string | null>(null);
-  const [freshToken, setFreshToken] = useState<string | null>(null);
+  const login = useLogin();
 
   // Update URL to match the canonical naddr from the event
   useEffect(() => {
@@ -69,45 +65,6 @@ export default function Room() {
     return stateEvent.created_at > subscriptionEvent.created_at ? stateEvent : subscriptionEvent;
   }, [roomUpdates, room?.event]);
 
-  const { service } = extractStreamInfo(event);
-  const api = useNestsApi(service);
-
-  // Refresh token on mount to ensure we have a valid token after page reload
-  const refreshToken = useCallback(async () => {
-    if (!event || !link || !api) return null;
-
-    // Only refresh once per room
-    if (tokenRefreshedRef.current === event.id) return null;
-
-    try {
-      console.debug("Refreshing room token...");
-      const { token } = await api.joinRoom(link.id);
-      tokenRefreshedRef.current = event.id;
-      setFreshToken(token);
-
-      // Update location state with fresh token
-      navigate(location.pathname, {
-        state: {
-          event,
-          token,
-        } as RoomState,
-        replace: true,
-      });
-
-      return token;
-    } catch (e) {
-      console.error("Failed to refresh token:", e);
-      return null;
-    }
-  }, [event, link, api, navigate, location.pathname]);
-
-  // Refresh token when component mounts with existing state (e.g., page reload)
-  useEffect(() => {
-    if (room?.token && event && tokenRefreshedRef.current !== event.id) {
-      refreshToken();
-    }
-  }, [room?.token, event, refreshToken]);
-
   useEffect(() => {
     if (event) {
       const relays = removeUndefined(
@@ -117,34 +74,87 @@ export default function Room() {
           .map((a) => sanitizeRelayUrl(a)) ?? [],
       );
       if (relays.length > 0) {
-        updateRelays(relays);
+        // TODO: updateRelays if needed
       }
     }
   }, [event, system]);
 
-  // Use fresh token if available, otherwise fall back to state token
-  const activeToken = freshToken ?? room?.token;
+  if (!event || !link) return <JoinRoom />;
 
-  if (!event || !activeToken || !link) return <JoinRoom />;
-
-  const livekitUrl = event?.tags.find(
-    (a) => a[0] === "streaming" && (a[1].startsWith("ws+livekit://") || a[1].startsWith("wss+livekit://")),
-  )?.[1];
-  const status = event?.tags.find((a) => a[0] === "status")?.[1];
+  // Extract MoQ relay URL from the room event's streaming tag
+  const streamingUrl = event.tags.find((a) => a[0] === "streaming")?.[1];
+  const status = event.tags.find((a) => a[0] === "status")?.[1];
   const isLive = status === "live";
-  const serverUrl = (livekitUrl ?? "").replace("+livekit", "");
-  // Use event.id + token as key to force LiveKitRoom to remount when switching rooms or token changes
-  // This ensures the audio connection is properly established with the correct token
-  const roomKey = `${event.id}-${activeToken}`;
+
+  // Determine the MoQ relay server URL
+  const serverUrl = streamingUrl || DefaultMoQServers[0];
+
+  // Build the room namespace from the event's address
+  const roomNamespace = `nests/30312:${event.pubkey}:${link.id}`;
+
+  // Check if the current user has publish rights (is host, admin, or speaker)
+  const userPubkey = login.pubkey ?? "";
+  const isHost = event.pubkey === userPubkey;
+  const userRole = event.tags.find(
+    (t) => t[0] === "p" && t[1] === userPubkey,
+  )?.[3];
+  const canPublish =
+    isHost ||
+    userRole === ParticipantRole.ADMIN ||
+    userRole === ParticipantRole.SPEAKER;
+
+  // Authenticate with moq-auth to get a JWT token
+  const [moqToken, setMoqToken] = useState<string | null>(null);
+  const authAttemptedRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!isLive || !serverUrl || !roomNamespace) return;
+
+    const authKey = `${serverUrl}:${roomNamespace}:${canPublish}`;
+    if (authAttemptedRef.current === authKey) return;
+    authAttemptedRef.current = authKey;
+
+    if (login.signer) {
+      // Authenticated user: use NIP-98
+      authenticateWithMoqRelay(DefaultMoQAuthUrl, login.signer, roomNamespace, canPublish)
+        .then((token) => {
+          console.debug("Got MoQ auth token");
+          setMoqToken(token);
+        })
+        .catch((e) => {
+          console.error("MoQ auth failed:", e);
+          // Still allow room view (chat works without transport)
+        });
+    }
+    // TODO: For guests without a signer, generate ephemeral keypair
+  }, [isLive, serverUrl, roomNamespace, canPublish, login.signer]);
+
+  // Build transport config (only when we have a token)
+  const certFingerprint = import.meta.env.VITE_MOQ_CERT_FINGERPRINT || undefined;
+  const transportConfig: TransportConfig | null =
+    isLive && serverUrl && moqToken
+      ? {
+          serverUrl,
+          authUrl: DefaultMoQAuthUrl,
+          roomNamespace,
+          identity: userPubkey,
+          canPublish,
+          token: moqToken,
+          certFingerprint,
+        }
+      : null;
+
+  const roomKey = `${event.id}-${serverUrl}-${moqToken ? "authed" : "pending"}`;
+
   return (
-    <LiveKitRoom key={roomKey} serverUrl={serverUrl} token={activeToken} connect={isLive}>
-      <NostrRoomContextProvider event={event} token={activeToken} serverUrl={serverUrl}>
+    <NestTransportProvider key={roomKey} config={transportConfig} connect={isLive}>
+      <NostrRoomContextProvider event={event}>
         <div className="flex overflow-hidden h-[100dvh]">
           <ParticipantsPannel event={event} />
           <ChatPannel link={link} />
         </div>
       </NostrRoomContextProvider>
-    </LiveKitRoom>
+    </NestTransportProvider>
   );
 }
 
@@ -214,7 +224,7 @@ function ChatPannel({ link }: { link: NostrLink }) {
             "mb-3": expanded,
             "bg-primary animate-pulse": hasNewMessages && !expanded,
             "bg-foreground-2": !hasNewMessages || expanded,
-          }
+          },
         )}
         onClick={() => setExpanded((s) => !s)}
       ></div>

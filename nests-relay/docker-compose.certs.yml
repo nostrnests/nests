@@ -1,0 +1,42 @@
+###############################################################################
+# Nests Audio Relay - Bring Your Own Certs
+#
+# Use this if you already have TLS certificates (e.g., from a reverse proxy,
+# or you manage certs yourself).
+#
+# Quick start:
+#   1. Place your certs in ./certs/fullchain.pem and ./certs/privkey.pem
+#   2. docker compose -f docker-compose.certs.yml up -d
+###############################################################################
+
+services:
+  moq-relay:
+    image: ghcr.io/nostrnests/moq-relay:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.relay
+    ports:
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./certs:/certs:ro
+    environment:
+      - MOQ_SERVER_BIND=0.0.0.0:443
+      - MOQ_SERVER_TLS_CERT=/certs/fullchain.pem
+      - MOQ_SERVER_TLS_KEY=/certs/privkey.pem
+      - MOQ_AUTH_KEY=http://moq-auth:8080/.well-known/jwks.json
+      - MOQ_AUTH_REFRESH_INTERVAL=60
+      - MOQ_LOG_LEVEL=info
+    depends_on:
+      - moq-auth
+    restart: unless-stopped
+
+  moq-auth:
+    image: ghcr.io/nostrnests/moq-auth:latest
+    build:
+      context: ../moq-auth
+      dockerfile: Dockerfile
+    environment:
+      - PORT=8080
+      - HOST=0.0.0.0
+    restart: unless-stopped

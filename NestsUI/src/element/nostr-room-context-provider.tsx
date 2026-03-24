@@ -1,50 +1,42 @@
-import { RoomAudioRenderer, useLocalParticipant, useRoomContext } from "@livekit/components-react";
 import { Link } from "react-router-dom";
 import { NostrEvent, NostrLink } from "@snort/system";
-import { useNestsApi } from "../hooks/useNestsApi";
 import { PrimaryButton, SecondaryButton } from "./button";
 import useRoomPresence, { useSendPresence } from "../hooks/useRoomPresence";
 import { useLogin } from "../login";
 import Modal from "./modal";
-import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRoomReactions } from "../hooks/useRoomReactions";
 import Flyout from "./flyout";
 import { NostrRoomContext } from "../hooks/nostr-room-context";
-import { RoomInfo } from "../api";
 import { FormattedMessage } from "react-intl";
 import { unixNow } from "@snort/shared";
 import { extractStreamInfo, updateOrAddTag } from "../utils";
 import useEventModifier from "../hooks/useEventModifier";
 import { usePageVisibility } from "../hooks/usePageVisibility";
-import { ConnectionState } from "livekit-client";
 import LobbyFlyoutContent from "./lobby-flyout";
+import { useNestTransport, useLocalParticipant, useConnectionState } from "../transport";
 
 export function NostrRoomContextProvider({
   event,
-  token,
-  serverUrl,
   children,
 }: {
   event: NostrEvent;
-  token: string;
-  serverUrl: string;
   children?: ReactNode;
 }) {
   const [flyout, setFlyout] = useState<ReactNode>();
   const [lobbyOpen, setLobbyOpen] = useState(false);
   const [volume, setVolume] = useState(1);
-  const [roomInfo, setRoomInfo] = useState<RoomInfo>();
   const [confirmGuest, setConfirmGuest] = useState(false);
   const login = useLogin();
   const link = useMemo(() => NostrLink.fromEvent(event), [event]);
   const presence = useRoomPresence(link);
   const reactions = useRoomReactions(link);
-  const room = useRoomContext();
-  const localParticipant = useLocalParticipant();
+  const transport = useNestTransport();
+  const { isMicEnabled, isPublishing, setMicEnabled } = useLocalParticipant();
+  const connectionState = useConnectionState();
   const modifier = useEventModifier();
 
-  const { status, service } = extractStreamInfo(event);
-  const api = useNestsApi(service);
+  const { status } = extractStreamInfo(event);
   const isMine = event.pubkey === login.pubkey;
 
   const isLive = status === "live";
@@ -52,20 +44,16 @@ export function NostrRoomContextProvider({
   const isPlanned = status === "planned";
   useSendPresence(isLive ? link : undefined);
 
-  function leaveRoom() {
-    // Disconnect in background, don't wait for it
-    room.disconnect();
-    // Navigate to lobby
+  const leaveRoom = useCallback(() => {
+    transport.disconnect();
     window.location.href = "/lobby";
-  }
+  }, [transport]);
 
   // Global spacebar handler for mute toggle
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Only handle spacebar
       if (e.code !== "Space") return;
 
-      // Don't toggle if typing in an input or textarea
       const target = e.target as HTMLElement;
       if (
         target.tagName === "INPUT" ||
@@ -75,21 +63,17 @@ export function NostrRoomContextProvider({
         return;
       }
 
-      // Only toggle if user has a microphone track
-      if (room.localParticipant.audioTrackPublications.size === 0) return;
+      if (!isPublishing) return;
 
-      // Prevent default (which would trigger the focused button)
       e.preventDefault();
-
-      // Toggle mute
-      room.localParticipant.setMicrophoneEnabled(!room.localParticipant.isMicrophoneEnabled);
+      setMicEnabled(!isMicEnabled);
     };
 
     document.addEventListener("keydown", handleKeyDown);
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [room]);
+  }, [isPublishing, isMicEnabled, setMicEnabled]);
 
   // Handle reconnection when page becomes visible after being hidden (mobile wake)
   const { isVisible } = usePageVisibility();
@@ -101,97 +85,29 @@ export function NostrRoomContextProvider({
     } else if (wasHiddenRef.current) {
       wasHiddenRef.current = false;
 
-      // Check if LiveKit room needs reconnection
-      const connectionState = room.state;
-      if (connectionState === ConnectionState.Disconnected && serverUrl) {
-        console.debug("Page became visible, LiveKit disconnected - attempting reconnect");
-        room.connect(serverUrl, token, {
-          autoSubscribe: true,
-        }).catch((e) => {
-          console.error("Failed to reconnect to LiveKit:", e);
-        });
-      } else if (connectionState === ConnectionState.Connected) {
-        console.debug("Page became visible, LiveKit still connected");
+      if (connectionState === "disconnected") {
+        console.debug("Page became visible, transport disconnected - will auto-reconnect via Reload");
       }
     }
-  }, [isVisible, room, token, serverUrl]);
+  }, [isVisible, connectionState]);
 
-  // Handle room metadata change / recording
+  // Volume sync with transport
   useEffect(() => {
-    const handler = (m?: string) => {
-      if (m) {
-        const info = JSON.parse(m) as RoomInfo;
-        console.debug("setting metadata", info);
-        setRoomInfo(info);
-      }
-    };
-    const endRecording = () => console.log("END_RECORDING");
-    const handler2 = () => {
-      if (room.numParticipants === 0) {
-        endRecording();
-      }
-    };
-
-    const isRecorder = room.localParticipant.permissions?.recorder;
-    room.on("roomMetadataChanged", handler);
-    if (isRecorder) {
-      room.on("participantDisconnected", handler2);
-      room.on("disconnected", endRecording);
-      console.log("START_RECORDING");
-    }
-    return () => {
-      room.off("roomMetadataChanged", handler);
-      if (isRecorder) {
-        room.off("participantDisconnected", handler2);
-        room.off("disconnected", endRecording);
-      }
-    };
-  }, [room]);
-
-  useEffect(() => {
-    const endRecording = () => console.log("END_RECORDING");
-    const handler2 = () => {
-      if (room.numParticipants === 0) {
-        endRecording();
-      }
-    };
-
-    const isRecorder = localParticipant.localParticipant.permissions?.recorder;
-    if (isRecorder) {
-      room.on("participantDisconnected", handler2);
-      room.on("disconnected", endRecording);
-      console.log("START_RECORDING");
-    }
-    return () => {
-      if (isRecorder) {
-        room.off("participantDisconnected", handler2);
-        room.off("disconnected", endRecording);
-      }
-    };
-  }, [room, localParticipant]);
-
-  useEffect(() => {
-    api.getRoomInfo(link.id).then((m) => {
-      console.debug("setting metadata", m);
-      setRoomInfo(m);
-    });
-  }, [link.id, api]);
+    transport.setVolume(volume);
+  }, [transport, volume]);
 
   async function startRoomNow() {
     updateOrAddTag(event, "starts", unixNow().toString());
     updateOrAddTag(event, "status", "live");
     event.tags = event.tags.filter((a) => a[0] !== "ends");
 
-    // Wait for update to broadcast
     await modifier.update(event);
-    // Navigate to room URL - forces full page load to pick up updated event
     window.location.href = `/${link.encode()}`;
   }
 
   return (
     <NostrRoomContext.Provider
       value={{
-        api,
         event,
         reactions,
         presence,
@@ -199,13 +115,11 @@ export function NostrRoomContextProvider({
         setFlyout,
         lobbyOpen,
         setLobbyOpen,
-        info: roomInfo,
         volume,
         setVolume,
         leaveRoom,
       }}
     >
-      <RoomAudioRenderer volume={volume} />
       <Flyout side="right" show={flyout !== undefined} onClose={() => setFlyout(undefined)}>
         {flyout}
       </Flyout>
@@ -245,7 +159,7 @@ export function NostrRoomContextProvider({
           </div>
         </Modal>
       )}
-      {isLive && login.type === "none" && !room.localParticipant.permissions?.recorder && !confirmGuest && (
+      {isLive && login.type === "none" && !confirmGuest && (
         <Modal id="join-as-guest">
           <div className="flex flex-col gap-4 items-center">
             <h2>

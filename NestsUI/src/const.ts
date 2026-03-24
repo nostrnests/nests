@@ -1,14 +1,7 @@
-/**
- * Nests API host base path
- */
-
 import { EventKind } from "@snort/system";
 
-//export const ApiUrl = "";
-export const ApiUrl = import.meta.env.VITE_API_URL || "https://nostrnests.com";
-
 /**
- * Default relays to connect and publish to
+ * Default Nostr relays to connect and publish to
  */
 export const DefaultRelays = [
   "wss://relay.snort.social",
@@ -17,7 +10,20 @@ export const DefaultRelays = [
   "wss://relay.ditto.pub",
   "wss://relay.primal.net",
 ];
-//export const DefaultRelays = ["ws://host.docker.internal:7777"];
+
+/**
+ * Default MoQ relay servers.
+ * Used when a user has no kind:10112 MoQ server list published.
+ */
+export const DefaultMoQServers = [
+  import.meta.env.VITE_MOQ_RELAY_URL || "https://moq.nostrnests.com",
+];
+
+/**
+ * Default MoQ auth service URL.
+ * Paired with the default MoQ relay.
+ */
+export const DefaultMoQAuthUrl = import.meta.env.VITE_MOQ_AUTH_URL || "https://moq-auth.nostrnests.com";
 
 /**
  * Color palette colors for room cards
@@ -37,7 +43,7 @@ export const ColorPalette = [
 ] as const;
 
 /**
- * Nests room event kind
+ * Nests room event kind (NIP-53 variant)
  */
 export const ROOM_KIND = 30_312 as EventKind;
 
@@ -47,6 +53,29 @@ export const ROOM_KIND = 30_312 as EventKind;
 export const ROOM_PRESENCE = 10_312 as EventKind;
 
 /**
- * Live chat kind
+ * Live chat kind (NIP-53)
  */
 export const LIVE_CHAT = 1311 as EventKind;
+
+/**
+ * MoQ server list kind (NIP-51 standard list).
+ * Users publish this to advertise their preferred MoQ relay servers.
+ */
+export const MOQ_SERVER_LIST = 10_112 as EventKind;
+
+/**
+ * Admin command kind.
+ * Used by room hosts/admins to send mute/unmute/kick commands.
+ */
+export const ADMIN_COMMAND = 4_312 as EventKind;
+
+/**
+ * Room participant roles as used in p-tag markers.
+ */
+export const ParticipantRole = {
+  HOST: "host",
+  ADMIN: "admin",
+  SPEAKER: "speaker",
+} as const;
+
+export type ParticipantRole = (typeof ParticipantRole)[keyof typeof ParticipantRole];

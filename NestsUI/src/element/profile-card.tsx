@@ -1,5 +1,3 @@
-import { useEnsureRoom } from "@livekit/components-react";
-import { LocalParticipant, RemoteParticipant } from "livekit-client";
 import Icon from "../icon";
 import { ReactNode } from "react";
 import classNames from "classnames";
@@ -11,26 +9,30 @@ import { useLogin } from "../login";
 import { FormattedMessage } from "react-intl";
 import useFollowing from "../hooks/useFollowing";
 import Async from "./async";
+import useEventModifier from "../hooks/useEventModifier";
+import { ParticipantRole } from "../const";
 
-export default function ProfileCard({
-  participant,
-  pubkey,
-}: {
-  participant: LocalParticipant | RemoteParticipant;
-  pubkey: string;
-}) {
+export default function ProfileCard({ pubkey }: { pubkey: string }) {
   const login = useLogin();
-  const room = useEnsureRoom();
   const nostrRoom = useNostrRoom();
   const isLoginAdmin = useIsAdmin();
   const { isFollowing, follow, unfollow } = useFollowing();
+  const modifier = useEventModifier();
 
-  const thisIsAdmin = nostrRoom.info?.admins.includes(pubkey);
-  const thisIsHost = pubkey === nostrRoom.info?.host;
+  const event = nostrRoom.event;
+  const thisIsHost = pubkey === event.pubkey;
+  const thisIsAdmin = event.tags.some(
+    (t) => t[0] === "p" && t[1] === pubkey && t[3] === ParticipantRole.ADMIN,
+  );
   const isSelf = pubkey === login.pubkey;
 
-  const isSpeaker = participant.permissions?.canPublish ?? false;
-  const isMuted = !participant.isMicrophoneEnabled;
+  const isSpeaker = event.tags.some(
+    (t) =>
+      t[0] === "p" &&
+      t[1] === pubkey &&
+      (t[3] === ParticipantRole.SPEAKER || t[3] === ParticipantRole.ADMIN),
+  ) || thisIsHost;
+
   const menuItem = (icon: string, text: ReactNode, onClick: () => Promise<void> | void, className?: string) => {
     return (
       <Async onClick={onClick}>
@@ -46,7 +48,25 @@ export default function ProfileCard({
       </Async>
     );
   };
+
   const isFollowed = isFollowing(pubkey);
+
+  /**
+   * Update the room event to add/remove/change a participant's role.
+   */
+  async function updateParticipantRole(targetPubkey: string, role: string | null) {
+    const updatedEvent = { ...event };
+    // Remove existing p tag for this pubkey
+    updatedEvent.tags = updatedEvent.tags.filter(
+      (t) => !(t[0] === "p" && t[1] === targetPubkey),
+    );
+    // Add new p tag with role if role is not null
+    if (role) {
+      updatedEvent.tags.push(["p", targetPubkey, "", role]);
+    }
+    await modifier.update(updatedEvent);
+  }
+
   return (
     <div className="absolute z-10 bg-foreground-2 rounded-xl overflow-hidden flex flex-col font-medium w-max">
       {menuItem("eye", <FormattedMessage defaultMessage="View Profile" />, () => {
@@ -76,22 +96,21 @@ export default function ProfileCard({
               <FormattedMessage defaultMessage="Remove from stage" />
             ),
             async () => {
-              await nostrRoom.api.updatePermissions(room.name, pubkey, { can_publish: !isSpeaker });
+              await updateParticipantRole(
+                pubkey,
+                isSpeaker ? null : ParticipantRole.SPEAKER,
+              );
             },
           )}
-          {!isMuted &&
-            menuItem("mic-off", <FormattedMessage defaultMessage="Mute" />, async () => {
-              await nostrRoom.api.updatePermissions(room.name, pubkey, { mute_microphone: true });
-            })}
           {!thisIsAdmin &&
             !thisIsHost &&
             menuItem("admin", <FormattedMessage defaultMessage="Make admin" />, async () => {
-              await nostrRoom.api.updatePermissions(room.name, pubkey, { is_admin: true });
+              await updateParticipantRole(pubkey, ParticipantRole.ADMIN);
             })}
           {thisIsAdmin &&
             !thisIsHost &&
             menuItem("admin", <FormattedMessage defaultMessage="Remove admin" />, async () => {
-              await nostrRoom.api.updatePermissions(room.name, pubkey, { is_admin: false });
+              await updateParticipantRole(pubkey, ParticipantRole.SPEAKER);
             })}
           {!isSelf && !thisIsHost && (
             <>
@@ -99,7 +118,9 @@ export default function ProfileCard({
               {menuItem(
                 "minus-circle",
                 <FormattedMessage defaultMessage="Ban user" />,
-                () => {},
+                () => {
+                  // TODO: Implement kick via kind:4312 admin command
+                },
                 "text-delete hover:text-delete",
               )}
             </>

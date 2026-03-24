@@ -1,9 +1,5 @@
-import { useMemo } from "react";
-import { NestsApi } from "../api";
-import { ApiUrl } from "../const";
-import { useLogin } from "../login";
-
-export function useNestsApi(api?: string) {
-  const { signer } = useLogin();
-  return useMemo(() => new NestsApi(api ?? ApiUrl, signer), [api, signer]);
-}
+/**
+ * @deprecated The central NestsApi is no longer needed with MoQ transport.
+ * Room management is now done via Nostr events directly.
+ * This file is kept temporarily for any remaining references during migration.
+ */

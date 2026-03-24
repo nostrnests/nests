@@ -1,37 +1,31 @@
 import { NostrLink } from "@snort/system";
 import { ReactNode, useEffect, useRef, useState } from "react";
 import IconButton from "./icon-button";
-import { useLocalParticipant } from "@livekit/components-react";
 import { useLogin } from "../login";
 import { createPortal } from "react-dom";
 import classNames from "classnames";
 import Icon from "../icon";
-import { useIsAdmin } from "../hooks/useIsAdmin";
 import { useNostrRoom } from "../hooks/nostr-room-context";
-import { RoomRecording } from "../api";
 import Modal from "./modal";
-import dayjs from "dayjs";
-import Async from "./async";
 import { FormattedMessage } from "react-intl";
 import ShareModal from "./share-modal";
 import { ProfileEditor } from "./profile-editor";
 import DeviceSelector from "./device-selector";
 import Wallet from "./wallet";
 import Flyout from "./flyout";
+import { useLocalParticipant } from "../transport";
 
-export function RoomOptionsButton({ link }: { link: NostrLink }) {
+export function RoomOptionsButton({ link: _link }: { link: NostrLink }) {
   const [open, setOpen] = useState(false);
   const login = useLogin();
   const ref = useRef<HTMLButtonElement | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
-  const [recordings, setRecordings] = useState<Array<RoomRecording>>();
   const [share, setShare] = useState(false);
   const [w, setW] = useState(230);
   const [profileEdit, setProfileEdit] = useState(false);
   const [devices, setDevices] = useState(false);
   const [wallet, setWallet] = useState(false);
-  const isAdmin = useIsAdmin();
-  const localParticipant = useLocalParticipant();
+  const { isPublishing } = useLocalParticipant();
   const roomContext = useNostrRoom();
 
   const menuItem = (icon: string, text: ReactNode, onClick: () => void, className?: string) => {
@@ -93,86 +87,23 @@ export function RoomOptionsButton({ link }: { link: NostrLink }) {
               setShare(true);
               setOpen(false);
             })}
-            {localParticipant.microphoneTrack &&
+            {isPublishing &&
               login.pubkey &&
-              menuItem("exit", <FormattedMessage defaultMessage="Leave Stage" />, async () => {
-                await roomContext.api.updatePermissions(link.id, login.pubkey!, { can_publish: false });
+              menuItem("exit", <FormattedMessage defaultMessage="Leave Stage" />, () => {
+                // TODO: Remove self from p tags via event update
                 setOpen(false);
               })}
             {menuItem("wallet", <FormattedMessage defaultMessage="Wallet" />, () => {
               setWallet(true);
               setOpen(false);
             })}
-            {false && isAdmin && menuItem("audio", <FormattedMessage defaultMessage="Stream Audio" />, () => {})}
-            {isAdmin &&
-              roomContext.info?.recording === false &&
-              menuItem("rec", <FormattedMessage defaultMessage="Start Recording" />, async () => {
-                await roomContext.api.startRecording(link.id);
-                setOpen(false);
-              })}
-            {isAdmin &&
-              roomContext.info?.recording === true &&
-              menuItem("stop-rec", <FormattedMessage defaultMessage="Stop Recording" />, async () => {
-                const recs = await roomContext.api.listRecording(link.id);
-                if (recs) {
-                  const activeRecording = recs.find((a) => a.stopped === undefined);
-                  if (activeRecording) {
-                    await roomContext.api.stopRecording(link.id, activeRecording.id);
-                    setOpen(false);
-                  }
-                }
-              })}
-            {isAdmin &&
-              menuItem("folder", <FormattedMessage defaultMessage="Room Recordings" />, async () => {
-                const recs = await roomContext.api.listRecording(link.id);
-                setRecordings(recs);
-                setOpen(false);
-              })}
+            {menuItem("gear", <FormattedMessage defaultMessage="Audio Servers" />, () => {
+              window.open("/settings", "_blank");
+              setOpen(false);
+            })}
           </div>,
           document.body,
         )}
-      {recordings && (
-        <Modal id="room-recordings" onClose={() => setRecordings(undefined)}>
-          <h2 className="text-center mb-4">
-            <FormattedMessage defaultMessage="Room Recordings" />
-          </h2>
-          <div className="flex flex-col gap-2">
-            {recordings.map((a) => (
-              <div className="flex items-center justify-between">
-                <div>
-                  <span>{dayjs(new Date(a.started * 1000)).format("LLL")}</span>
-                  {a.stopped !== undefined && (
-                    <span className="text-xs opacity-50"> {((a.stopped - a.started) / 60).toFixed(0)} mins</span>
-                  )}
-                </div>
-                <div className="flex gap-2 items-center">
-                  <Async
-                    className="text-highlight cursor-pointer select-none"
-                    onClick={async () => {
-                      const blob = await roomContext.api.getRecording(link.id, a.id);
-                      const atag = document.createElement("a");
-                      atag.href = URL.createObjectURL(blob);
-                      atag.download = `${a.id}.mp4`;
-                      atag.click();
-                    }}
-                  >
-                    <FormattedMessage defaultMessage="Download" />
-                  </Async>
-                  <IconButton
-                    name="trash"
-                    className="text-delete rounded-xl"
-                    onClick={async () => {
-                      await roomContext.api.deleteRecording(link.id, a.id);
-                      setRecordings((rx) => rx?.filter((b) => b.id !== a.id));
-                    }}
-                  />
-                </div>
-              </div>
-            ))}
-            {recordings.length === 0 && <FormattedMessage defaultMessage="No Recordings" />}
-          </div>
-        </Modal>
-      )}
       {share && (
         <Modal id="share-room" onClose={() => setShare(false)}>
           <ShareModal event={roomContext.event} onClose={() => setShare(false)} />

@@ -1,8 +1,7 @@
 import { useCallback, useContext, useMemo, useState } from "react";
 import { PrimaryButton, SecondaryButton } from "../element/button";
 import { Link, Navigate, useNavigate } from "react-router-dom";
-import { NestsApi } from "../api";
-import { ApiUrl, DefaultRelays, ROOM_KIND } from "../const";
+import { DefaultMoQServers, DefaultRelays, ROOM_KIND } from "../const";
 import { EventBuilder, NostrLink } from "@snort/system";
 import { sanitizeRelayUrl, unixNow } from "@snort/shared";
 import { SnortContext } from "@snort/system-react";
@@ -13,6 +12,8 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { updateRelays } from "../utils";
 import Icon from "../icon";
 import Collapsed from "../element/collapsed";
+import { v4 as uuid } from "uuid";
+import { useMoqServerList } from "../hooks/useMoqServerList";
 
 export default function NewRoom() {
   updateRelays(DefaultRelays);
@@ -24,10 +25,13 @@ export default function NewRoom() {
   const [image, setImage] = useState<string>();
   const [relayInput, setRelayInput] = useState("");
   const [relays, setRelays] = useState<Array<string>>([...DefaultRelays]);
-  const [hls, setHls] = useState(false);
   const navigate = useNavigate();
   const login = useLogin();
   const { formatMessage } = useIntl();
+
+  // Use user's MoQ server list if published, otherwise defaults
+  const { servers: moqServers } = useMoqServerList();
+  const moqServer = moqServers[0] ?? DefaultMoQServers[0];
 
   const buildEvent = useCallback(
     (id: string) => {
@@ -35,32 +39,31 @@ export default function NewRoom() {
       eb.pubKey(login.pubkey ?? "00")
         .kind(ROOM_KIND)
         .tag(["d", id])
-        .tag(["service", ApiUrl])
         .tag(["title", name])
         .tag(["summary", desc])
         .tag(["color", color ?? ""])
         .tag(["image", image ?? ""])
+        .tag(["streaming", moqServer])
         .tag(["status", time ? "planned" : "live"])
         .tag(["starts", time ? String(Math.floor(new Date(time).getTime() / 1000)) : String(unixNow())])
         .tag(["relays", ...relays]);
 
       return eb;
     },
-    [login.pubkey, name, desc, color, time, image, relays],
+    [login.pubkey, name, desc, color, time, image, relays, moqServer],
   );
 
-  const dmeoRoom = useMemo(() => {
+  const demoRoom = useMemo(() => {
     return buildEvent("demo").build();
   }, [buildEvent]);
 
   async function createRoom() {
     if (!login.signer) return;
-    const api = new NestsApi(ApiUrl, login.signer);
-    const room = await api.createRoom(relays, hls);
-    const eb = buildEvent(room.roomId);
 
-    room.endpoints.forEach((e) => eb.tag(["streaming", e]));
+    // Generate a room ID
+    const roomId = uuid();
 
+    const eb = buildEvent(roomId);
     const ev = await eb.buildAndSign(login.signer);
     await Promise.all(relays.map((r) => system.pool.broadcastTo(r, ev)));
 
@@ -68,7 +71,6 @@ export default function NewRoom() {
     navigate(`/${link.encode()}`, {
       state: {
         event: ev,
-        token: room.token,
       },
     });
   }
@@ -168,32 +170,7 @@ export default function NewRoom() {
           </div>
         </Collapsed>
       </div>
-      <div>
-        <div className="flex items-center justify-between">
-          <p className="font-medium mb-2">
-            <FormattedMessage defaultMessage="Create room video stream" />
-          </p>
-          <input type="checkbox" checked={hls} onChange={(e) => setHls(e.target.checked)} />
-        </div>
-
-        <Collapsed
-          header={(open) => (
-            <small className="flex gap-2 items-center">
-              <FormattedMessage defaultMessage="What is this?" />
-              <Icon name="chevron" className={`${open ? "rotate-90" : "-rotate-90"} transition`} size={16} />
-            </small>
-          )}
-        >
-          <small className="text-off-white">
-            <FormattedMessage defaultMessage="Enabling this option will create a video stream of this nest, allowing people to watch the nest on zap.stream / Amethyst / nostrudel.ninja / sats.gg or any client that supports Live Activities (NIP-53), they will also be able to chat in the room while watching." />
-          </small>
-          <br />
-          <small className="text-off-white">
-            <FormattedMessage defaultMessage="If this option is disabled they will still be able to see the nest on those clients and chat but not hear the room audio." />
-          </small>
-        </Collapsed>
-      </div>
-      <RoomCard event={dmeoRoom} showDescription={true} />
+      <RoomCard event={demoRoom} showDescription={true} />
       <div className="flex gap-2 justify-center">
         <Link to="/">
           <SecondaryButton>

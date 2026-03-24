@@ -75,11 +75,10 @@ export function RoomListList({
   const eventsWithPresence = useMemo(() => {
     return events
       .filter((a) => {
-        const hasLivekit = a.tags.some(
-          (a) => a[0] === "streaming" && (a[1].startsWith("ws+livekit://") || a[1].startsWith("wss+livekit://")),
+        const hasStreaming = a.tags.some(
+          (a) => a[0] === "streaming" && a[1].startsWith("http"),
         );
-        const hasServiceTag = a.tags.some((a) => a[0] === "service" && a[1].startsWith("http"));
-        return hasLivekit && hasServiceTag;
+        return hasStreaming;
       })
       .map((a) => {
         const aLink = NostrLink.fromEvent(a);

@@ -1,0 +1,23 @@
+{
+  "name": "moq-auth",
+  "version": "0.1.0",
+  "description": "NIP-98 to JWT auth service for MoQ relays used by Nostr Nests",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx watch src/index.ts"
+  },
+  "dependencies": {
+    "@noble/curves": "^1.8.0",
+    "@noble/hashes": "^1.7.0",
+    "@scure/base": "^1.2.4",
+    "jose": "^6.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  }
+}

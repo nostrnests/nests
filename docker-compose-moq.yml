@@ -1,0 +1,48 @@
+###
+# MoQ-based Nests development stack
+#
+# Services:
+#   moq-relay  - MoQ media relay server (upstream, unmodified)
+#   moq-auth   - NIP-98 -> JWT auth sidecar (ours)
+#   strfry     - Nostr relay for local development
+#
+# Usage:
+#   1. Generate TLS certs: ./dev-config/generate-certs.sh
+#   2. Start: docker compose -f docker-compose-moq.yml up -d
+#   3. Run UI dev server: cd NestsUI && yarn dev
+#
+# The UI dev server (Vite) runs outside Docker for hot reload.
+###
+
+services:
+  moq-relay:
+    image: ghcr.io/kixelated/moq-relay:latest
+    ports:
+      - "4443:4443"       # WebTransport (HTTPS/HTTP3)
+      - "4443:4443/udp"   # QUIC UDP
+    volumes:
+      - ./dev-config/certs:/certs:ro
+    environment:
+      - MOQ_BIND=0.0.0.0:4443
+      - MOQ_TLS_CERT=/certs/fullchain.pem
+      - MOQ_TLS_KEY=/certs/privkey.pem
+      - MOQ_AUTH_KEY=http://moq-auth:8080/.well-known/jwks.json
+      - MOQ_AUTH_REFRESH_INTERVAL=30
+
+  moq-auth:
+    build: ./moq-auth
+    ports:
+      - "8090:8080"
+    environment:
+      - PORT=8080
+      - HOST=0.0.0.0
+
+  strfry:
+    image: ghcr.io/hoytech/strfry:latest
+    ports:
+      - "7777:7777"
+    volumes:
+      - strfry-data:/app/strfry-db
+
+volumes:
+  strfry-data:

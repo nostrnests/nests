@@ -43,6 +43,9 @@ export default function Header() {
             <Link to="/new">
               <IconButton name="plus" className="bg-primary hover:bg-primary/80 rounded-full aspect-square" />
             </Link>
+            <Link to="/settings">
+              <IconButton name="gear" className="bg-foreground hover:bg-foreground-2 rounded-full aspect-square" />
+            </Link>
             <Avatar pubkey={login.pubkey} link={true} size={40} />
           </>
         )}

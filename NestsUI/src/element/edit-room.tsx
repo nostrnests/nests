@@ -133,15 +133,33 @@ function EditRoomDetails({ event, onClose }: { event: NostrEvent; onClose: () =>
 
 function EditRoomAdmin() {
   const roomContext = useNostrRoom();
-  const link = NostrLink.fromEvent(roomContext.event);
+  const modifier = useEventModifier();
+  const event = roomContext.event;
+
+  // Extract admins and speakers from event p-tags
+  const admins = event.tags
+    .filter((t) => t[0] === "p" && t[3] === "admin")
+    .map((t) => t[1]);
+  const speakers = event.tags
+    .filter((t) => t[0] === "p" && t[3] === "speaker")
+    .map((t) => t[1]);
+
+  async function removeRole(pubkey: string) {
+    const updatedEvent = { ...event };
+    updatedEvent.tags = updatedEvent.tags.filter(
+      (t) => !(t[0] === "p" && t[1] === pubkey),
+    );
+    await modifier.update(updatedEvent);
+  }
+
   return (
     <>
       <h2>
         <FormattedMessage defaultMessage="Admins" />
       </h2>
       <div className="flex flex-col gap-2">
-        {roomContext.info?.admins
-          .filter((a) => a !== roomContext.event.pubkey)
+        {admins
+          .filter((a) => a !== event.pubkey)
           .map((a) => (
             <div key={`admin-${a}`} className="flex justify-between items-center bg-foreground-2 py-3 px-4 rounded-2xl">
               <div className="flex gap-2 items-center">
@@ -151,11 +169,7 @@ function EditRoomAdmin() {
               <IconButton
                 name="trash"
                 className="rounded-xl bg-delete!"
-                onClick={async () => {
-                  await roomContext.api.updatePermissions(link.id, a, {
-                    is_admin: false,
-                  });
-                }}
+                onClick={async () => await removeRole(a)}
               />
             </div>
           ))}
@@ -164,7 +178,7 @@ function EditRoomAdmin() {
         <FormattedMessage defaultMessage="Speakers" />
       </h2>
       <div className="flex flex-col gap-2">
-        {roomContext.info?.speakers.map((a) => (
+        {speakers.map((a) => (
           <div key={`speaker-${a}`} className="flex justify-between items-center bg-foreground-2 py-3 px-4 rounded-2xl">
             <div className="flex gap-2 items-center">
               <Avatar pubkey={a} link={false} size={40} />
@@ -173,11 +187,7 @@ function EditRoomAdmin() {
             <IconButton
               name="trash"
               className="rounded-xl bg-delete!"
-              onClick={async () => {
-                await roomContext.api.updatePermissions(link.id, a, {
-                  can_publish: false,
-                });
-              }}
+              onClick={async () => await removeRole(a)}
             />
           </div>
         ))}

@@ -7,7 +7,7 @@ import { RouteObject, RouterProvider, createBrowserRouter } from "react-router-d
 import Layout, { BackLayout } from "./pages/layout";
 import { SnortContext } from "@snort/system-react";
 import { NostrSystem } from "@snort/system";
-import { setLogLevel } from "livekit-client";
+
 import RoomList from "./pages/room-list";
 import NewRoom from "./pages/new-room";
 import Home from "./pages/home";
@@ -16,6 +16,7 @@ import SignUp from "./element/sign-up";
 import Login from "./element/login";
 import LoginCallback from "./pages/login-callback";
 import NostrRoute from "./pages/nostr-route";
+import Settings from "./pages/settings";
 
 import { WasmOptimizer, hasWasm, wasmInit } from "./wasm";
 
@@ -121,6 +122,10 @@ const routes = [
         path: "/new",
         element: <NewRoom />,
       },
+      {
+        path: "/settings",
+        element: <Settings />,
+      },
     ],
   },
   {
@@ -139,8 +144,6 @@ export const snortSystem = new NostrSystem({
   buildFollowGraph: true,
   cachingRelay: cacheRelay,
 });
-
-setLogLevel("debug");
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>

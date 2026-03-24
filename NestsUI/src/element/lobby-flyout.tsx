@@ -56,12 +56,11 @@ export default function LobbyFlyoutContent() {
   const eventsWithPresence = useMemo(() => {
     return events
       .filter((a) => {
-        const hasLivekit = a.tags.some(
-          (t) => t[0] === "streaming" && (t[1].startsWith("ws+livekit://") || t[1].startsWith("wss+livekit://")),
+        const hasStreaming = a.tags.some(
+          (t) => t[0] === "streaming" && t[1].startsWith("http"),
         );
-        const hasServiceTag = a.tags.some((t) => t[0] === "service" && t[1].startsWith("http"));
         // Exclude the current room
-        return hasLivekit && hasServiceTag && a.id !== currentRoom.id;
+        return hasStreaming && a.id !== currentRoom.id;
       })
       .map((a) => {
         const aLink = NostrLink.fromEvent(a);

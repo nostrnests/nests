@@ -13,11 +13,9 @@ import IconButton from "./icon-button";
 import Modal from "./modal";
 import EditRoom from "./edit-room";
 import { useLogin } from "../login";
-import { useNostrRoom } from "../hooks/nostr-room-context";
 import { FormattedMessage } from "react-intl";
 import DisplayName from "./display-name";
 import { extractStreamInfo } from "../utils";
-import { useNestsApi } from "../hooks/useNestsApi";
 import { PrimaryButton } from "./button";
 import ShareModal from "./share-modal";
 
@@ -55,23 +53,14 @@ export default function RoomCard({
   const eventLink = useMemo(() => NostrLink.fromEvent(event), [event]);
   const loadedPresence = useRoomPresence(presenceEvents === undefined ? eventLink : undefined);
   const presence = presenceEvents ?? loadedPresence;
-  const roomContext = useNostrRoom();
-
-  const { service } = extractStreamInfo(event);
-  const api = useNestsApi(service);
 
   async function joinRoom() {
-    const id = event.tags.find((a) => a[0] === "d")?.[1];
-    if (id) {
-      const { token } = await api.joinRoom(id);
-      onJoin?.();
-      navigate(`/${NostrLink.fromEvent(event).encode()}`, {
-        state: {
-          event: event,
-          token,
-        },
-      });
-    }
+    onJoin?.();
+    navigate(`/${NostrLink.fromEvent(event).encode()}`, {
+      state: {
+        event: event,
+      },
+    });
   }
 
   const inner = () => {
@@ -114,12 +103,7 @@ export default function RoomCard({
             ) : status === "planned" ? (
               <StartTime n={Number(starts)} />
             ) : undefined}
-            {inRoom && roomContext.info?.recording === true && (
-              <div className="px-2 py-1 flex gap-1 items-center bg-white rounded-full text-delete font-semibold text-sm">
-                <span className="rounded-full w-4 h-4 bg-delete animate-pulse"></span>
-                REC
-              </div>
-            )}
+            {/* Recording indicator removed - recording not yet supported with MoQ */}
           </div>
           {!inRoom && (
             <div className="flex items-center gap-2">

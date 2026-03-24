@@ -1,0 +1,105 @@
+###############################################################################
+# Nests Audio Relay
+#
+# Run a MoQ relay + auth service for Nostr Nests audio rooms.
+#
+# Quick start:
+#   1. Edit .env (set your domain and email)
+#   2. docker compose up -d
+#
+# Requirements:
+#   - A domain name pointing to this server
+#   - Ports 443 (TCP+UDP) and 8090 (TCP) open
+#   - Docker and Docker Compose
+#
+# The relay will automatically obtain TLS certificates via Let's Encrypt.
+###############################################################################
+
+services:
+  moq-relay:
+    image: ghcr.io/nostrnests/moq-relay:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.relay
+    ports:
+      - "443:443"        # WebTransport (HTTPS + HTTP/3 over QUIC)
+      - "443:443/udp"    # QUIC UDP
+    volumes:
+      - certs:/certs:ro
+    environment:
+      - MOQ_SERVER_BIND=0.0.0.0:443
+      - MOQ_SERVER_TLS_CERT=/certs/fullchain.pem
+      - MOQ_SERVER_TLS_KEY=/certs/privkey.pem
+      - MOQ_AUTH_KEY=http://moq-auth:8080/.well-known/jwks.json
+      - MOQ_AUTH_REFRESH_INTERVAL=60
+      - MOQ_LOG_LEVEL=info
+    depends_on:
+      moq-auth:
+        condition: service_started
+      certbot:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  moq-auth:
+    image: ghcr.io/nostrnests/moq-auth:latest
+    build:
+      context: ../moq-auth
+      dockerfile: Dockerfile
+    environment:
+      - PORT=8080
+      - HOST=0.0.0.0
+    restart: unless-stopped
+
+  # Automatic TLS certificate provisioning via Let's Encrypt
+  certbot:
+    image: certbot/certbot:latest
+    volumes:
+      - certs:/etc/letsencrypt
+      - certbot-webroot:/var/www/certbot
+    environment:
+      - DOMAIN=${DOMAIN}
+      - EMAIL=${EMAIL}
+    entrypoint: >
+      sh -c '
+        if [ -f /etc/letsencrypt/live/${DOMAIN}/fullchain.pem ]; then
+          echo "Certificate exists, attempting renewal..."
+          certbot renew --non-interactive
+        else
+          echo "Obtaining new certificate for ${DOMAIN}..."
+          certbot certonly --standalone \
+            --non-interactive \
+            --agree-tos \
+            --email ${EMAIL} \
+            -d ${DOMAIN} \
+            --preferred-challenges http
+        fi
+        # Copy to the expected paths for moq-relay
+        cp /etc/letsencrypt/live/${DOMAIN}/fullchain.pem /etc/letsencrypt/fullchain.pem 2>/dev/null || true
+        cp /etc/letsencrypt/live/${DOMAIN}/privkey.pem /etc/letsencrypt/privkey.pem 2>/dev/null || true
+      '
+
+  # Renew certs periodically
+  certbot-renew:
+    image: certbot/certbot:latest
+    volumes:
+      - certs:/etc/letsencrypt
+      - certbot-webroot:/var/www/certbot
+    environment:
+      - DOMAIN=${DOMAIN}
+    entrypoint: >
+      sh -c '
+        while true; do
+          sleep 12h
+          certbot renew --non-interactive
+          cp /etc/letsencrypt/live/${DOMAIN}/fullchain.pem /etc/letsencrypt/fullchain.pem 2>/dev/null || true
+          cp /etc/letsencrypt/live/${DOMAIN}/privkey.pem /etc/letsencrypt/privkey.pem 2>/dev/null || true
+        done
+      '
+    depends_on:
+      certbot:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+volumes:
+  certs:
+  certbot-webroot:

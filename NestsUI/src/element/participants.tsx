@@ -1,6 +1,4 @@
-import { useParticipantPermissions, useParticipants } from "@livekit/components-react";
 import { useUserProfile } from "@snort/system-react";
-import { LocalParticipant, LocalTrackPublication, RemoteParticipant, RoomEvent, Track } from "livekit-client";
 import Icon from "../icon";
 import Avatar from "./avatar";
 import { unixNow } from "@snort/shared";
@@ -10,91 +8,130 @@ import ProfileCard from "./profile-card";
 import useHoverMenu from "../hooks/useHoverMenu";
 import { useUserRoomReactions } from "../hooks/useRoomReactions";
 import { useEffect, useMemo, useRef } from "react";
-import { useNostrRoom } from "../hooks/nostr-room-context";
 import { FormattedMessage } from "react-intl";
 import DisplayName from "./display-name";
-import VuBar from "./vu";
 import ZapButton from "./zap-button";
-import { useHand } from "../login";
+import { useHand, useLogin } from "../login";
+import { useRemoteParticipantList, useLocalParticipant, useConnectionState } from "../transport";
+import { ParticipantRole } from "../const";
 
 export default function NostrParticipants({ event }: { event: NostrEvent }) {
-  const participants = useParticipants({
-    updateOnlyOn: [
-      RoomEvent.ParticipantConnected,
-      RoomEvent.ParticipantDisconnected,
-      RoomEvent.ParticipantPermissionsChanged,
-      RoomEvent.TrackMuted,
-      RoomEvent.TrackPublished,
-      RoomEvent.TrackUnmuted,
-      RoomEvent.TrackUnmuted,
-    ],
-  });
+  const remoteParticipants = useRemoteParticipantList();
+  const login = useLogin();
+  // Build a combined list: local user + remote participants
+  // Determine who is a speaker from the event's p tags
+  const getSpeakerPubkeys = useMemo(() => {
+    const speakers = new Set<string>();
+    // Host is always a speaker
+    speakers.add(event.pubkey);
+    for (const tag of event.tags) {
+      if (tag[0] === "p") {
+        const role = tag[3];
+        if (
+          role === ParticipantRole.SPEAKER ||
+          role === ParticipantRole.ADMIN ||
+          role === ParticipantRole.HOST
+        ) {
+          speakers.add(tag[1]);
+        }
+      }
+    }
+    return speakers;
+  }, [event]);
+
+  // All participant pubkeys (remote + local if publishing)
+  const allPubkeys = useMemo(() => {
+    const pubkeys: string[] = [];
+    if (login.pubkey) {
+      pubkeys.push(login.pubkey);
+    }
+    for (const p of remoteParticipants) {
+      if (p.pubkey !== login.pubkey) {
+        pubkeys.push(p.pubkey);
+      }
+    }
+    return pubkeys;
+  }, [remoteParticipants, login.pubkey]);
+
+  const speakers = allPubkeys.filter((pk) => getSpeakerPubkeys.has(pk));
+  const listeners = allPubkeys.filter((pk) => !getSpeakerPubkeys.has(pk));
 
   return (
     <>
       <div className="grid lg:grid-cols-4 max-lg:grid-cols-3 gap-4 content-evenly">
-        {participants
-          .filter((a) => a.permissions?.canPublish)
-          .map((a) => {
-            return <NostrParticipant p={a} key={a.sid} event={event} />;
-          })}
+        {speakers.map((pubkey) => (
+          <NostrParticipant
+            key={pubkey}
+            pubkey={pubkey}
+            event={event}
+            isSpeaker={true}
+            isMe={pubkey === login.pubkey}
+          />
+        ))}
       </div>
       <div className="h-[1px] bg-foreground w-full"></div>
       <div className="grid lg:grid-cols-4 max-lg:grid-cols-3 gap-4 content-evenly">
-        {participants
-          .filter((a) => !a.permissions?.canPublish)
-          .map((a) => {
-            return <NostrParticipant p={a} key={a.sid} event={event} />;
-          })}
+        {listeners.map((pubkey) => (
+          <NostrParticipant
+            key={pubkey}
+            pubkey={pubkey}
+            event={event}
+            isSpeaker={false}
+            isMe={pubkey === login.pubkey}
+          />
+        ))}
       </div>
     </>
   );
 }
 
-function NostrParticipant({ p, event }: { p: RemoteParticipant | LocalParticipant; event: NostrEvent }) {
-  const isGuest = p.identity.startsWith("guest-") || p.identity === "";
-  const isMe = p instanceof LocalParticipant;
-  const profile = useUserProfile(isGuest ? undefined : p.identity);
-  const presence = useUserPresence(p.identity);
-  const reactions = useUserRoomReactions(p.identity);
-  const permissions = useParticipantPermissions({
-    participant: p,
-  });
-
-  // Track previous canPublish state to detect when user is moved to stage
-  const wasOnStageRef = useRef(permissions?.canPublish);
+function NostrParticipant({
+  pubkey,
+  event,
+  isSpeaker,
+  isMe,
+}: {
+  pubkey: string;
+  event: NostrEvent;
+  isSpeaker: boolean;
+  isMe: boolean;
+}) {
+  const isGuest = pubkey.startsWith("guest-") || pubkey === "";
+  const profile = useUserProfile(isGuest ? undefined : pubkey);
+  const presence = useUserPresence(pubkey);
+  const reactions = useUserRoomReactions(pubkey);
+  const { isMicEnabled, isPublishing, publishMicrophone } = useLocalParticipant();
+  const connectionState = useConnectionState();
   const link = useMemo(() => NostrLink.fromEvent(event), [event]);
   const { active: handRaised, toggleHand } = useHand(link);
 
+  // Track previous speaker state to detect promotion
+  const wasOnStageRef = useRef(isSpeaker);
+
   useEffect(() => {
-    if (permissions && p instanceof LocalParticipant) {
-      const handler = (lt: LocalTrackPublication) => {
-        lt.mute();
-      };
-      p.on("localTrackPublished", handler);
-      if (permissions.canPublish && p.audioTrackPublications.size === 0) {
-        p.setMicrophoneEnabled(true);
+    if (isMe && isSpeaker && connectionState === "connected") {
+      // Auto-publish mic when promoted to speaker and transport is connected
+      if (!isPublishing) {
+        publishMicrophone().catch((e) =>
+          console.error("Failed to publish microphone:", e),
+        );
       }
 
       // Auto-lower hand when moved to stage
-      if (permissions.canPublish && !wasOnStageRef.current && handRaised) {
+      if (!wasOnStageRef.current && handRaised) {
         toggleHand();
       }
-      wasOnStageRef.current = permissions.canPublish;
-
-      return () => {
-        p.off("localTrackPublished", handler);
-      };
+      wasOnStageRef.current = isSpeaker;
     }
-  }, [p, permissions, handRaised, toggleHand]);
+  }, [isMe, isSpeaker, isPublishing, connectionState, handRaised, toggleHand, publishMicrophone]);
 
   const { handleMouseEnter, handleMouseLeave, isHovering } = useHoverMenu();
-  const room = useNostrRoom();
 
   const isHandRaised = Boolean(presence?.tags.find((a) => a[0] === "hand")?.[1]);
-  const isSpeaker = p.permissions?.canPublish;
-  const isHost = event.pubkey === p.identity;
-  const isAdmin = room.info?.admins.includes(p.identity);
+  const isHost = event.pubkey === pubkey;
+  const isAdmin = event.tags.some(
+    (t) => t[0] === "p" && t[1] === pubkey && t[3] === ParticipantRole.ADMIN,
+  );
   const reaction = reactions
     ?.filter((a) => a.created_at > unixNow() - 10)
     ?.sort((a, b) => (a.created_at > b.created_at ? -1 : 1))?.[0];
@@ -120,66 +157,58 @@ function NostrParticipant({ p, event }: { p: RemoteParticipant | LocalParticipan
       );
     }
   }
-  if (p.permissions?.recorder) {
-    return;
-  }
+
+  // Determine mic state for display
+  const showMicIcon = isMe ? isPublishing : isSpeaker;
+  const micEnabled = isMe ? isMicEnabled : true; // We can't know remote mic state yet
+
   return (
-    <>
-      <div className="flex items-center flex-col gap-2" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
-        <div className="relative">
-          {reaction && (
-            <div
-              key={reaction.id}
-              className="absolute w-[72px] h-[72px] flex items-center justify-center text-3xl react"
-            >
-              {reaction.content}
+    <div className="flex items-center flex-col gap-2" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+      <div className="relative">
+        {reaction && (
+          <div key={reaction.id} className="absolute w-[72px] h-[72px] flex items-center justify-center text-3xl react">
+            {reaction.content}
+          </div>
+        )}
+        {isHandRaised && (
+          <div className="absolute w-[72px] h-[72px]">
+            <div className="bg-foreground rounded-full inline-block w-10 h-10 -mt-4 -ml-4 flex items-center justify-center">
+              <Icon name="hand" size={25} />
             </div>
-          )}
-          {isHandRaised && (
-            <div className="absolute w-[72px] h-[72px]">
-              <div className="bg-foreground rounded-full inline-block w-10 h-10 -mt-4 -ml-4 flex items-center justify-center">
-                <Icon name="hand" size={25} />
+          </div>
+        )}
+        {(profile?.lud16 || profile?.lud06) && (
+          <div className="absolute w-[72px] h-[72px] rotate-[80deg]">
+            <div className="inline-block mt-[-8px] ml-[-8px]">
+              <ZapButton pubkey={pubkey} iconClass="rotate-[-80deg]" iconSize={32} event={event} />
+            </div>
+          </div>
+        )}
+        {showMicIcon && (
+          <div className="absolute w-[72px] h-[72px] rotate-[135deg]">
+            <div className="bg-foreground rounded-full inline-block mt-[-4px] ml-[-4px] w-8 h-8 flex items-center justify-center">
+              <div className="flex items-center justify-center relative rotate-[-135deg] w-full h-full overflow-hidden rounded-full">
+                <Icon name={micEnabled ? "mic" : "mic-off"} className="z-20" size={20} />
+                {/* TODO: VU meter needs MediaStreamTrack - will integrate when transport exposes it */}
               </div>
             </div>
-          )}
-          {(profile?.lud16 || profile?.lud06) && (
-            <div className="absolute w-[72px] h-[72px] rotate-[80deg]">
-              <div className="inline-block mt-[-8px] ml-[-8px]">
-                <ZapButton pubkey={p.identity} iconClass="rotate-[-80deg]" iconSize={32} event={event} />
-              </div>
-            </div>
-          )}
-          {p.audioTrackPublications.size > 0 && (
-            <div className="absolute w-[72px] h-[72px] rotate-[135deg]">
-              <div className="bg-foreground rounded-full inline-block mt-[-4px] ml-[-4px] w-8 h-8 flex items-center justify-center">
-                <div className="flex items-center justify-center relative rotate-[-135deg] w-full h-full overflow-hidden rounded-full">
-                  <Icon name={p.isMicrophoneEnabled ? "mic" : "mic-off"} className="z-20" size={20} />
-                  <VuBar
-                    track={p.getTrackPublication(Track.Source.Microphone)?.audioTrack?.mediaStreamTrack}
-                    height={40}
-                    width={40}
-                    className="absolute top-0 left-0 w-full h-full z-10"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-          <Avatar pubkey={p.identity} size={72} className={""} link={false} />
-          {isHovering && !isGuest && <ProfileCard participant={p} pubkey={p.identity} />}
-        </div>
-        <div className={`text-center ${isHost ? "text-primary" : ""}`}>
-          {isGuest ? (
-            isMe ? (
-              <FormattedMessage defaultMessage="Guest (me)" />
-            ) : (
-              <FormattedMessage defaultMessage="Guest" />
-            )
-          ) : (
-            <DisplayName pubkey={p.identity} profile={profile} />
-          )}
-          {getRole()}
-        </div>
+          </div>
+        )}
+        <Avatar pubkey={pubkey} size={72} className={""} link={false} />
+        {isHovering && !isGuest && <ProfileCard pubkey={pubkey} />}
       </div>
-    </>
+      <div className={`text-center ${isHost ? "text-primary" : ""}`}>
+        {isGuest ? (
+          isMe ? (
+            <FormattedMessage defaultMessage="Guest (me)" />
+          ) : (
+            <FormattedMessage defaultMessage="Guest" />
+          )
+        ) : (
+          <DisplayName pubkey={pubkey} profile={profile} />
+        )}
+        {getRole()}
+      </div>
+    </div>
   );
 }
