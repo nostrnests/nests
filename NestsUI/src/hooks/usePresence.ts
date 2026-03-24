@@ -35,8 +35,13 @@ export default function usePresence(link?: NostrLink) {
       builder.tag(["hand", hand ? "1" : "0"]);
     }
     const ev = await builder.buildAndSign(signer);
-    await system.BroadcastEvent(ev);
-    console.debug("Presence sent successfully");
+    try {
+      await system.BroadcastEvent(ev);
+      console.debug("Presence sent successfully");
+    } catch (e) {
+      // Some relays may reject writes (read-only relays). This is expected.
+      console.debug("Presence broadcast partially failed (some relays may be read-only):", e);
+    }
   }, [signer, link, hand, system, login.type]);
 
   return { sendPresence, interval: PRESENCE_TIME, hand, isReady };
