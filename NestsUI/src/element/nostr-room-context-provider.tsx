@@ -50,6 +50,41 @@ export function NostrRoomContextProvider({
     navigate("/lobby");
   }, [transport, navigate]);
 
+  // Auto-publish microphone when connected as a speaker
+  const isSpeaker = useMemo(() => {
+    if (!login.pubkey) return false;
+    if (event.pubkey === login.pubkey) return true; // host
+    return event.tags.some(
+      (t) => t[0] === "p" && t[1] === login.pubkey &&
+        (t[3] === "speaker" || t[3] === "admin" || t[3] === "host"),
+    );
+  }, [event, login.pubkey]);
+
+  useEffect(() => {
+    if (!isSpeaker || !isLive) return;
+    if (transport.isPublishing || transport.declinedPublish) return;
+
+    // Subscribe to connection state changes directly on the transport
+    const dispose = transport.onStateChange((state) => {
+      if (state === "connected" && !transport.isPublishing && !transport.declinedPublish) {
+        console.log("[room] auto-publishing: connected as speaker");
+        transport.publishMicrophone().catch((e) =>
+          console.error("[room] auto-publish failed:", e),
+        );
+      }
+    });
+
+    // Also check immediately if already connected
+    if (transport.state === "connected" && !transport.isPublishing && !transport.declinedPublish) {
+      console.log("[room] auto-publishing: already connected as speaker");
+      transport.publishMicrophone().catch((e) =>
+        console.error("[room] auto-publish failed:", e),
+      );
+    }
+
+    return dispose;
+  }, [isSpeaker, isLive, transport]);
+
   // Global spacebar handler for mute toggle
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

@@ -3,17 +3,17 @@ import Icon from "../icon";
 import Avatar from "./avatar";
 import { unixNow } from "@snort/shared";
 import { useUserPresence } from "../hooks/useRoomPresence";
-import { NostrEvent, NostrLink } from "@snort/system";
+import { NostrEvent } from "@snort/system";
 import ProfileCard from "./profile-card";
 import useHoverMenu from "../hooks/useHoverMenu";
 import { useUserRoomReactions } from "../hooks/useRoomReactions";
-import { useEffect, useMemo, useRef } from "react";
+import { useMemo } from "react";
 import { useNostrRoom } from "../hooks/nostr-room-context";
 import { FormattedMessage } from "react-intl";
 import DisplayName from "./display-name";
 import ZapButton from "./zap-button";
-import { useHand, useLogin } from "../login";
-import { useRemoteParticipantList, useLocalParticipant, useConnectionState } from "../transport";
+import { useLogin } from "../login";
+import { useRemoteParticipantList, useLocalParticipant } from "../transport";
 import { ParticipantRole } from "../const";
 
 export default function NostrParticipants({ event }: { event: NostrEvent }) {
@@ -125,37 +125,7 @@ function NostrParticipant({
   const profile = useUserProfile(isGuest ? undefined : pubkey);
   const presence = useUserPresence(pubkey);
   const reactions = useUserRoomReactions(pubkey);
-  const { isMicEnabled, isPublishing, publishMicrophone, declinedPublish, resetDeclinedPublish } = useLocalParticipant();
-  const connectionState = useConnectionState();
-  const link = useMemo(() => NostrLink.fromEvent(event), [event]);
-  const { active: handRaised, toggleHand } = useHand(link);
-
-  // Track previous speaker state to detect fresh promotion
-  const wasOnStageRef = useRef(isSpeaker);
-
-  // Reset declined flag when freshly promoted (host re-added to stage)
-  useEffect(() => {
-    if (isMe && isSpeaker && !wasOnStageRef.current) {
-      resetDeclinedPublish();
-    }
-    wasOnStageRef.current = isSpeaker;
-  }, [isMe, isSpeaker, resetDeclinedPublish]);
-
-  useEffect(() => {
-    if (isMe && isSpeaker && connectionState === "connected" && !declinedPublish) {
-      // Auto-publish mic when promoted to speaker and transport is connected
-      if (!isPublishing) {
-        publishMicrophone().catch((e) =>
-          console.error("Failed to publish microphone:", e),
-        );
-      }
-
-      // Auto-lower hand when moved to stage
-      if (handRaised) {
-        toggleHand();
-      }
-    }
-  }, [isMe, isSpeaker, isPublishing, connectionState, declinedPublish, handRaised, toggleHand, publishMicrophone]);
+  const { isMicEnabled, isPublishing } = useLocalParticipant();
 
   const { handleMouseEnter, handleMouseLeave, isHovering } = useHoverMenu();
 
