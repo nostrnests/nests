@@ -2,6 +2,7 @@ import { lazy } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { ScrollToTop } from "./components/ScrollToTop";
 
+import Index from "./pages/Index";
 import { NIP19Page } from "./pages/NIP19Page";
 import NotFound from "./pages/NotFound";
 
@@ -16,7 +17,8 @@ export function AppRouter() {
     <BrowserRouter>
       <ScrollToTop />
       <Routes>
-        <Route path="/" element={<Lobby />} />
+        <Route path="/" element={<Index />} />
+        <Route path="/lobby" element={<Lobby />} />
         <Route path="/new" element={<NewRoom />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/login" element={<LoginPage />} />

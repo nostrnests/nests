@@ -1,0 +1,31 @@
+{
+  "short_name": "Nests",
+  "name": "Nests - Live Audio Rooms on Nostr",
+  "description": "Host and join live audio conversations on the decentralized Nostr network.",
+  "id": "/",
+  "icons": [
+    {
+      "src": "/logo_256.png",
+      "type": "image/png",
+      "sizes": "256x256"
+    },
+    {
+      "src": "/logo_512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/lobby",
+  "display": "standalone",
+  "theme_color": "#0a0a1a",
+  "background_color": "#0a0a1a",
+  "categories": ["social", "entertainment"],
+  "orientation": "any",
+  "display_override": ["standalone"],
+  "protocol_handlers": [
+    {
+      "protocol": "web+nostr",
+      "url": "/%s"
+    }
+  ]
+}

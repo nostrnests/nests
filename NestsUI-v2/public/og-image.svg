@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0a0a1a"/>
+      <stop offset="50%" style="stop-color:#1a0a2e"/>
+      <stop offset="100%" style="stop-color:#0a0a1a"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#9333ea"/>
+      <stop offset="50%" style="stop-color:#ec4899"/>
+      <stop offset="100%" style="stop-color:#f97316"/>
+    </linearGradient>
+    <radialGradient id="glow1" cx="30%" cy="40%" r="40%">
+      <stop offset="0%" style="stop-color:#9333ea;stop-opacity:0.3"/>
+      <stop offset="100%" style="stop-color:#9333ea;stop-opacity:0"/>
+    </radialGradient>
+    <radialGradient id="glow2" cx="70%" cy="60%" r="35%">
+      <stop offset="0%" style="stop-color:#ec4899;stop-opacity:0.2"/>
+      <stop offset="100%" style="stop-color:#ec4899;stop-opacity:0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="url(#glow1)"/>
+  <rect width="1200" height="630" fill="url(#glow2)"/>
+
+  <!-- Decorative circles (audio wave feel) -->
+  <circle cx="600" cy="280" r="120" fill="none" stroke="#9333ea" stroke-opacity="0.15" stroke-width="1"/>
+  <circle cx="600" cy="280" r="180" fill="none" stroke="#9333ea" stroke-opacity="0.1" stroke-width="1"/>
+  <circle cx="600" cy="280" r="240" fill="none" stroke="#ec4899" stroke-opacity="0.07" stroke-width="1"/>
+
+  <!-- Logo mark -->
+  <rect x="555" y="180" width="90" height="90" rx="20" fill="url(#accent)"/>
+  <text x="600" y="243" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-weight="800" font-size="48" fill="white">N</text>
+
+  <!-- Title -->
+  <text x="600" y="340" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-weight="800" font-size="64" fill="white">Nests</text>
+
+  <!-- Subtitle -->
+  <text x="600" y="390" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-weight="400" font-size="24" fill="#a1a1aa">Live Audio Rooms on Nostr</text>
+
+  <!-- Tagline -->
+  <text x="600" y="440" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-weight="400" font-size="18" fill="#71717a">No algorithms. No gatekeepers. Just real conversations.</text>
+
+  <!-- Bottom accent line -->
+  <rect x="450" y="490" width="300" height="3" rx="1.5" fill="url(#accent)" opacity="0.6"/>
+
+  <!-- URL -->
+  <text x="600" y="540" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-weight="500" font-size="20" fill="#71717a">nostrnests.com</text>
+</svg>

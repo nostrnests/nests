@@ -23,19 +23,19 @@ export function Header() {
 
         {/* Navigation Tabs */}
         <nav className="flex items-center gap-1">
-          <Link to="/">
+          <Link to="/lobby">
             <Button
               variant="ghost"
               size="sm"
               className={cn(
                 "rounded-full text-sm",
-                isActive("/") && "bg-secondary text-foreground",
+                isActive("/lobby") && "bg-secondary text-foreground",
               )}
             >
               Rooms
             </Button>
           </Link>
-          <Link to="/?tab=following">
+          <Link to="/lobby?tab=following">
             <Button
               variant="ghost"
               size="sm"
