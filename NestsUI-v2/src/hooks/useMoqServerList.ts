@@ -3,11 +3,12 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useNostrPublish } from "@/hooks/useNostrPublish";
 import { useCallback, useState, useEffect } from "react";
-import { MOQ_SERVER_LIST, DefaultMoQServers } from "@/lib/const";
+import { MOQ_SERVER_LIST, DefaultMoQServers, DefaultMoQAuthUrl, type MoQServer } from "@/lib/const";
 
 /**
  * Manage kind:10112 MoQ server list.
- * Provides CRUD operations and saves by publishing the updated list.
+ * Each server has a relay URL and an auth URL.
+ * Tag format: ["server", "relayUrl", "authUrl"]
  */
 export function useMoqServerList() {
   const { nostr } = useNostr();
@@ -15,12 +16,12 @@ export function useMoqServerList() {
   const { mutateAsync: createEvent } = useNostrPublish();
   const queryClient = useQueryClient();
 
-  const [localServers, setLocalServers] = useState<string[]>([]);
+  const [localServers, setLocalServers] = useState<MoQServer[]>([]);
   const [isDirty, setIsDirty] = useState(false);
 
   const query = useQuery({
     queryKey: ["nostr", "moq-server-list", user?.pubkey ?? ""],
-    queryFn: async () => {
+    queryFn: async (): Promise<MoQServer[]> => {
       if (!user) return DefaultMoQServers;
 
       const events = await nostr.query(
@@ -30,10 +31,13 @@ export function useMoqServerList() {
 
       if (events.length === 0) return DefaultMoQServers;
 
-      const servers = events[0].tags
+      const servers: MoQServer[] = events[0].tags
         .filter(([t]) => t === "relay" || t === "server")
-        .map(([, url]) => url)
-        .filter(Boolean);
+        .filter(([, url]) => !!url)
+        .map(([, relay, auth]) => ({
+          relay,
+          auth: auth || deriveAuthUrl(relay),
+        }));
 
       return servers.length > 0 ? servers : DefaultMoQServers;
     },
@@ -47,28 +51,24 @@ export function useMoqServerList() {
     }
   }, [query.data, isDirty]);
 
-  const addServer = useCallback((url: string) => {
+  const addServer = useCallback((relay: string, auth?: string) => {
+    const server: MoQServer = { relay, auth: auth || deriveAuthUrl(relay) };
     setLocalServers((prev) => {
-      if (prev.includes(url)) return prev;
-      return [...prev, url];
+      if (prev.some((s) => s.relay === relay)) return prev;
+      return [...prev, server];
     });
     setIsDirty(true);
   }, []);
 
-  const removeServer = useCallback((url: string) => {
-    setLocalServers((prev) => prev.filter((s) => s !== url));
-    setIsDirty(true);
-  }, []);
-
-  const reorderServers = useCallback((servers: string[]) => {
-    setLocalServers(servers);
+  const removeServer = useCallback((relay: string) => {
+    setLocalServers((prev) => prev.filter((s) => s.relay !== relay));
     setIsDirty(true);
   }, []);
 
   const save = useCallback(async () => {
     if (!user) return;
 
-    const tags = localServers.map((url) => ["server", url]);
+    const tags = localServers.map((s) => ["server", s.relay, s.auth]);
 
     await createEvent({
       kind: MOQ_SERVER_LIST,
@@ -87,7 +87,25 @@ export function useMoqServerList() {
     isDirty,
     addServer,
     removeServer,
-    reorderServers,
     save,
   };
+}
+
+/**
+ * Derive an auth URL from a relay URL by convention.
+ * https://moq.example.com:4443 -> https://moq-auth.example.com
+ */
+function deriveAuthUrl(relayUrl: string): string {
+  try {
+    const url = new URL(relayUrl);
+    // Replace "moq." prefix with "moq-auth." and remove port
+    const host = url.hostname.replace(/^moq\./, "moq-auth.");
+    if (host === url.hostname) {
+      // No "moq." prefix — just prepend "moq-auth." to the domain
+      return `${url.protocol}//moq-auth.${url.hostname}`;
+    }
+    return `${url.protocol}//${host}`;
+  } catch {
+    return DefaultMoQAuthUrl;
+  }
 }

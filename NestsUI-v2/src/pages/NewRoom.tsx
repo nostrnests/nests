@@ -18,7 +18,7 @@ import { ThemeChooser } from "@/components/ThemeChooser";
 import { buildRoomNaddr } from "@/lib/room";
 import type { DittoTheme } from "@/lib/ditto-theme";
 import type { DittoThemeEntry } from "@/hooks/useDittoThemes";
-import { ROOM_KIND, DITTO_THEME, ColorPalette, DefaultMoQAuthUrl, DefaultRelays } from "@/lib/const";
+import { ROOM_KIND, DITTO_THEME, ColorPalette, DefaultRelays } from "@/lib/const";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/useToast";
 
@@ -33,7 +33,7 @@ export default function NewRoom() {
   const [summary, setSummary] = useState("");
   const [color, setColor] = useState(ColorPalette[Math.floor(Math.random() * ColorPalette.length)]);
   const [scheduledTime, setScheduledTime] = useState("");
-  const [selectedServer, setSelectedServer] = useState(servers[0] ?? "");
+  const [selectedServer, setSelectedServer] = useState(servers[0] ?? null);
   const [selectedTheme, setSelectedTheme] = useState<DittoTheme | null>(null);
   const [selectedThemeEntry, setSelectedThemeEntry] = useState<DittoThemeEntry | null>(null);
 
@@ -49,7 +49,7 @@ export default function NewRoom() {
       const dTag = uuidv4();
       const isScheduled = !!scheduledTime;
       const startsAt = isScheduled ? Math.floor(new Date(scheduledTime).getTime() / 1000) : Math.floor(Date.now() / 1000);
-      const streamingUrl = selectedServer || servers[0];
+      const server = selectedServer || servers[0];
 
       const tags: string[][] = [
         ["d", dTag],
@@ -57,8 +57,8 @@ export default function NewRoom() {
         ["status", isScheduled ? "planned" : "live"],
         ["starts", String(startsAt)],
         ["color", color],
-        ["streaming", streamingUrl],
-        ["auth", DefaultMoQAuthUrl],
+        ["streaming", server.relay],
+        ["auth", server.auth],
         ["relays", ...DefaultRelays],
       ];
 
@@ -211,17 +211,17 @@ export default function NewRoom() {
               <div className="flex flex-col gap-1">
                 {servers.map((server) => (
                   <button
-                    key={server}
+                    key={server.relay}
                     type="button"
                     onClick={() => setSelectedServer(server)}
                     className={cn(
                       "text-left text-sm px-3 py-2.5 md:py-2 rounded-lg transition-colors",
-                      selectedServer === server
+                      selectedServer?.relay === server.relay
                         ? "bg-primary/20 text-primary"
                         : "bg-secondary/50 text-muted-foreground hover:bg-secondary",
                     )}
                   >
-                    {server}
+                    {server.relay}
                   </button>
                 ))}
               </div>

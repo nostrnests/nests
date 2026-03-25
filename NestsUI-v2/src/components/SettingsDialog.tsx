@@ -85,16 +85,19 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
             <div className="flex flex-col gap-3">
               {servers.map((server) => (
                 <div
-                  key={server}
+                  key={server.relay}
                   className="flex items-center gap-2 bg-secondary/50 rounded-lg px-3 py-2"
                 >
                   <Radio className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <span className="text-sm flex-1 truncate">{server}</span>
+                  <div className="flex-1 min-w-0">
+                    <span className="text-sm truncate block">{server.relay}</span>
+                    <span className="text-xs text-muted-foreground truncate block">{server.auth}</span>
+                  </div>
                   <Button
                     variant="ghost"
                     size="icon"
                     className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
-                    onClick={() => removeServer(server)}
+                    onClick={() => removeServer(server.relay)}
                     disabled={servers.length <= 1}
                   >
                     <Trash2 className="h-3.5 w-3.5" />
@@ -106,7 +109,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 <Input
                   value={newUrl}
                   onChange={(e) => setNewUrl(e.target.value)}
-                  placeholder="https://moq-relay.example.com"
+                  placeholder="https://moq.example.com:4443"
                   className="flex-1"
                   onKeyDown={(e) => e.key === "Enter" && handleAddServer()}
                 />

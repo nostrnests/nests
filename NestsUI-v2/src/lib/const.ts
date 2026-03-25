@@ -41,12 +41,21 @@ export const DefaultRelays = [
   "wss://relay.primal.net",
 ];
 
+/** MoQ server entry: relay URL + auth URL */
+export interface MoQServer {
+  relay: string;
+  auth: string;
+}
+
 /** Default MoQ relay servers (used when user has no kind:10112 list) */
-export const DefaultMoQServers = [
-  import.meta.env.VITE_MOQ_RELAY_URL || "https://moq.nostrnests.com:4443",
+export const DefaultMoQServers: MoQServer[] = [
+  {
+    relay: import.meta.env.VITE_MOQ_RELAY_URL || "https://moq.nostrnests.com:4443",
+    auth: import.meta.env.VITE_MOQ_AUTH_URL || "https://moq-auth.nostrnests.com",
+  },
 ];
 
-/** Default MoQ auth service URL */
+/** Default MoQ auth service URL (fallback for rooms without an auth tag) */
 export const DefaultMoQAuthUrl = import.meta.env.VITE_MOQ_AUTH_URL || "https://moq-auth.nostrnests.com";
 
 /** Color palette for room cards */
