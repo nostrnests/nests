@@ -147,10 +147,13 @@ function RoomContent({ event }: { event: NostrEvent }) {
       <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
         {/* Participants panel */}
         <div className="flex-1 overflow-y-auto pb-32 md:pb-20 relative scrollbar-hide">
-          <div className="max-w-3xl mx-auto">
-            <div className="bg-background/70 backdrop-blur-sm rounded-xl m-2 md:m-4">
-              <ParticipantsGrid />
-            </div>
+          {/* Backdrop that fills the visible area */}
+          <div className="sticky top-0 max-w-3xl mx-auto px-2 md:px-4 -mb-[100vh] pointer-events-none" style={{ height: "calc(100vh - 10rem)" }}>
+            <div className="bg-background/70 backdrop-blur-sm rounded-xl h-full" />
+          </div>
+          {/* Content on top */}
+          <div className="max-w-3xl mx-auto px-2 md:px-4 relative">
+            <ParticipantsGrid />
           </div>
         </div>
 
