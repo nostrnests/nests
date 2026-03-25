@@ -1,7 +1,8 @@
 import { useNostr } from "@nostrify/react";
 import { useQuery } from "@tanstack/react-query";
 import type { NostrEvent } from "@nostrify/nostrify";
-import { ROOM_KIND } from "@/lib/const";
+import { ROOM_KIND, ROOM_PRESENCE } from "@/lib/const";
+import { getRoomATag } from "@/lib/room";
 
 /** How far back to look for rooms (7 days) */
 const ROOM_LOOKBACK_SECONDS = 7 * 24 * 60 * 60;
@@ -11,6 +12,9 @@ const PLANNED_MAX_FUTURE_SECONDS = 30 * 24 * 60 * 60;
 
 /** Max age for a planned room's start time before it's considered stale (1 hour past) */
 const PLANNED_STALE_SECONDS = 60 * 60;
+
+/** A live room with no presence in this many seconds is considered stale */
+const STALE_PRESENCE_SECONDS = 10 * 60; // 10 minutes
 
 function nowSeconds(): number {
   return Math.floor(Date.now() / 1000);
@@ -50,16 +54,28 @@ export function useRoomList() {
     queryFn: async () => {
       const now = nowSeconds();
 
-      const events = await nostr.query(
-        [{
-          kinds: [ROOM_KIND],
-          since: now - ROOM_LOOKBACK_SECONDS,
-          limit: 200,
-        }],
-        { signal: AbortSignal.timeout(5000) },
-      );
+      // Fetch rooms and recent presence in parallel
+      const [roomEvents, presenceEvents] = await Promise.all([
+        nostr.query(
+          [{ kinds: [ROOM_KIND], since: now - ROOM_LOOKBACK_SECONDS, limit: 200 }],
+          { signal: AbortSignal.timeout(5000) },
+        ),
+        nostr.query(
+          [{ kinds: [ROOM_PRESENCE], since: now - STALE_PRESENCE_SECONDS, limit: 500 }],
+          { signal: AbortSignal.timeout(5000) },
+        ),
+      ]);
 
-      const valid = events.filter(isValidRoom);
+      // Build a set of room a-tags that have recent presence
+      const activeRoomATags = new Set<string>();
+      for (const p of presenceEvents) {
+        const aTag = p.tags.find(([t]) => t === "a")?.[1];
+        if (aTag && p.created_at >= now - STALE_PRESENCE_SECONDS) {
+          activeRoomATags.add(aTag);
+        }
+      }
+
+      const valid = roomEvents.filter(isValidRoom);
 
       // Deduplicate by author+d-tag (keep latest)
       const seen = new Map<string, NostrEvent>();
@@ -82,11 +98,16 @@ export function useRoomList() {
         const status = getStatus(room);
 
         if (status === "live") {
-          live.push(room);
+          const aTag = getRoomATag(room);
+          // Only show live rooms that have recent presence OR were created very recently (< 10 min)
+          const hasPresence = activeRoomATags.has(aTag);
+          const isNew = room.created_at >= now - STALE_PRESENCE_SECONDS;
+          if (hasPresence || isNew) {
+            live.push(room);
+          }
         } else if (status === "planned") {
           const starts = getStarts(room);
           // Only show planned rooms that haven't gone stale
-          // (start time is in the future, or at most 1 hour in the past)
           if (starts > now - PLANNED_STALE_SECONDS && starts < now + PLANNED_MAX_FUTURE_SECONDS) {
             planned.push(room);
           }
