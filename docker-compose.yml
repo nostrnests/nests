@@ -19,7 +19,10 @@
 #   NESTS_DOMAIN        - Frontend domain (default: nests.example.com)
 #   MOQ_RELAY_DOMAIN    - MoQ relay domain (default: moq.nests.example.com)
 #   MOQ_AUTH_DOMAIN     - Auth service domain (default: moq-auth.nests.example.com)
-#   MOQ_RELAY_PORT      - MoQ relay port (default: 4443)
+#   MOQ_RELAY_PORT      - MoQ relay port (default: 443)
+#
+# First-time setup:
+#   Clone moq-rs for the relay build: git clone https://github.com/kixelated/moq-rs.git
 ###
 
 services:
@@ -34,7 +37,9 @@ services:
     restart: unless-stopped
 
   moq-relay:
-    image: ghcr.io/kixelated/moq-relay:latest
+    build:
+      context: ./moq-rs
+      dockerfile: Dockerfile
     ports:
       - "${MOQ_RELAY_PORT:-443}:4443"
       - "${MOQ_RELAY_PORT:-443}:4443/udp"

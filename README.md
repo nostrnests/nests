@@ -35,17 +35,20 @@ Open `http://localhost:8080` in your browser.
 Use `docker-compose.yml` to run everything:
 
 ```bash
-# 1. Configure your domains
+# 1. Clone the MoQ relay (built from source)
+git clone https://github.com/kixelated/moq-rs.git
+
+# 2. Configure your domains
 cp .env.example .env
 # Edit .env:
 #   MOQ_RELAY_DOMAIN=moq.yourdomain.com
 #   MOQ_AUTH_DOMAIN=moq-auth.yourdomain.com
 
-# 2. Get TLS certs for the MoQ relay (WebTransport requires valid TLS)
-certbot certonly --standalone -d moq.yourdomain.com
+# 3. Get TLS certs for the MoQ relay (WebTransport requires valid TLS)
+certbot certonly --webroot -w /var/www/certbot -d moq.yourdomain.com
 ln -s /etc/letsencrypt/live/moq.yourdomain.com ./certs
 
-# 3. Start all services
+# 4. Start all services
 docker compose up -d
 ```
 
@@ -81,11 +84,14 @@ moq-auth.yourdomain.com {
 Anyone can run their own MoQ audio server. No frontend required — Nests clients can connect to any relay.
 
 ```bash
-# 1. Get TLS certs
-certbot certonly --standalone -d moq.yourdomain.com
+# 1. Clone the MoQ relay
+git clone https://github.com/kixelated/moq-rs.git
+
+# 2. Get TLS certs
+certbot certonly --webroot -w /var/www/certbot -d moq.yourdomain.com
 ln -s /etc/letsencrypt/live/moq.yourdomain.com ./certs
 
-# 2. Start the relay
+# 3. Start the relay
 docker compose -f docker-compose-moq.yml up moq-relay moq-auth -d
 ```
 
