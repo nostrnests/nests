@@ -18,7 +18,7 @@ services:
   moq-relay:
     build:
       context: ./moq
-      dockerfile: Dockerfile
+      dockerfile: ../moq-relay.Dockerfile
     ports:
       - "4443:4443"       # WebTransport (HTTPS/HTTP3)
       - "4443:4443/udp"   # QUIC UDP

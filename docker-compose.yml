@@ -39,7 +39,7 @@ services:
   moq-relay:
     build:
       context: ./moq
-      dockerfile: Dockerfile
+      dockerfile: ../moq-relay.Dockerfile
     ports:
       - "${MOQ_RELAY_PORT:-443}:4443"
       - "${MOQ_RELAY_PORT:-443}:4443/udp"
