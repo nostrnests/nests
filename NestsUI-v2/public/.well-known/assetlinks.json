@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.nostrnests.app",
+      "sha256_cert_fingerprints": [
+        "2E:C5:67:CE:53:5B:FD:DF:3F:C7:8D:27:F7:3F:42:59:9F:50:6D:92:AF:E2:13:98:E4:D9:75:E5:9D:FE:2D:F5"
+      ]
+    }
+  }
+]
