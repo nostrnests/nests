@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { X, Crown, Shield, Mic } from "lucide-react";
 import {
@@ -99,6 +100,7 @@ interface RoomFormData {
 }
 
 export function EditRoomDialog({ open, onOpenChange, roomEvent }: EditRoomDialogProps) {
+  const navigate = useNavigate();
   const { mutateAsync: modifyEvent, isPending } = useEventModifier();
   const { toast } = useToast();
   const { user } = useCurrentUser();
@@ -191,6 +193,25 @@ export function EditRoomDialog({ open, onOpenChange, roomEvent }: EditRoomDialog
     }
   };
 
+  const handleCloseRoom = async () => {
+    try {
+      const tags = roomEvent.tags.map(([t, ...rest]) =>
+        t === "status" ? ["status", "ended"] : [t, ...rest],
+      );
+      await modifyEvent({
+        kind: roomEvent.kind,
+        content: roomEvent.content,
+        tags,
+        created_at: Math.floor(Date.now() / 1000),
+      });
+      toast({ title: "Room closed" });
+      onOpenChange(false);
+      navigate("/");
+    } catch {
+      toast({ title: "Failed to close room", variant: "destructive" });
+    }
+  };
+
   const participants = getRoomParticipants(roomEvent);
   const admins = participants.filter((p) => p.role === "admin");
   const speakers = participants.filter((p) => p.role === "speaker");
@@ -259,6 +280,22 @@ export function EditRoomDialog({ open, onOpenChange, roomEvent }: EditRoomDialog
               <Button type="submit" disabled={isPending} className="w-full">
                 {isPending ? "Saving..." : "Save Changes"}
               </Button>
+
+              {/* Close Room */}
+              <div className="pt-4 border-t border-border">
+                <Button
+                  type="button"
+                  variant="destructive"
+                  className="w-full"
+                  disabled={isPending}
+                  onClick={handleCloseRoom}
+                >
+                  Close Room
+                </Button>
+                <p className="text-xs text-muted-foreground text-center mt-2">
+                  This will end the room for all participants.
+                </p>
+              </div>
             </form>
           </TabsContent>
 
