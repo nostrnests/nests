@@ -4,6 +4,7 @@ import { Header } from "@/components/Header";
 import { RoomCard } from "@/components/RoomCard";
 import { useRoomList } from "@/hooks/useRoomList";
 import { useFollowing } from "@/hooks/useFollowing";
+import { useMuteList } from "@/hooks/useMuteList";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -43,14 +44,16 @@ export default function Lobby() {
   const activeTab = searchParams.get("tab") ?? "browse";
   const { data, isLoading } = useRoomList();
   const { contacts } = useFollowing();
+  const { mutedPubkeys } = useMuteList();
 
   useSeoMeta({
     title: "Nests - Audio Rooms on Nostr",
     description: "Join live audio rooms on Nostr. Listen, speak, and connect with communities in real-time.",
   });
 
-  const liveRooms = data?.live ?? [];
-  const plannedRooms = data?.planned ?? [];
+  // Filter out rooms hosted by muted users
+  const liveRooms = (data?.live ?? []).filter((room) => !mutedPubkeys.includes(room.pubkey));
+  const plannedRooms = (data?.planned ?? []).filter((room) => !mutedPubkeys.includes(room.pubkey));
 
   const followingRooms = liveRooms.filter((room) =>
     contacts.includes(room.pubkey) ||

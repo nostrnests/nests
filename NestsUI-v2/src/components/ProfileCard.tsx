@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, type PropsWithChildren } from "react";
 import {
   UserPlus, UserMinus, Shield, ShieldOff, Ban, Zap,
-  ArrowUpFromLine, ArrowDownFromLine, Eye, MoreHorizontal,
+  ArrowUpFromLine, ArrowDownFromLine, Eye, MoreHorizontal, VolumeOff, Volume2,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -29,6 +29,7 @@ import { ZapDialog } from "@/components/ZapDialog";
 import { genUserName } from "@/lib/genUserName";
 import { isEmoji, getEmojiMaskUrl, themeToCSS } from "@/lib/ditto-theme";
 import { useDittoProfile } from "@/hooks/useDittoProfile";
+import { useMuteList } from "@/hooks/useMuteList";
 import { getRoomParticipants, getRoomATag } from "@/lib/room";
 import type { NostrEvent } from "@nostrify/nostrify";
 import { cn } from "@/lib/utils";
@@ -59,8 +60,10 @@ export function ProfileCard({ pubkey, roomEvent, children }: PropsWithChildren<P
   const isOnStage = participantEntry?.role === "speaker" || participantEntry?.role === "admin" || isTargetHost;
   const isTargetAdmin = participantEntry?.role === "admin";
 
+  const { isMuted, addMute, removeMute } = useMuteList();
   const lightningAddress = metadata?.lud16 ?? metadata?.lud06;
   const authorEvent = author.data?.event as Event | undefined;
+  const muted = isMuted(pubkey);
 
   // Avatar shape from kind:0 — emoji mask
   const avatarMask = useMemo(() => {
@@ -176,6 +179,17 @@ export function ProfileCard({ pubkey, roomEvent, children }: PropsWithChildren<P
                 <><UserMinus className="h-4 w-4 mr-2" />Unfollow</>
               ) : (
                 <><UserPlus className="h-4 w-4 mr-2" />Follow</>
+              )}
+            </DropdownMenuItem>
+          )}
+
+          {/* Mute/Unmute */}
+          {!isSelf && user && (
+            <DropdownMenuItem onClick={() => muted ? removeMute(pubkey) : addMute(pubkey)}>
+              {muted ? (
+                <><Volume2 className="h-4 w-4 mr-2" />Unmute</>
+              ) : (
+                <><VolumeOff className="h-4 w-4 mr-2" />Mute</>
               )}
             </DropdownMenuItem>
           )}
