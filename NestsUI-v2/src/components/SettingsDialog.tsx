@@ -14,6 +14,7 @@ import { RelayListManager } from "@/components/RelayListManager";
 import { useMoqServerList } from "@/hooks/useMoqServerList";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useToast } from "@/hooks/useToast";
+import { DefaultMoQServers } from "@/lib/const";
 
 interface SettingsDialogProps {
   open: boolean;
@@ -103,6 +104,21 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                     <Trash2 className="h-3.5 w-3.5" />
                   </Button>
                 </div>
+              ))}
+
+              {/* Add default server if not already in list */}
+              {DefaultMoQServers.filter(
+                (def) => !servers.some((s) => s.relay === def.relay),
+              ).map((def) => (
+                <Button
+                  key={def.relay}
+                  variant="outline"
+                  className="w-full gap-2 text-xs justify-start"
+                  onClick={() => addServer(def.relay, def.auth)}
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  Add {def.relay}
+                </Button>
               ))}
 
               <div className="flex items-center gap-2">
