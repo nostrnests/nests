@@ -1,8 +1,8 @@
 import { useEffect, useRef } from "react";
 
 /**
- * Show a persistent browser notification while the user is in a room.
- * Helps users know audio is active when the tab is backgrounded.
+ * Show a browser notification only when the tab is backgrounded while in a room.
+ * Clears when the tab comes back to focus.
  */
 export function useRoomNotification(roomTitle: string, enabled: boolean) {
   const notifRef = useRef<Notification | null>(null);
@@ -10,13 +10,9 @@ export function useRoomNotification(roomTitle: string, enabled: boolean) {
   useEffect(() => {
     if (!enabled || !("Notification" in window)) return;
 
-    const show = async () => {
-      // Only request permission if not already granted
-      if (Notification.permission === "default") {
-        const result = await Notification.requestPermission();
-        if (result !== "granted") return;
-      }
+    const show = () => {
       if (Notification.permission !== "granted") return;
+      if (notifRef.current) return; // already showing
 
       notifRef.current = new Notification("Nests", {
         body: `In room: ${roomTitle}`,
@@ -26,18 +22,36 @@ export function useRoomNotification(roomTitle: string, enabled: boolean) {
         requireInteraction: true,
       });
 
-      // Clicking the notification focuses the tab
       notifRef.current.onclick = () => {
         window.focus();
         notifRef.current?.close();
+        notifRef.current = null;
       };
     };
 
-    show();
-
-    return () => {
+    const hide = () => {
       notifRef.current?.close();
       notifRef.current = null;
+    };
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "hidden") {
+        show();
+      } else {
+        hide();
+      }
+    };
+
+    // Request permission quietly on first use
+    if (Notification.permission === "default") {
+      Notification.requestPermission();
+    }
+
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      hide();
     };
   }, [roomTitle, enabled]);
 }
