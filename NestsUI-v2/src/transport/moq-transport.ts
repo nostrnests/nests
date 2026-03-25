@@ -147,6 +147,7 @@ export class MoQAudioTransport implements NestTransport {
         enabled: true,
         delay: { initial: 1000, multiplier: 2, max: 30000 },
         webtransport: wtOptions,
+        websocket: {}, // WebSocket fallback for browsers without WebTransport (Android WebView, older browsers)
       });
 
       // Watch connection status reactively.

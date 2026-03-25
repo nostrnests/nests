@@ -18,6 +18,9 @@ import { RoomLobbyDrawer } from "@/components/RoomLobbyDrawer";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Drawer, DrawerContent, DrawerTitle } from "@/components/ui/drawer";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { useWakeLock } from "@/hooks/useWakeLock";
+import { useAudioKeepAlive } from "@/hooks/useAudioKeepAlive";
+import { useRoomNotification } from "@/hooks/useRoomNotification";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { useRoomPresence } from "@/hooks/useRoomPresence";
 import { useIsMobile } from "@/hooks/useIsMobile";
@@ -62,6 +65,11 @@ function RoomContent({ event }: { event: NostrEvent }) {
   const [desktopChatExpanded, setDesktopChatExpanded] = useState(true);
   const { data: presenceList } = useRoomPresence(status === "live" ? roomATag : undefined);
   const participantCount = presenceList?.length ?? 0;
+
+  // Keep screen awake and audio alive while in a room
+  useWakeLock(status === "live");
+  useAudioKeepAlive(status === "live");
+  useRoomNotification(title, status === "live");
 
   // Convert room theme to CSS custom properties
   const roomThemeCSS = useMemo(

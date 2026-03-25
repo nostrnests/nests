@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Nests</string>
+    <string name="title_activity_main">Nests</string>
+    <string name="package_name">com.nostrnests.app</string>
+    <string name="custom_url_scheme">com.nostrnests.app</string>
+</resources>
