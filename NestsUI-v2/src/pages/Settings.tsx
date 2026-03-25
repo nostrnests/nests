@@ -19,6 +19,7 @@ export default function Settings() {
   const { servers, isDirty, addServer, removeServer, save } = useMoqServerList();
   const { toast } = useToast();
   const [newUrl, setNewUrl] = useState("");
+  const [newAuthUrl, setNewAuthUrl] = useState("");
   const [saving, setSaving] = useState(false);
 
   useSeoMeta({
@@ -31,8 +32,11 @@ export default function Settings() {
     if (!url) return;
     try {
       new URL(url);
-      addServer(url);
+      const auth = newAuthUrl.trim() || undefined;
+      if (auth) new URL(auth);
+      addServer(url, auth);
       setNewUrl("");
+      setNewAuthUrl("");
     } catch {
       toast({ title: "Invalid URL", variant: "destructive" });
     }
@@ -96,7 +100,7 @@ export default function Settings() {
               <CardHeader>
                 <CardTitle>Audio Servers</CardTitle>
                 <CardDescription>
-                  MoQ relay servers handle audio transport for rooms you create. Your server list is published as kind:10112.
+                  MoQ servers handle audio transport for rooms you create. Your server list is published as kind:10112.
                 </CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col gap-4">
@@ -126,21 +130,28 @@ export default function Settings() {
                 </div>
 
                 {/* Add server */}
-                <div className="flex items-center gap-2">
+                <div className="space-y-2 border-t border-border/30 pt-3">
+                  <p className="text-xs text-muted-foreground">Add server</p>
                   <Input
                     value={newUrl}
                     onChange={(e) => setNewUrl(e.target.value)}
-                    placeholder="https://moq-relay.example.com"
-                    className="flex-1"
+                    placeholder="MoQ URL (https://moq.example.com:4443)"
+                    onKeyDown={(e) => e.key === "Enter" && handleAddServer()}
+                  />
+                  <Input
+                    value={newAuthUrl}
+                    onChange={(e) => setNewAuthUrl(e.target.value)}
+                    placeholder="Auth URL (optional — auto-derived if empty)"
                     onKeyDown={(e) => e.key === "Enter" && handleAddServer()}
                   />
                   <Button
                     variant="outline"
-                    size="icon"
+                    className="w-full gap-2"
                     onClick={handleAddServer}
                     disabled={!newUrl.trim()}
                   >
                     <Plus className="h-4 w-4" />
+                    Add Server
                   </Button>
                 </div>
 

@@ -27,7 +27,6 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   const { toast } = useToast();
   const [newUrl, setNewUrl] = useState("");
   const [newAuthUrl, setNewAuthUrl] = useState("");
-  const [showAuthField, setShowAuthField] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const handleAddServer = () => {
@@ -40,7 +39,6 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
       addServer(url, auth);
       setNewUrl("");
       setNewAuthUrl("");
-      setShowAuthField(false);
     } catch {
       toast({ title: "Invalid URL", variant: "destructive" });
     }
@@ -87,7 +85,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 
           <TabsContent value="audio" className="mt-4">
             <p className="text-xs text-muted-foreground mb-3">
-              MoQ relay servers handle audio transport for rooms you create. Published as kind:10112.
+              MoQ servers handle audio transport for rooms you create. Published as kind:10112.
             </p>
             <div className="flex flex-col gap-3">
               {servers.map((server) => (
@@ -127,42 +125,29 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 </Button>
               ))}
 
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <Input
-                    value={newUrl}
-                    onChange={(e) => setNewUrl(e.target.value)}
-                    placeholder="https://moq.example.com:4443"
-                    className="flex-1"
-                    onKeyDown={(e) => e.key === "Enter" && handleAddServer()}
-                  />
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={handleAddServer}
-                    disabled={!newUrl.trim()}
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
-                {!showAuthField && newUrl.trim() && (
-                  <button
-                    type="button"
-                    onClick={() => setShowAuthField(true)}
-                    className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    Custom auth URL? (optional)
-                  </button>
-                )}
-                {showAuthField && (
-                  <Input
-                    value={newAuthUrl}
-                    onChange={(e) => setNewAuthUrl(e.target.value)}
-                    placeholder="https://moq-auth.example.com (auto-derived if empty)"
-                    className="text-xs"
-                    onKeyDown={(e) => e.key === "Enter" && handleAddServer()}
-                  />
-                )}
+              <div className="space-y-2 border-t border-border/30 pt-3">
+                <p className="text-xs text-muted-foreground">Add server</p>
+                <Input
+                  value={newUrl}
+                  onChange={(e) => setNewUrl(e.target.value)}
+                  placeholder="MoQ URL (https://moq.example.com:4443)"
+                  onKeyDown={(e) => e.key === "Enter" && handleAddServer()}
+                />
+                <Input
+                  value={newAuthUrl}
+                  onChange={(e) => setNewAuthUrl(e.target.value)}
+                  placeholder="Auth URL (optional — auto-derived if empty)"
+                  onKeyDown={(e) => e.key === "Enter" && handleAddServer()}
+                />
+                <Button
+                  variant="outline"
+                  className="w-full gap-2"
+                  onClick={handleAddServer}
+                  disabled={!newUrl.trim()}
+                >
+                  <Plus className="h-4 w-4" />
+                  Add Server
+                </Button>
               </div>
 
               {user && (
