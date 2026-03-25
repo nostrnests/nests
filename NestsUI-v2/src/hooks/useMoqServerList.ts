@@ -51,19 +51,27 @@ export function useMoqServerList() {
     }
   }, [query.data, isDirty]);
 
+  // The effective server list — local if modified, otherwise from query/defaults
+  const effectiveServers = localServers.length > 0 ? localServers : (query.data ?? DefaultMoQServers);
+
   const addServer = useCallback((relay: string, auth?: string) => {
     const server: MoQServer = { relay, auth: auth || deriveAuthUrl(relay) };
     setLocalServers((prev) => {
-      if (prev.some((s) => s.relay === relay)) return prev;
-      return [...prev, server];
+      // If local is empty, seed with current effective list first
+      const base = prev.length > 0 ? prev : (query.data ?? DefaultMoQServers);
+      if (base.some((s) => s.relay === relay)) return base;
+      return [...base, server];
     });
     setIsDirty(true);
-  }, []);
+  }, [query.data]);
 
   const removeServer = useCallback((relay: string) => {
-    setLocalServers((prev) => prev.filter((s) => s.relay !== relay));
+    setLocalServers((prev) => {
+      const base = prev.length > 0 ? prev : (query.data ?? DefaultMoQServers);
+      return base.filter((s) => s.relay !== relay);
+    });
     setIsDirty(true);
-  }, []);
+  }, [query.data]);
 
   const save = useCallback(async () => {
     if (!user) return;
@@ -82,7 +90,7 @@ export function useMoqServerList() {
   }, [user, localServers, createEvent, queryClient]);
 
   return {
-    servers: localServers.length > 0 ? localServers : (query.data ?? DefaultMoQServers),
+    servers: effectiveServers,
     isLoading: query.isLoading,
     isDirty,
     addServer,
