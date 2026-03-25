@@ -11,6 +11,7 @@ const NewRoom = lazy(() => import("./pages/NewRoom"));
 const Settings = lazy(() => import("./pages/Settings"));
 const LoginPage = lazy(() => import("./pages/LoginPage"));
 const RoomPage = lazy(() => import("./pages/RoomPage"));
+const Privacy = lazy(() => import("./pages/Privacy"));
 
 export function AppRouter() {
   return (
@@ -23,6 +24,7 @@ export function AppRouter() {
         <Route path="/settings" element={<Settings />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/room/:id" element={<RoomPage />} />
+        <Route path="/privacy" element={<Privacy />} />
         {/* NIP-19 route for npub1, note1, naddr1, nevent1, nprofile1 */}
         <Route path="/:nip19" element={<NIP19Page />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

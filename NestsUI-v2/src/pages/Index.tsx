@@ -218,7 +218,7 @@ export default function Index() {
             </div>
             <div className="flex gap-6 text-sm text-muted-foreground">
               <a
-                href="https://github.com/niclas-aspect/nests"
+                href="https://github.com/nostrnests/nests"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-foreground transition-colors"
