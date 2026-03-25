@@ -17,9 +17,7 @@ export function Header() {
       <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2.5 shrink-0">
-          <div className="h-10 w-10 rounded-xl gradient-1 flex items-center justify-center shadow-lg shadow-purple-500/20">
-            <span className="text-white font-bold text-base">N</span>
-          </div>
+          <img src="/favicon.svg" alt="Nests" className="h-9 w-9" />
           <span className="font-bold text-xl tracking-tight hidden sm:block">Nests</span>
         </Link>
 
