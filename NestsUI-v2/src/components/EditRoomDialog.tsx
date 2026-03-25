@@ -218,7 +218,7 @@ export function EditRoomDialog({ open, onOpenChange, roomEvent }: EditRoomDialog
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg max-h-[90dvh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Room</DialogTitle>
           <DialogDescription>Update room details and permissions</DialogDescription>
