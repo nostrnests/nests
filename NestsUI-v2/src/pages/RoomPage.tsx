@@ -163,7 +163,7 @@ function RoomContent({ event }: { event: NostrEvent }) {
 
         {/* Desktop chat panel - toggled via menu bar chat button */}
         {!isMobile && desktopChatExpanded && (
-          <div className="shrink-0 w-80 lg:w-96 p-2 md:p-4 pl-0 md:pl-0">
+          <div className="shrink-0 w-80 lg:w-96 p-2 md:p-4 pl-2 md:pl-2">
             <div className="flex flex-col h-full bg-background/80 backdrop-blur-sm rounded-xl border border-border/30 overflow-hidden">
               <div className="px-4 py-2 border-b border-border/30 shrink-0">
                 <h3 className="text-sm font-medium text-muted-foreground">Chat</h3>
