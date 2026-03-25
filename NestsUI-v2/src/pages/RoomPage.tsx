@@ -111,7 +111,7 @@ function RoomContent({ event }: { event: NostrEvent }) {
   }, [roomTheme]);
 
   return (
-    <div className="flex flex-col h-[100dvh] bg-background" style={rootStyle}>
+    <div className="flex flex-col h-[100dvh] bg-background safe-top" style={rootStyle}>
       {/* Room header / banner */}
       <div className="shrink-0 relative z-10 p-2 md:p-4 pb-0 md:pb-0">
         <div

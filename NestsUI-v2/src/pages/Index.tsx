@@ -16,7 +16,7 @@ export default function Index() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="fixed top-0 z-50 w-full bg-background/60 backdrop-blur-xl border-b border-white/5">
+      <header className="fixed top-0 z-50 w-full bg-background/60 backdrop-blur-xl border-b border-white/5 safe-top">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
           <Link to="/" className="flex items-center gap-3">
             <img src="/favicon.svg" alt="Nests" className="h-9 w-9" />
