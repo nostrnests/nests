@@ -22,7 +22,7 @@
 #   MOQ_RELAY_PORT      - MoQ relay port (default: 443)
 #
 # First-time setup:
-#   Clone moq-rs for the relay build: git clone https://github.com/kixelated/moq-rs.git
+#   Clone moq relay: git clone https://github.com/moq-dev/moq.git
 ###
 
 services:
@@ -38,7 +38,7 @@ services:
 
   moq-relay:
     build:
-      context: ./moq-rs
+      context: ./moq
       dockerfile: Dockerfile
     ports:
       - "${MOQ_RELAY_PORT:-443}:4443"

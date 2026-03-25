@@ -17,7 +17,7 @@
 services:
   moq-relay:
     build:
-      context: ./moq-rs
+      context: ./moq
       dockerfile: Dockerfile
     ports:
       - "4443:4443"       # WebTransport (HTTPS/HTTP3)

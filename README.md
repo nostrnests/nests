@@ -36,7 +36,7 @@ Use `docker-compose.yml` to run everything:
 
 ```bash
 # 1. Clone the MoQ relay (built from source)
-git clone https://github.com/kixelated/moq-rs.git
+git clone https://github.com/moq-dev/moq.git
 
 # 2. Configure your domains
 cp .env.example .env
@@ -85,7 +85,7 @@ Anyone can run their own MoQ audio server. No frontend required — Nests client
 
 ```bash
 # 1. Clone the MoQ relay
-git clone https://github.com/kixelated/moq-rs.git
+git clone https://github.com/moq-dev/moq.git
 
 # 2. Get TLS certs
 certbot certonly --webroot -w /var/www/certbot -d moq.yourdomain.com
