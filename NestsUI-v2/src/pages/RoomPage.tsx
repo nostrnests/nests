@@ -105,37 +105,42 @@ function RoomContent({ event }: { event: NostrEvent }) {
   return (
     <div className="flex flex-col h-[100dvh] bg-background" style={rootStyle}>
       {/* Room header / banner */}
-      <div
-        className={cn("shrink-0 relative overflow-hidden", !roomTheme && color)}
-        style={headerStyle}
-      >
-        {image && (
-          <>
-            <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${image})` }} />
-            <div className="absolute inset-0 bg-black/50" />
-          </>
-        )}
-        <div className="relative px-4 py-4 md:px-6 md:py-5">
-          <div className="max-w-5xl mx-auto">
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex-1 min-w-0">
-                <h1 className="text-white font-bold text-lg md:text-xl leading-tight">{title}</h1>
-                {summary && (
-                  <p className="text-white/70 text-sm md:text-base mt-1 line-clamp-2">{summary}</p>
-                )}
-                <div className="flex items-center gap-3 mt-2">
-                  {status === "live" && (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-red-500/90 text-white">
-                      <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
-                      LIVE
-                    </span>
+      <div className="shrink-0 relative z-10 p-2 md:p-4 pb-0 md:pb-0">
+        <div
+          className={cn(
+            "relative overflow-hidden rounded-xl shadow-lg",
+            !roomTheme && color,
+          )}
+          style={headerStyle}
+        >
+          {image && (
+            <>
+              <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${image})` }} />
+              <div className="absolute inset-0 bg-black/40" />
+            </>
+          )}
+          <div className="relative px-5 py-4 md:px-6 md:py-5">
+            <div className="max-w-5xl mx-auto">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <h1 className="text-white font-bold text-lg md:text-xl leading-tight drop-shadow-md">{title}</h1>
+                  {summary && (
+                    <p className="text-white/80 text-sm md:text-base mt-1 line-clamp-2 drop-shadow-sm">{summary}</p>
                   )}
-                  {participantCount > 0 && (
-                    <span className="text-white/60 text-xs md:text-sm flex items-center gap-1">
-                      <Users className="h-3.5 w-3.5" />
-                      {participantCount} listening
-                    </span>
-                  )}
+                  <div className="flex items-center gap-3 mt-2.5">
+                    {status === "live" && (
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-red-500 text-white shadow-sm">
+                        <span className="h-2 w-2 rounded-full bg-white animate-pulse" />
+                        LIVE
+                      </span>
+                    )}
+                    {participantCount > 0 && (
+                      <span className="text-white/70 text-xs md:text-sm flex items-center gap-1.5">
+                        <Users className="h-3.5 w-3.5" />
+                        {participantCount} listening
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
