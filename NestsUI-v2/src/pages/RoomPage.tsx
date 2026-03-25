@@ -148,7 +148,9 @@ function RoomContent({ event }: { event: NostrEvent }) {
         {/* Participants panel */}
         <div className="flex-1 overflow-y-auto pb-32 md:pb-20 relative">
           <div className="max-w-3xl mx-auto">
-            <ParticipantsGrid />
+            <div className="bg-background/70 backdrop-blur-sm rounded-xl m-2 md:m-4">
+              <ParticipantsGrid />
+            </div>
           </div>
         </div>
 
@@ -161,8 +163,8 @@ function RoomContent({ event }: { event: NostrEvent }) {
 
         {/* Desktop chat panel - toggled via menu bar chat button */}
         {!isMobile && desktopChatExpanded && (
-          <div className="border-l border-border flex flex-col shrink-0 w-80 lg:w-96">
-            <div className="px-4 py-2 border-b border-border shrink-0">
+          <div className="border-l border-border/50 flex flex-col shrink-0 w-80 lg:w-96 bg-background/80 backdrop-blur-sm">
+            <div className="px-4 py-2 border-b border-border/50 shrink-0">
               <h3 className="text-sm font-medium text-muted-foreground">Chat</h3>
             </div>
             <ChatMessages roomATag={roomATag} />
