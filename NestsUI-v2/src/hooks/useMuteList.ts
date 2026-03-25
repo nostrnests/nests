@@ -1,5 +1,6 @@
 import { useNostr } from "@nostrify/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import type { NostrEvent } from "@nostrify/nostrify";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useNostrPublish } from "@/hooks/useNostrPublish";
 import { useCallback } from "react";
@@ -8,6 +9,7 @@ const MUTE_LIST_KIND = 10000;
 
 /**
  * Manage NIP-51 public mute list (kind:10000).
+ * Preserves all existing tags (e, t, word, etc.) when adding/removing pubkeys.
  */
 export function useMuteList() {
   const { nostr } = useNostr();
@@ -17,24 +19,23 @@ export function useMuteList() {
 
   const query = useQuery({
     queryKey: ["nostr", "mute-list", user?.pubkey ?? ""],
-    queryFn: async () => {
-      if (!user) return [];
+    queryFn: async (): Promise<NostrEvent | null> => {
+      if (!user) return null;
 
       const events = await nostr.query(
         [{ kinds: [MUTE_LIST_KIND], authors: [user.pubkey], limit: 1 }],
         { signal: AbortSignal.timeout(3000) },
       );
 
-      if (events.length === 0) return [];
-
-      return events[0].tags
-        .filter(([t]) => t === "p")
-        .map(([, pubkey]) => pubkey);
+      return events[0] ?? null;
     },
     enabled: !!user,
   });
 
-  const mutedPubkeys = query.data ?? [];
+  const muteEvent = query.data;
+  const mutedPubkeys = muteEvent?.tags
+    .filter(([t]) => t === "p")
+    .map(([, pk]) => pk) ?? [];
 
   const isMuted = useCallback(
     (pubkey: string) => mutedPubkeys.includes(pubkey),
@@ -44,37 +45,39 @@ export function useMuteList() {
   const addMute = useCallback(
     async (pubkey: string) => {
       if (!user) return;
-      const newList = [...mutedPubkeys.filter((pk) => pk !== pubkey), pubkey];
-      const tags = newList.map((pk) => ["p", pk]);
+      // Preserve all existing tags, add new p tag
+      const existingTags = muteEvent?.tags ?? [];
+      if (existingTags.some(([t, pk]) => t === "p" && pk === pubkey)) return;
 
       await createEvent({
         kind: MUTE_LIST_KIND,
-        content: "",
-        tags,
+        content: muteEvent?.content ?? "",
+        tags: [...existingTags, ["p", pubkey]],
         created_at: Math.floor(Date.now() / 1000),
       });
 
       queryClient.invalidateQueries({ queryKey: ["nostr", "mute-list"] });
     },
-    [user, mutedPubkeys, createEvent, queryClient],
+    [user, muteEvent, createEvent, queryClient],
   );
 
   const removeMute = useCallback(
     async (pubkey: string) => {
       if (!user) return;
-      const newList = mutedPubkeys.filter((pk) => pk !== pubkey);
-      const tags = newList.map((pk) => ["p", pk]);
+      // Preserve all non-matching tags
+      const existingTags = muteEvent?.tags ?? [];
+      const newTags = existingTags.filter(([t, pk]) => !(t === "p" && pk === pubkey));
 
       await createEvent({
         kind: MUTE_LIST_KIND,
-        content: "",
-        tags,
+        content: muteEvent?.content ?? "",
+        tags: newTags,
         created_at: Math.floor(Date.now() / 1000),
       });
 
       queryClient.invalidateQueries({ queryKey: ["nostr", "mute-list"] });
     },
-    [user, mutedPubkeys, createEvent, queryClient],
+    [user, muteEvent, createEvent, queryClient],
   );
 
   return {
