@@ -57,7 +57,7 @@ This starts:
 | Service | Port | Description |
 |---------|------|-------------|
 | `nests-web` | 8080 | Frontend (nginx serving the Vite build) |
-| `moq-relay` | 443 (TCP+UDP) | MoQ audio relay (WebTransport/QUIC) |
+| `moq-relay` | 4443 (TCP+UDP) | MoQ audio relay (WebTransport/QUIC) |
 | `moq-auth` | 8090 | NIP-98 auth sidecar (issues JWTs) |
 
 Put a reverse proxy (Caddy/nginx) in front for the frontend and auth. The MoQ relay handles its own TLS on port 443 — do **not** proxy it.
@@ -72,10 +72,10 @@ moq-auth.yourdomain.com {
     reverse_proxy moq-auth:8080
 }
 
-# moq.yourdomain.com — no proxy, relay handles its own TLS on port 443
+# moq.yourdomain.com:4443 — no proxy, relay handles its own TLS
 ```
 
-**Firewall:** Open TCP + UDP on port 443 for the MoQ relay subdomain.
+**Firewall:** Open TCP + UDP on port 4443 for the MoQ relay subdomain.
 
 **DNS:** Point all three subdomains to your server.
 
@@ -95,7 +95,7 @@ ln -s /etc/letsencrypt/live/moq.yourdomain.com ./certs
 docker compose -f docker-compose-moq.yml up moq-relay moq-auth -d
 ```
 
-Then add `https://moq.yourdomain.com` as an audio server in any Nests client under **Settings > Audio**.
+Then add `https://moq.yourdomain.com:4443` as an audio server in any Nests client under **Settings > Audio**.
 
 Users can also publish their preferred audio servers to Nostr as a `kind:10112` server list, so their rooms automatically use their own relay.
 
@@ -106,7 +106,7 @@ Users can also publish their preferred audio servers to Nostr as a `kind:10112` 
 | `VITE_MOQ_RELAY_URL` | `https://moq.nostrnests.com` | MoQ relay URL (build-time) |
 | `VITE_MOQ_AUTH_URL` | `https://moq-auth.nostrnests.com` | Auth service URL (build-time) |
 | `VITE_MOQ_CERT_FINGERPRINT` | — | Dev only: self-signed cert fingerprint |
-| `MOQ_RELAY_PORT` | `443` | MoQ relay port (443 = clean URLs) |
+| `MOQ_RELAY_PORT` | `4443` | MoQ relay port |
 | `MOQ_AUTH_PORT` | `8090` | Auth service port |
 
 ## Nostr Protocol

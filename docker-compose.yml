@@ -30,7 +30,7 @@ services:
     build:
       context: ./NestsUI-v2
       args:
-        VITE_MOQ_RELAY_URL: https://${MOQ_RELAY_DOMAIN:-moq.nests.example.com}
+        VITE_MOQ_RELAY_URL: https://${MOQ_RELAY_DOMAIN:-moq.nests.example.com}:${MOQ_RELAY_PORT:-4443}
         VITE_MOQ_AUTH_URL: https://${MOQ_AUTH_DOMAIN:-moq-auth.nests.example.com}
     ports:
       - "8080:80"
@@ -41,8 +41,8 @@ services:
       context: ./moq
       dockerfile: ../moq-relay.Dockerfile
     ports:
-      - "${MOQ_RELAY_PORT:-443}:4443"
-      - "${MOQ_RELAY_PORT:-443}:4443/udp"
+      - "${MOQ_RELAY_PORT:-4443}:4443"
+      - "${MOQ_RELAY_PORT:-4443}:4443/udp"
     volumes:
       - ./certs:/certs:ro
     environment:

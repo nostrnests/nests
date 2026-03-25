@@ -43,7 +43,7 @@ export const DefaultRelays = [
 
 /** Default MoQ relay servers (used when user has no kind:10112 list) */
 export const DefaultMoQServers = [
-  import.meta.env.VITE_MOQ_RELAY_URL || "https://moq.nostrnests.com",
+  import.meta.env.VITE_MOQ_RELAY_URL || "https://moq.nostrnests.com:4443",
 ];
 
 /** Default MoQ auth service URL */
