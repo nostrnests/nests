@@ -17,6 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useEventModifier } from "@/hooks/useEventModifier";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useAuthor } from "@/hooks/useAuthor";
+import { useMoqServerList } from "@/hooks/useMoqServerList";
 import { ThemeChooser } from "@/components/ThemeChooser";
 import { getRoomTitle, getRoomSummary, getRoomColor, getRoomImage, getRoomParticipants } from "@/lib/room";
 import { parseThemeTags, type DittoTheme } from "@/lib/ditto-theme";
@@ -101,6 +102,7 @@ export function EditRoomDialog({ open, onOpenChange, roomEvent }: EditRoomDialog
   const { mutateAsync: modifyEvent, isPending } = useEventModifier();
   const { toast } = useToast();
   const { user } = useCurrentUser();
+  const { servers } = useMoqServerList();
 
   // Parse existing inline theme from room event
   const existingTheme = parseThemeTags(roomEvent.tags);
@@ -120,10 +122,10 @@ export function EditRoomDialog({ open, onOpenChange, roomEvent }: EditRoomDialog
 
   const onSubmit = async (data: RoomFormData) => {
     try {
-      // Rebuild tags preserving existing ones, stripping editable fields + theme tags
+      // Rebuild tags preserving existing ones, stripping editable fields + theme + server tags
       const tags = roomEvent.tags.filter(
         ([t, v]) =>
-          !["title", "summary", "color", "image", "c", "f", "bg"].includes(t) &&
+          !["title", "summary", "color", "image", "c", "f", "bg", "streaming", "auth"].includes(t) &&
           !(t === "a" && v?.startsWith(`${DITTO_THEME}:`)),
       );
 
@@ -131,6 +133,13 @@ export function EditRoomDialog({ open, onOpenChange, roomEvent }: EditRoomDialog
       if (data.summary) tags.push(["summary", data.summary]);
       tags.push(["color", data.color]);
       if (data.image) tags.push(["image", data.image]);
+
+      // Re-add streaming + auth from user's current server list
+      const server = servers[0];
+      if (server) {
+        tags.push(["streaming", server.relay]);
+        tags.push(["auth", server.auth]);
+      }
 
       // Add theme tags if a theme is selected
       if (selectedTheme) {
