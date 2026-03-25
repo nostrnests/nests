@@ -156,7 +156,7 @@ function RoomContent({ event }: { event: NostrEvent }) {
 
         {/* Desktop: menu bar fixed at bottom of participants pane */}
         <div className="hidden md:flex fixed bottom-0 left-0 z-30 pointer-events-none" style={{ width: desktopChatExpanded ? "calc(100% - 24rem)" : "100%" }}>
-          <div className="w-full flex justify-center pb-4 pointer-events-auto">
+          <div className="w-full flex justify-center pb-2 pointer-events-auto">
             <MenuBar onChatToggle={() => setDesktopChatExpanded(!desktopChatExpanded)} chatOpen={desktopChatExpanded} />
           </div>
         </div>
