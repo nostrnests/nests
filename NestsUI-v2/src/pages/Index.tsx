@@ -19,9 +19,7 @@ export default function Index() {
       <header className="fixed top-0 z-50 w-full bg-background/60 backdrop-blur-xl border-b border-white/5">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
           <Link to="/" className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-xl gradient-1 flex items-center justify-center shadow-lg shadow-purple-500/20">
-              <span className="text-white font-bold text-base">N</span>
-            </div>
+            <img src="/favicon.svg" alt="Nests" className="h-9 w-9" />
             <span className="font-bold text-xl tracking-tight">Nests</span>
           </Link>
           <div className="flex items-center gap-3">
@@ -215,9 +213,7 @@ export default function Index() {
         <div className="mx-auto max-w-5xl px-6">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <div className="h-6 w-6 rounded-md gradient-1 flex items-center justify-center">
-                <span className="text-white font-bold text-xs">N</span>
-              </div>
+              <img src="/favicon.svg" alt="Nests" className="h-6 w-6" />
               Built on Nostr. Open source and decentralized.
             </div>
             <div className="flex gap-6 text-sm text-muted-foreground">
