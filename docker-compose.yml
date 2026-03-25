@@ -46,11 +46,11 @@ services:
     volumes:
       - /etc/letsencrypt:/etc/letsencrypt:ro
     environment:
-      - MOQ_BIND=0.0.0.0:4443
-      - MOQ_TLS_CERT=/etc/letsencrypt/live/${MOQ_RELAY_DOMAIN:-moq.nests.example.com}/fullchain.pem
-      - MOQ_TLS_KEY=/etc/letsencrypt/live/${MOQ_RELAY_DOMAIN:-moq.nests.example.com}/privkey.pem
-      - MOQ_AUTH_KEY=http://moq-auth:8080/.well-known/jwks.json
-      - MOQ_AUTH_REFRESH_INTERVAL=30
+      MOQ_SERVER_BIND: "0.0.0.0:4443"
+      MOQ_SERVER_TLS_CERT: "/etc/letsencrypt/live/${MOQ_RELAY_DOMAIN:-moq.nests.example.com}/fullchain.pem"
+      MOQ_SERVER_TLS_KEY: "/etc/letsencrypt/live/${MOQ_RELAY_DOMAIN:-moq.nests.example.com}/privkey.pem"
+      MOQ_AUTH_KEY: "http://moq-auth:8080/.well-known/jwks.json"
+      MOQ_AUTH_REFRESH_INTERVAL: "30"
     depends_on:
       - moq-auth
     restart: unless-stopped

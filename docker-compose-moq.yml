@@ -25,11 +25,11 @@ services:
     volumes:
       - ./dev-config/certs:/certs:ro
     environment:
-      - MOQ_BIND=0.0.0.0:4443
-      - MOQ_TLS_CERT=/certs/fullchain.pem
-      - MOQ_TLS_KEY=/certs/privkey.pem
-      - MOQ_AUTH_KEY=http://moq-auth:8080/.well-known/jwks.json
-      - MOQ_AUTH_REFRESH_INTERVAL=30
+      MOQ_SERVER_BIND: "0.0.0.0:4443"
+      MOQ_SERVER_TLS_CERT: "/certs/fullchain.pem"
+      MOQ_SERVER_TLS_KEY: "/certs/privkey.pem"
+      MOQ_AUTH_KEY: "http://moq-auth:8080/.well-known/jwks.json"
+      MOQ_AUTH_REFRESH_INTERVAL: "30"
 
   moq-auth:
     build: ./moq-auth
