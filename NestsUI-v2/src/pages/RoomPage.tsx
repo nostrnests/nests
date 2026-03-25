@@ -147,8 +147,8 @@ function RoomContent({ event }: { event: NostrEvent }) {
       <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
         {/* Participants panel */}
         <div className="flex-1 overflow-y-auto pb-32 md:pb-20 relative">
-          <div className="max-w-3xl mx-auto">
-            <div className="bg-background/70 backdrop-blur-sm rounded-xl m-2 md:m-4">
+          <div className="max-w-3xl mx-auto min-h-full">
+            <div className="bg-background/70 backdrop-blur-sm rounded-t-xl mt-2 md:mt-4 mx-2 md:mx-4 min-h-full">
               <ParticipantsGrid />
             </div>
           </div>
