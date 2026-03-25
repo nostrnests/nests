@@ -44,11 +44,11 @@ services:
       - "${MOQ_RELAY_PORT:-4443}:4443"
       - "${MOQ_RELAY_PORT:-4443}:4443/udp"
     volumes:
-      - ./certs:/certs:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
     environment:
       - MOQ_BIND=0.0.0.0:4443
-      - MOQ_TLS_CERT=/certs/fullchain.pem
-      - MOQ_TLS_KEY=/certs/privkey.pem
+      - MOQ_TLS_CERT=/etc/letsencrypt/live/${MOQ_RELAY_DOMAIN:-moq.nests.example.com}/fullchain.pem
+      - MOQ_TLS_KEY=/etc/letsencrypt/live/${MOQ_RELAY_DOMAIN:-moq.nests.example.com}/privkey.pem
       - MOQ_AUTH_KEY=http://moq-auth:8080/.well-known/jwks.json
       - MOQ_AUTH_REFRESH_INTERVAL=30
     depends_on:
