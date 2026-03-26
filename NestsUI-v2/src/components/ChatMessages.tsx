@@ -8,7 +8,6 @@ import { useFollowing } from "@/hooks/useFollowing";
 import { useNostrPublish } from "@/hooks/useNostrPublish";
 import { useChatMessages } from "@/hooks/useChatMessages";
 import { useRoomReactions } from "@/hooks/useRoomReactions";
-import { useRoomContext } from "./RoomContextProvider";
 import { ZapDialog } from "./ZapDialog";
 import { genUserName } from "@/lib/genUserName";
 import { isEmoji, getEmojiMaskUrl } from "@/lib/ditto-theme";
@@ -67,7 +66,6 @@ function ChatMessage({ event, roomATag, reactions, onLocalReaction }: { event: N
   const displayName = metadata?.display_name ?? metadata?.name ?? genUserName(event.pubkey);
   const { isFollowing, follow, unfollow } = useFollowing();
   const { mutate: createEvent } = useNostrPublish();
-  const { addLocalReaction } = useRoomContext();
 
   const isSelf = user?.pubkey === event.pubkey;
   const following = isFollowing(event.pubkey);
@@ -88,7 +86,7 @@ function ChatMessage({ event, roomATag, reactions, onLocalReaction }: { event: N
 
   const sendReaction = (emoji: string) => {
     if (!user) return;
-    addLocalReaction(emoji);
+    // Only add to chat message reactions, NOT the flying overlay
     onLocalReaction?.(event.id, emoji);
     createEvent({
       kind: 7,
@@ -247,11 +245,14 @@ export function ChatMessages({ roomATag }: ChatMessagesProps) {
     }
   }
 
-  // Merge local optimistic reactions
+  // Merge local optimistic reactions (only for messages not yet confirmed by relay)
   for (const lr of localReactions) {
-    if (!messageReactions.has(lr.messageId)) {
-      messageReactions.set(lr.messageId, { emojis: new Map(), zapTotal: 0, zapCount: 0 });
+    const existing = messageReactions.get(lr.messageId);
+    if (existing) {
+      // Relay already has reactions for this message — skip local to avoid double-counting
+      continue;
     }
+    messageReactions.set(lr.messageId, { emojis: new Map(), zapTotal: 0, zapCount: 0 });
     const entry = messageReactions.get(lr.messageId)!;
     entry.emojis.set(lr.emoji, (entry.emojis.get(lr.emoji) ?? 0) + 1);
   }

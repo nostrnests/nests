@@ -5,7 +5,15 @@ description: Host and join live audio conversations on the decentralized Nostr n
 repository: https://github.com/nostrnests/nests
 homepage: https://nostrnests.com
 icon: ./public/favicon.png
-tags: nostr audio rooms live social bitcoin zaps freedom-tech
+tags:
+  - nostr
+  - audio
+  - rooms
+  - live
+  - social
+  - bitcoin
+  - zaps
+  - freedom-tech
 license: MIT
 builder: npub18ams6ewn5aj2n3wt2qawzglx9mr4nzksxhvrdc4gzrecw7n5tvjqctp424
 assets:

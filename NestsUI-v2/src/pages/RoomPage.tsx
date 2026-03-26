@@ -21,6 +21,7 @@ import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useWakeLock } from "@/hooks/useWakeLock";
 import { useAudioKeepAlive } from "@/hooks/useAudioKeepAlive";
 import { useRoomNotification } from "@/hooks/useRoomNotification";
+import { useBackgroundAudio } from "@/hooks/useBackgroundAudio";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { useRoomPresence } from "@/hooks/useRoomPresence";
 import { useIsMobile } from "@/hooks/useIsMobile";
@@ -70,6 +71,7 @@ function RoomContent({ event }: { event: NostrEvent }) {
   useWakeLock(status === "live");
   useAudioKeepAlive(status === "live");
   useRoomNotification(title, status === "live");
+  useBackgroundAudio(title, status === "live");
 
   // Convert room theme to CSS custom properties
   const roomThemeCSS = useMemo(
