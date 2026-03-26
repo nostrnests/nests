@@ -1,0 +1,12 @@
+identifier: com.nostrnests.app
+name: Nests
+summary: Decentralized live audio rooms on Nostr
+description: Host and join live audio conversations on the decentralized Nostr network. Features real-time audio via MoQ (Media over QUIC), Ditto theming, custom emoji reactions, avatar shapes, live chat with reactions and zaps, hand raising, room permissions, and NIP-46 remote signer support. No algorithms, no gatekeepers, just real conversations.
+repository: https://github.com/nostrnests/nests
+homepage: https://nostrnests.com
+icon: ./public/favicon.png
+tags: nostr audio rooms live social bitcoin zaps freedom-tech
+license: MIT
+builder: npub18ams6ewn5aj2n3wt2qawzglx9mr4nzksxhvrdc4gzrecw7n5tvjqctp424
+assets:
+  - ./android/app/build/outputs/apk/release/app-release.apk
