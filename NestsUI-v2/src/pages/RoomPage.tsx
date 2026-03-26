@@ -77,15 +77,21 @@ function RoomContent({ event }: { event: NostrEvent }) {
     [roomTheme],
   );
 
-  // Load custom font if room theme has one
+  // Load custom font if room theme has one (only from trusted CDNs)
   useEffect(() => {
     if (!roomTheme?.font?.url) return;
+    const fontUrl = roomTheme.font.url;
+    const trustedHosts = ["fonts.googleapis.com", "fonts.bunny.net", "fonts.cdnfonts.com", "use.typekit.net"];
+    try {
+      const host = new URL(fontUrl).hostname;
+      if (!trustedHosts.some((h) => host === h || host.endsWith(`.${h}`))) return;
+    } catch { return; }
     const id = "room-theme-font";
     if (document.getElementById(id)) return;
     const link = document.createElement("link");
     link.id = id;
     link.rel = "stylesheet";
-    link.href = roomTheme.font.url;
+    link.href = fontUrl;
     document.head.appendChild(link);
     return () => { document.getElementById(id)?.remove(); };
   }, [roomTheme?.font?.url]);

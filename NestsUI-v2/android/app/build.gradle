@@ -19,9 +19,9 @@ android {
     signingConfigs {
         release {
             storeFile file('../../keystore/nests-release.keystore')
-            storePassword 'nestsnests'
+            storePassword System.getenv('NESTS_KEYSTORE_PASSWORD') ?: project.findProperty('NESTS_KEYSTORE_PASSWORD') ?: ''
             keyAlias 'nests'
-            keyPassword 'nestsnests'
+            keyPassword System.getenv('NESTS_KEY_PASSWORD') ?: project.findProperty('NESTS_KEY_PASSWORD') ?: ''
         }
     }
     buildTypes {

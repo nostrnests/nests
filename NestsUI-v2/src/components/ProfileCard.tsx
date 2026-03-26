@@ -84,15 +84,22 @@ export function ProfileCard({ pubkey, roomEvent, children }: PropsWithChildren<P
     [dittoProfile],
   );
 
-  // Load custom font if profile theme has one
+  // Load custom font if profile theme has one (only from trusted CDNs)
   useEffect(() => {
     if (!dittoProfile?.font?.url) return;
+    const fontUrl = dittoProfile.font.url;
+    // Only load fonts from trusted sources
+    const trustedHosts = ["fonts.googleapis.com", "fonts.bunny.net", "fonts.cdnfonts.com", "use.typekit.net"];
+    try {
+      const host = new URL(fontUrl).hostname;
+      if (!trustedHosts.some((h) => host === h || host.endsWith(`.${h}`))) return;
+    } catch { return; }
     const id = `ditto-font-${pubkey}`;
     if (document.getElementById(id)) return;
     const link = document.createElement("link");
     link.id = id;
     link.rel = "stylesheet";
-    link.href = dittoProfile.font.url;
+    link.href = fontUrl;
     document.head.appendChild(link);
   }, [dittoProfile?.font?.url, pubkey]);
 

@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useState, useRef, type FormEvent } from "react";
 import { Send } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -14,11 +14,17 @@ export function WriteMessage({ roomATag }: WriteMessageProps) {
   const { user } = useCurrentUser();
   const { mutate: createEvent, isPending } = useNostrPublish();
   const [message, setMessage] = useState("");
+  const lastSentRef = useRef(0);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     const text = message.trim();
     if (!text || !user) return;
+
+    // Rate limit: 1 message per second
+    const now = Date.now();
+    if (now - lastSentRef.current < 1000) return;
+    lastSentRef.current = now;
 
     setMessage(""); // Clear immediately for snappy UX
 

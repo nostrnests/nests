@@ -4,11 +4,45 @@ import { base64 } from "./base64.js";
 
 const PORT = parseInt(process.env.PORT || "8080", 10);
 const HOST = process.env.HOST || "0.0.0.0";
+const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS?.split(",").map((s) => s.trim()) || [];
 
 /** Token lifetime in seconds (10 minutes) */
 const TOKEN_TTL = 600;
 
+/** Rate limit: max requests per window per IP */
+const RATE_LIMIT_MAX = 20;
+const RATE_LIMIT_WINDOW_MS = 60_000; // 1 minute
+
+/** Namespace format validation */
+const NAMESPACE_REGEX = /^nests\/\d+:[0-9a-f]{64}:[a-zA-Z0-9._-]+$/;
+
 const tokenService = new TokenService();
+
+/**
+ * Simple in-memory rate limiter per IP.
+ */
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const entry = rateLimitMap.get(ip);
+
+  if (!entry || now > entry.resetAt) {
+    rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return true;
+  }
+
+  entry.count++;
+  return entry.count <= RATE_LIMIT_MAX;
+}
+
+// Clean up expired entries every 5 minutes
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, entry] of rateLimitMap) {
+    if (now > entry.resetAt) rateLimitMap.delete(ip);
+  }
+}, 5 * 60_000);
 
 /**
  * Auth request body from clients.
@@ -18,6 +52,27 @@ interface AuthRequest {
   namespace: string;
   /** Whether the client wants publish rights */
   publish?: boolean;
+}
+
+/**
+ * Structured audit log entry.
+ */
+function auditLog(event: string, data: Record<string, unknown>) {
+  console.log(JSON.stringify({
+    timestamp: new Date().toISOString(),
+    event,
+    ...data,
+  }));
+}
+
+/**
+ * Get CORS origin header. If ALLOWED_ORIGINS is set, validate against it.
+ * Otherwise allow all origins (for development).
+ */
+function getCorsOrigin(requestOrigin: string | null): string {
+  if (ALLOWED_ORIGINS.length === 0) return "*";
+  if (requestOrigin && ALLOWED_ORIGINS.includes(requestOrigin)) return requestOrigin;
+  return ALLOWED_ORIGINS[0];
 }
 
 /**
@@ -44,30 +99,41 @@ function parseAuthHeader(header: string): NostrEvent {
  *
  * Accepts NIP-98 auth header, returns a JWT for moq-relay.
  */
-async function handleAuth(req: Request): Promise<Response> {
+async function handleAuth(req: Request, clientIp: string): Promise<Response> {
+  const origin = req.headers.get("origin");
+  const corsOrigin = getCorsOrigin(origin);
+
+  // Rate limit
+  if (!checkRateLimit(clientIp)) {
+    auditLog("auth_rate_limited", { ip: clientIp });
+    return jsonError(429, "Too many requests, try again later", corsOrigin);
+  }
+
   // Parse auth header
   const authHeader = req.headers.get("authorization");
   if (!authHeader) {
-    return jsonError(401, "Missing Authorization header");
+    auditLog("auth_failed", { ip: clientIp, reason: "missing_header" });
+    return jsonError(401, "Missing Authorization header", corsOrigin);
   }
 
   let event: NostrEvent;
   try {
     event = parseAuthHeader(authHeader);
   } catch (e) {
-    return jsonError(401, (e as Error).message);
+    auditLog("auth_failed", { ip: clientIp, reason: "invalid_header" });
+    return jsonError(401, (e as Error).message, corsOrigin);
   }
 
   // Validate NIP-98 event
-  const url = new URL(req.url);
   let pubkey: string;
   try {
     pubkey = validateNip98(event, req.url, req.method);
   } catch (e) {
     if (e instanceof AuthError) {
-      return jsonError(401, e.message);
+      auditLog("auth_failed", { ip: clientIp, pubkey: event.pubkey?.substring(0, 8), reason: e.message });
+      return jsonError(401, e.message, corsOrigin);
     }
-    return jsonError(500, "Internal error during auth validation");
+    return jsonError(500, "Internal error during auth validation", corsOrigin);
   }
 
   // Parse request body
@@ -75,11 +141,17 @@ async function handleAuth(req: Request): Promise<Response> {
   try {
     body = (await req.json()) as AuthRequest;
   } catch {
-    return jsonError(400, "Invalid JSON body");
+    return jsonError(400, "Invalid JSON body", corsOrigin);
   }
 
   if (!body.namespace || typeof body.namespace !== "string") {
-    return jsonError(400, "Missing or invalid 'namespace' field");
+    return jsonError(400, "Missing or invalid 'namespace' field", corsOrigin);
+  }
+
+  // Validate namespace format
+  if (!NAMESPACE_REGEX.test(body.namespace)) {
+    auditLog("auth_failed", { ip: clientIp, pubkey: pubkey.substring(0, 8), reason: "invalid_namespace", namespace: body.namespace });
+    return jsonError(400, "Invalid namespace format", corsOrigin);
   }
 
   // Build JWT claims
@@ -95,11 +167,18 @@ async function handleAuth(req: Request): Promise<Response> {
 
   const token = await tokenService.signToken(claims, TOKEN_TTL);
 
+  auditLog("auth_success", {
+    ip: clientIp,
+    pubkey: pubkey.substring(0, 8) + "...",
+    namespace: body.namespace,
+    publish: !!body.publish,
+  });
+
   return new Response(JSON.stringify({ token }), {
     status: 200,
     headers: {
       "content-type": "application/json",
-      "access-control-allow-origin": "*",
+      "access-control-allow-origin": corsOrigin,
     },
   });
 }
@@ -122,11 +201,11 @@ function handleJwks(): Response {
 /**
  * Handle CORS preflight.
  */
-function handleOptions(): Response {
+function handleOptions(requestOrigin: string | null): Response {
   return new Response(null, {
     status: 204,
     headers: {
-      "access-control-allow-origin": "*",
+      "access-control-allow-origin": getCorsOrigin(requestOrigin),
       "access-control-allow-methods": "GET, POST, OPTIONS",
       "access-control-allow-headers": "Authorization, Content-Type",
       "access-control-max-age": "86400",
@@ -137,12 +216,12 @@ function handleOptions(): Response {
 /**
  * Return a JSON error response.
  */
-function jsonError(status: number, message: string): Response {
+function jsonError(status: number, message: string, corsOrigin: string = "*"): Response {
   return new Response(JSON.stringify({ error: message }), {
     status,
     headers: {
       "content-type": "application/json",
-      "access-control-allow-origin": "*",
+      "access-control-allow-origin": corsOrigin,
     },
   });
 }
@@ -150,11 +229,11 @@ function jsonError(status: number, message: string): Response {
 /**
  * Main request router.
  */
-async function handleRequest(req: Request): Promise<Response> {
+async function handleRequest(req: Request, clientIp: string): Promise<Response> {
   const url = new URL(req.url);
 
   if (req.method === "OPTIONS") {
-    return handleOptions();
+    return handleOptions(req.headers.get("origin"));
   }
 
   if (url.pathname === "/.well-known/jwks.json" && req.method === "GET") {
@@ -162,7 +241,7 @@ async function handleRequest(req: Request): Promise<Response> {
   }
 
   if (url.pathname === "/auth" && req.method === "POST") {
-    return handleAuth(req);
+    return handleAuth(req, clientIp);
   }
 
   // Health check
@@ -181,6 +260,7 @@ async function handleRequest(req: Request): Promise<Response> {
  */
 async function main() {
   await tokenService.init();
+  auditLog("server_start", { host: HOST, port: PORT });
   console.log(`moq-auth starting on ${HOST}:${PORT}`);
   console.log(`JWKS endpoint: http://${HOST}:${PORT}/.well-known/jwks.json`);
   console.log(`Auth endpoint: http://${HOST}:${PORT}/auth`);
@@ -192,6 +272,12 @@ async function startNodeServer() {
   const { createServer } = await import("node:http");
 
   const server = createServer(async (nodeReq, nodeRes) => {
+    // Extract client IP (trust X-Forwarded-For from reverse proxy)
+    const forwarded = nodeReq.headers["x-forwarded-for"];
+    const clientIp = typeof forwarded === "string"
+      ? forwarded.split(",")[0].trim()
+      : nodeReq.socket.remoteAddress || "unknown";
+
     // Build a Request object from the Node.js request
     const protocol = "http";
     const host = nodeReq.headers.host || `${HOST}:${PORT}`;
@@ -212,7 +298,7 @@ async function startNodeServer() {
       body: body,
     });
 
-    const response = await handleRequest(request);
+    const response = await handleRequest(request, clientIp);
 
     nodeRes.writeHead(response.status, Object.fromEntries(response.headers.entries()));
     const responseBody = await response.text();

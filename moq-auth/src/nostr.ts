@@ -63,7 +63,7 @@ export const NIP98_KIND = 27235;
 /**
  * Maximum age of a NIP-98 event in seconds.
  */
-const MAX_EVENT_AGE_SECONDS = 120;
+const MAX_EVENT_AGE_SECONDS = 60;
 
 /**
  * Validate a NIP-98 HTTP authentication event.
@@ -99,17 +99,20 @@ export function validateNip98(
     throw new AuthError(`Event too old: ${age}s (max ${MAX_EVENT_AGE_SECONDS}s)`);
   }
 
-  // Check URL
+  // Check URL — validate full origin (scheme + host + port) and pathname
   const eventUrl = getTagValue(event, "u");
   if (!eventUrl) {
     throw new AuthError("Missing 'u' tag");
   }
 
-  // Compare URL paths (ignore host differences for flexibility)
-  const expectedPath = new URL(expectedUrl).pathname;
-  const eventPath = new URL(eventUrl).pathname;
-  if (expectedPath !== eventPath) {
-    throw new AuthError(`URL path mismatch: expected ${expectedPath}, got ${eventPath}`);
+  const expected = new URL(expectedUrl);
+  const actual = new URL(eventUrl);
+
+  if (expected.origin !== actual.origin) {
+    throw new AuthError(`URL origin mismatch: expected ${expected.origin}, got ${actual.origin}`);
+  }
+  if (expected.pathname !== actual.pathname) {
+    throw new AuthError(`URL path mismatch: expected ${expected.pathname}, got ${actual.pathname}`);
   }
 
   // Check method
