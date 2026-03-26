@@ -99,7 +99,7 @@ export function validateNip98(
     throw new AuthError(`Event too old: ${age}s (max ${MAX_EVENT_AGE_SECONDS}s)`);
   }
 
-  // Check URL — validate full origin (scheme + host + port) and pathname
+  // Check URL — validate host and pathname (scheme ignored because reverse proxy terminates TLS)
   const eventUrl = getTagValue(event, "u");
   if (!eventUrl) {
     throw new AuthError("Missing 'u' tag");
@@ -108,8 +108,8 @@ export function validateNip98(
   const expected = new URL(expectedUrl);
   const actual = new URL(eventUrl);
 
-  if (expected.origin !== actual.origin) {
-    throw new AuthError(`URL origin mismatch: expected ${expected.origin}, got ${actual.origin}`);
+  if (expected.host !== actual.host) {
+    throw new AuthError(`URL host mismatch: expected ${expected.host}, got ${actual.host}`);
   }
   if (expected.pathname !== actual.pathname) {
     throw new AuthError(`URL path mismatch: expected ${expected.pathname}, got ${actual.pathname}`);
