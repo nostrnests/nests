@@ -59,6 +59,8 @@ services:
     build: ./moq-auth
     expose:
       - "8080"
+    ports:
+      - "127.0.0.1:8090:8080"  # localhost only — nginx proxies to this
     environment:
       - PORT=8080
       - HOST=0.0.0.0
