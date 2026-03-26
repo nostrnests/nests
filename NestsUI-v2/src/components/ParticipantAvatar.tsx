@@ -52,7 +52,7 @@ export function ParticipantAvatar({
   const isMe = user?.pubkey === pubkey;
   const localSpeaking = useLocalSpeaking();
   const remoteSpeaking = useRemoteSpeaking(pubkey);
-  const isSpeaking = isMe ? localSpeaking : remoteSpeaking;
+  const isSpeaking = (isMe ? localSpeaking : remoteSpeaking) && !isMuted;
 
   // Track avatar position for portal-based reaction
   const avatarRef = useRef<HTMLDivElement>(null);
