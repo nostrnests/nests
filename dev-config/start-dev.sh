@@ -9,7 +9,7 @@
 # This script runs:
 #   1. moq-relay (compiled from source via cargo)
 #   2. moq-auth (our NIP-98 -> JWT service)
-#   3. NestsUI dev server (Vite)
+#   3. NestsUI-v2 dev server (Vite)
 
 set -e
 
@@ -50,8 +50,8 @@ moq-relay \
 MOQ_RELAY_PID=$!
 
 echo "==> Starting Vite dev server..."
-cd "$PROJECT_DIR/NestsUI"
-yarn dev &
+cd "$PROJECT_DIR/NestsUI-v2"
+npm run dev &
 VITE_PID=$!
 
 echo ""

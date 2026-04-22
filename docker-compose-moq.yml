@@ -9,7 +9,7 @@
 # Usage:
 #   1. Generate TLS certs: ./dev-config/generate-certs.sh
 #   2. Start: docker compose -f docker-compose-moq.yml up -d
-#   3. Run UI dev server: cd NestsUI && yarn dev
+#   3. Run UI dev server: cd NestsUI-v2 && npm run dev
 #
 # The UI dev server (Vite) runs outside Docker for hot reload.
 ###
