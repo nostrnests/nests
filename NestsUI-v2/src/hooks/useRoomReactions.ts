@@ -1,12 +1,12 @@
-import { useNostr } from "@nostrify/react";
 import { useQuery } from "@tanstack/react-query";
 import type { NostrEvent } from "@nostrify/nostrify";
+import { useRoomNostr } from "@/hooks/useRoomNostr";
 
 /**
  * Query reactions (kind:7) and zap receipts (kind:9735) for a room.
  */
 export function useRoomReactions(roomATag: string | undefined) {
-  const { nostr } = useNostr();
+  const { nostr } = useRoomNostr();
 
   return useQuery({
     queryKey: ["nostr", "room-reactions", roomATag ?? ""],

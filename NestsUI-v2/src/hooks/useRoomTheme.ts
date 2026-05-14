@@ -1,16 +1,16 @@
 import { useMemo } from "react";
-import { useNostr } from "@nostrify/react";
 import { useQuery } from "@tanstack/react-query";
 import type { NostrEvent } from "@nostrify/nostrify";
 import { DITTO_THEME } from "@/lib/const";
 import { parseDittoThemeEvent, parseThemeTags, type DittoTheme } from "@/lib/ditto-theme";
+import { useRoomNostr } from "@/hooks/useRoomNostr";
 
 /**
  * Resolve the room's active theme.
  * Checks for an `a` tag referencing a kind:36767 theme, then falls back to inline `c` tags.
  */
 export function useRoomTheme(roomEvent: NostrEvent) {
-  const { nostr } = useNostr();
+  const { nostr } = useRoomNostr();
 
   // Check for a theme reference tag: ["a", "36767:<pubkey>:<d-tag>"]
   const themeRef = roomEvent.tags.find(

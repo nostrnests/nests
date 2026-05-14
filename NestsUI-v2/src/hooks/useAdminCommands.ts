@@ -1,9 +1,9 @@
-import { useNostr } from "@nostrify/react";
 import { useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type { NostrEvent } from "@nostrify/nostrify";
 import { ADMIN_COMMAND } from "@/lib/const";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { useRoomNostr } from "@/hooks/useRoomNostr";
 
 interface UseAdminCommandsOptions {
   /** The room event to monitor commands for */
@@ -17,7 +17,7 @@ interface UseAdminCommandsOptions {
  * Admin commands must come from the room host or an admin.
  */
 export function useAdminCommands({ roomEvent, onKick }: UseAdminCommandsOptions) {
-  const { nostr } = useNostr();
+  const { nostr } = useRoomNostr();
   const { user } = useCurrentUser();
   const processedRef = useRef(new Set<string>());
 

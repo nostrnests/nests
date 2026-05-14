@@ -9,6 +9,7 @@ import type { NostrEvent } from "@nostrify/nostrify";
 
 import { NestTransportProvider } from "@/transport";
 import { RoomContextProvider, useRoomContext } from "@/components/RoomContextProvider";
+import { RoomRelaysProvider } from "@/components/RoomRelaysProvider";
 import { ParticipantsGrid } from "@/components/ParticipantsGrid";
 import { ChatMessages } from "@/components/ChatMessages";
 import { WriteMessage } from "@/components/WriteMessage";
@@ -25,6 +26,7 @@ import { useBackgroundAudio } from "@/hooks/useBackgroundAudio";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { useRoomPresence } from "@/hooks/useRoomPresence";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import { useAppContext } from "@/hooks/useAppContext";
 import { authenticateWithMoqRelay } from "@/transport";
 import {
   getRoomTitle,
@@ -36,7 +38,9 @@ import {
   getRoomNamespace,
   getRoomStatus,
   getRoomImage,
+  getRoomRelays,
 } from "@/lib/room";
+import { dedupeRelays } from "@/lib/relays";
 import { ROOM_KIND, DefaultMoQAuthUrl } from "@/lib/const";
 import { themeToCSS } from "@/lib/ditto-theme";
 import { cn } from "@/lib/utils";
@@ -301,11 +305,12 @@ export default function RoomPage() {
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
   const { nostr } = useNostr();
+  const { config } = useAppContext();
 
   // Try to get event from navigation state first
   const stateEvent = (location.state as { event?: NostrEvent } | null)?.event;
 
-  // Decode naddr
+  // Decode naddr (may include relay hints we can use for bootstrap fetch)
   const decoded = useMemo(() => {
     if (!id) return null;
     try {
@@ -317,9 +322,30 @@ export default function RoomPage() {
     return null;
   }, [id]);
 
+  // User's NIP-65 relays (or app default) — used as the base of every room set.
+  const userRelays = useMemo(
+    () => config.relayMetadata.relays.map((r) => r.url),
+    [config.relayMetadata.relays],
+  );
+
+  // Track the room event's `relays` tag from the last known event (state or
+  // freshly fetched). We feed this back into the refetch so subsequent edits
+  // made on a room-tagged relay are discovered, even if the relay isn't in
+  // the user's NIP-65 list or the naddr hints.
+  const [eventRelays, setEventRelays] = useState<string[]>(
+    () => (stateEvent ? getRoomRelays(stateEvent) : []),
+  );
+
+  // Effective fetch relays: user relays ∪ naddr hints ∪ last known event relays tag.
+  const fetchRelays = useMemo(
+    () => dedupeRelays(userRelays, decoded?.relays, eventRelays),
+    [userRelays, decoded?.relays, eventRelays],
+  );
+  const fetchRelaysKey = fetchRelays.join("|");
+
   // Always fetch the latest event from relays (handles edits/updates)
   const { data: fetchedEvent, isLoading } = useQuery({
-    queryKey: ["nostr", "room-event", decoded?.kind, decoded?.pubkey, decoded?.identifier],
+    queryKey: ["nostr", "room-event", decoded?.kind, decoded?.pubkey, decoded?.identifier, fetchRelaysKey],
     queryFn: async () => {
       if (!decoded) return null;
       const events = await nostr.query(
@@ -329,7 +355,11 @@ export default function RoomPage() {
           "#d": [decoded.identifier],
           limit: 5,
         }],
-        { signal: AbortSignal.timeout(5000) },
+        {
+          signal: AbortSignal.timeout(5000),
+          // Route fetch through user relays + naddr hints + known room relays
+          relays: fetchRelays.length > 0 ? fetchRelays : undefined,
+        },
       );
       // Return the most recent version
       return events.sort((a, b) => b.created_at - a.created_at)[0] ?? null;
@@ -345,6 +375,20 @@ export default function RoomPage() {
     if (!stateEvent) return fetchedEvent;
     return fetchedEvent.created_at >= stateEvent.created_at ? fetchedEvent : stateEvent;
   }, [fetchedEvent, stateEvent]);
+
+  // When the event's `relays` tag changes, expand the fetch route to include
+  // the newly-tagged relays. Stable string compare avoids re-render loops.
+  useEffect(() => {
+    if (!event) return;
+    const tagged = getRoomRelays(event);
+    setEventRelays((prev) => (prev.join("|") === tagged.join("|") ? prev : tagged));
+  }, [event]);
+
+  // Effective relay set for this room: user relays ∪ naddr hints ∪ event's `relays` tag.
+  const effectiveRelays = useMemo(
+    () => dedupeRelays(userRelays, decoded?.relays, event ? getRoomRelays(event) : undefined),
+    [userRelays, decoded?.relays, event],
+  );
 
   useSeoMeta({
     title: event ? `${getRoomTitle(event)} - Nests` : "Room - Nests",
@@ -370,5 +414,9 @@ export default function RoomPage() {
     return <NotFound />;
   }
 
-  return <RoomWithTransport event={event} />;
+  return (
+    <RoomRelaysProvider relays={effectiveRelays}>
+      <RoomWithTransport event={event} />
+    </RoomRelaysProvider>
+  );
 }

@@ -1,14 +1,14 @@
-import { useNostr } from "@nostrify/react";
 import { useQuery } from "@tanstack/react-query";
 import type { NostrEvent } from "@nostrify/nostrify";
 import { ROOM_PRESENCE } from "@/lib/const";
+import { useRoomNostr } from "@/hooks/useRoomNostr";
 
 /**
  * Query kind:10312 presence events for a room.
  * Presence events expire after 5 minutes.
  */
 export function useRoomPresence(roomATag: string | undefined) {
-  const { nostr } = useNostr();
+  const { nostr } = useRoomNostr();
 
   return useQuery({
     queryKey: ["nostr", "room-presence", roomATag ?? ""],
