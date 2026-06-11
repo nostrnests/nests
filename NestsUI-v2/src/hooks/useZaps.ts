@@ -131,7 +131,13 @@ export function useZaps(
   }, [zapEvents, actualTarget]);
 
   const zap = async (amount: number, comment: string) => {
-    if (amount <= 0) {
+    // Guard against NaN and fractional/out-of-range values from free-form input
+    if (!Number.isInteger(amount) || amount <= 0) {
+      toast({
+        title: 'Invalid amount',
+        description: 'Enter a whole number of sats greater than zero.',
+        variant: 'destructive',
+      });
       return;
     }
 

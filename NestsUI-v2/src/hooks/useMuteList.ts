@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { NostrEvent } from "@nostrify/nostrify";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useNostrPublish } from "@/hooks/useNostrPublish";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 
 const MUTE_LIST_KIND = 10000;
 
@@ -33,9 +33,10 @@ export function useMuteList() {
   });
 
   const muteEvent = query.data;
-  const mutedPubkeys = muteEvent?.tags
-    .filter(([t]) => t === "p")
-    .map(([, pk]) => pk) ?? [];
+  const mutedPubkeys = useMemo(
+    () => muteEvent?.tags.filter(([t]) => t === "p").map(([, pk]) => pk) ?? [],
+    [muteEvent],
+  );
 
   const isMuted = useCallback(
     (pubkey: string) => mutedPubkeys.includes(pubkey),

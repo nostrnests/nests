@@ -25,18 +25,10 @@ export function useLocalSpeaking(): boolean {
   const [speaking, setSpeaking] = useState(false);
 
   useEffect(() => {
-    // Poll for the mic track (it may not be available immediately)
-    const checkInterval = setInterval(() => {
-      const track = transport.localAudioTrack;
-      if (track) {
-        clearInterval(checkInterval);
-        startAnalysis(track);
-      }
-    }, 500);
-
     let analyserCleanup: (() => void) | null = null;
+    let currentTrack: MediaStreamTrack | null = null;
 
-    function startAnalysis(track: MediaStreamTrack) {
+    function startAnalysis(track: MediaStreamTrack): () => void {
       const audioContext = new AudioContext();
       const source = audioContext.createMediaStreamSource(new MediaStream([track]));
       const analyser = audioContext.createAnalyser();
@@ -51,6 +43,7 @@ export function useLocalSpeaking(): boolean {
 
       const interval = setInterval(() => {
         if (track.readyState !== "live") {
+          // Track ended — the poller below will tear this analysis down
           setSpeaking(false);
           return;
         }
@@ -73,12 +66,34 @@ export function useLocalSpeaking(): boolean {
         }
       }, POLL_MS);
 
-      analyserCleanup = () => {
+      return () => {
         clearInterval(interval);
         source.disconnect();
-        audioContext.close();
+        analyser.disconnect();
+        audioContext.close().catch(() => { /* already closed */ });
       };
     }
+
+    // Poll for the mic track. Keeps running so the analyser is rebuilt when
+    // the track changes (device switch / re-publish) and torn down when it
+    // ends, instead of leaking the AudioContext.
+    const checkInterval = setInterval(() => {
+      const track = transport.localAudioTrack;
+      const trackChanged = track !== currentTrack;
+      const trackEnded = currentTrack !== null && currentTrack.readyState !== "live";
+
+      if (trackChanged || trackEnded) {
+        analyserCleanup?.();
+        analyserCleanup = null;
+        currentTrack = null;
+        setSpeaking(false);
+
+        if (track && track.readyState === "live") {
+          currentTrack = track;
+          analyserCleanup = startAnalysis(track);
+        }
+      }
+    }, 500);
 
     return () => {
       clearInterval(checkInterval);

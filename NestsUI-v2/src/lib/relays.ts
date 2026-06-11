@@ -45,6 +45,33 @@ export function normalizeRelayUrl(input: unknown): string | null {
   return out;
 }
 
+/** Loopback, private-range, and link-local hosts. */
+const PRIVATE_HOST_RE =
+  /^(localhost|127\.\d{1,3}\.\d{1,3}\.\d{1,3}|0\.0\.0\.0|10\.\d{1,3}\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}|172\.(1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3}|169\.254\.\d{1,3}\.\d{1,3}|::1|f[cde][0-9a-f]{2}:.*)$/i;
+
+/**
+ * Normalize relay URLs that come from untrusted sources (room event `relays`
+ * tags, naddr hints). In addition to normal validation, this rejects
+ * loopback/private/link-local hosts so a malicious event can't direct the
+ * client to probe services on the user's machine or LAN.
+ *
+ * In dev builds private hosts are allowed so local relays keep working.
+ */
+export function sanitizeUntrustedRelays(list: Iterable<unknown> | undefined | null): string[] {
+  if (!list) return [];
+  const out: string[] = [];
+  for (const entry of list) {
+    const norm = normalizeRelayUrl(entry);
+    if (!norm) continue;
+    if (!import.meta.env.DEV) {
+      const hostname = new URL(norm).hostname.toLowerCase();
+      if (PRIVATE_HOST_RE.test(hostname) || hostname.endsWith(".local")) continue;
+    }
+    out.push(norm);
+  }
+  return out;
+}
+
 /**
  * Build a deduplicated list of normalized relay URLs from one or more inputs.
  * Invalid entries are silently dropped.

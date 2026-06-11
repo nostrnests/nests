@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/sheet";
 import { RoomCard } from "./RoomCard";
 import { useRoomList } from "@/hooks/useRoomList";
-import { useRoomContext } from "./RoomContextProvider";
+import { useRoomContext } from "@/contexts/RoomContext";
 
 export function RoomLobbyDrawer() {
   const { lobbyDrawerOpen, setLobbyDrawerOpen, event } = useRoomContext();

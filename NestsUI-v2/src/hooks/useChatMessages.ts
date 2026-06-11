@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { useQueryClient } from "@tanstack/react-query";
 import type { NostrEvent } from "@nostrify/nostrify";
 import { LIVE_CHAT } from "@/lib/const";
 import { useRoomNostr } from "@/hooks/useRoomNostr";
@@ -14,7 +13,6 @@ export function useChatMessages(roomATag: string | undefined) {
   const [messages, setMessages] = useState<NostrEvent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const seenIds = useRef(new Set<string>());
-  const queryClient = useQueryClient();
 
   // Add a message if not already seen
   const addMessage = useCallback((event: NostrEvent) => {

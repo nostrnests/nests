@@ -45,6 +45,28 @@ setInterval(() => {
 }, 5 * 60_000);
 
 /**
+ * Replay protection: NIP-98 events are only valid for 60 seconds, but within
+ * that window the same signed event could be replayed to mint extra tokens.
+ * Track seen event IDs until they age out of the validity window.
+ */
+const seenEventIds = new Map<string, number>();
+const SEEN_EVENT_TTL_MS = 2 * 60_000;
+
+function checkAndRecordEventId(id: string): boolean {
+  const now = Date.now();
+  if (seenEventIds.has(id)) return false;
+  seenEventIds.set(id, now + SEEN_EVENT_TTL_MS);
+  return true;
+}
+
+setInterval(() => {
+  const now = Date.now();
+  for (const [id, expiresAt] of seenEventIds) {
+    if (now > expiresAt) seenEventIds.delete(id);
+  }
+}, 60_000);
+
+/**
  * Auth request body from clients.
  */
 interface AuthRequest {
@@ -67,10 +89,13 @@ function auditLog(event: string, data: Record<string, unknown>) {
 
 /**
  * Get CORS origin header. If ALLOWED_ORIGINS is set, validate against it.
- * Otherwise allow all origins (for development).
+ * An empty list falls back to "*" for development convenience, but only
+ * outside production — in production it must be configured explicitly.
  */
 function getCorsOrigin(requestOrigin: string | null): string {
-  if (ALLOWED_ORIGINS.length === 0) return "*";
+  if (ALLOWED_ORIGINS.length === 0) {
+    return process.env.NODE_ENV === "production" ? "null" : "*";
+  }
   if (requestOrigin && ALLOWED_ORIGINS.includes(requestOrigin)) return requestOrigin;
   return ALLOWED_ORIGINS[0];
 }
@@ -134,6 +159,12 @@ async function handleAuth(req: Request, clientIp: string): Promise<Response> {
       return jsonError(401, e.message, corsOrigin);
     }
     return jsonError(500, "Internal error during auth validation", corsOrigin);
+  }
+
+  // Reject replayed auth events
+  if (!checkAndRecordEventId(event.id)) {
+    auditLog("auth_failed", { ip: clientIp, pubkey: pubkey.substring(0, 8), reason: "replayed_event" });
+    return jsonError(401, "Auth event already used", corsOrigin);
   }
 
   // Parse request body
@@ -260,6 +291,14 @@ async function handleRequest(req: Request, clientIp: string): Promise<Response> 
  */
 async function main() {
   await tokenService.init();
+  if (ALLOWED_ORIGINS.length === 0) {
+    console.warn(
+      "WARNING: ALLOWED_ORIGINS is not set. " +
+      (process.env.NODE_ENV === "production"
+        ? "Cross-origin requests will be rejected."
+        : "Allowing all origins (development mode only — set ALLOWED_ORIGINS in production)."),
+    );
+  }
   auditLog("server_start", { host: HOST, port: PORT });
   console.log(`moq-auth starting on ${HOST}:${PORT}`);
   console.log(`JWKS endpoint: http://${HOST}:${PORT}/.well-known/jwks.json`);

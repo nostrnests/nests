@@ -17,7 +17,6 @@ function ThemeCard({
   label,
   selected,
   onClick,
-  authorPubkey,
 }: {
   theme: DittoTheme;
   label: string;

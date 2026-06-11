@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { Separator } from "@/components/ui/separator";
 import { ParticipantAvatar } from "./ParticipantAvatar";
 import { ProfileCard } from "./ProfileCard";
-import { useRoomContext } from "./RoomContextProvider";
+import { useRoomContext } from "@/contexts/RoomContext";
 import { useRemoteParticipantList, useLocalParticipant } from "@/transport";
 import { getRoomParticipants } from "@/lib/room";
 import { useCurrentUser } from "@/hooks/useCurrentUser";

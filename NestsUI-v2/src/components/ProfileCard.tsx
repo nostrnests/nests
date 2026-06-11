@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, type PropsWithChildren } from "react";
 import {
   UserPlus, UserMinus, Shield, ShieldOff, Ban, Zap,
-  ArrowUpFromLine, ArrowDownFromLine, Eye, MoreHorizontal, VolumeOff, Volume2,
+  ArrowUpFromLine, ArrowDownFromLine, Eye, VolumeOff, Volume2,
 } from "lucide-react";
 import {
   DropdownMenu,

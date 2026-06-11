@@ -1,6 +1,6 @@
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import type { ConnectionState, NestTransport, RemoteParticipant } from "./types";
-import { NestTransportContext } from "./provider";
+import { NestTransportContext } from "./context";
 
 /**
  * Get the NestTransport instance from context.
