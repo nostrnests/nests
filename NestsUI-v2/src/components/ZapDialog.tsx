@@ -31,7 +31,7 @@ import { useToast } from '@/hooks/useToast';
 import { useZaps } from '@/hooks/useZaps';
 import { useWallet } from '@/hooks/useWallet';
 import { useIsMobile } from '@/hooks/useIsMobile';
-import { useOptionalRoomThemeCSS } from './RoomContextProvider';
+import { useOptionalRoomThemeCSS } from '@/contexts/RoomContext';
 import type { Event } from 'nostr-tools';
 import QRCode from 'qrcode';
 import type { WebLNProvider } from "@webbtc/webln-types";

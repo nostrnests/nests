@@ -17,6 +17,22 @@ export function parseDittoThemeEvent(event: NostrEvent): DittoTheme | null {
   return parseThemeTags(event.tags);
 }
 
+/**
+ * Validate that an untrusted theme URL is http(s).
+ * Theme events come from arbitrary relays, so reject anything that could
+ * smuggle a non-web scheme into an <img src> or CSS url().
+ */
+function safeHttpUrl(input: string | undefined): string | undefined {
+  if (!input) return undefined;
+  try {
+    const url = new URL(input);
+    if (url.protocol === "https:" || url.protocol === "http:") return input;
+  } catch {
+    // fall through
+  }
+  return undefined;
+}
+
 /** Parse inline theme tags (c, f, bg) from any event's tag array. */
 export function parseThemeTags(tags: string[][]): DittoTheme | null {
   const colors: Partial<DittoTheme["colors"]> = {};
@@ -33,7 +49,7 @@ export function parseThemeTags(tags: string[][]): DittoTheme | null {
       else if (role === "text") colors.text = hex;
       else if (role === "primary") colors.primary = hex;
     } else if (tag[0] === "f" && tag[1]) {
-      font = { family: tag[1], url: tag[2] };
+      font = { family: tag[1], url: safeHttpUrl(tag[2]) };
     } else if (tag[0] === "bg" && tag[1]) {
       const bgData: { url?: string; mode?: string; mime?: string } = {};
       for (const val of tag.slice(1)) {
@@ -41,9 +57,10 @@ export function parseThemeTags(tags: string[][]): DittoTheme | null {
         else if (val.startsWith("mode ")) bgData.mode = val.slice(5);
         else if (val.startsWith("m ")) bgData.mime = val.slice(2);
       }
-      if (bgData.url) {
+      const bgUrl = safeHttpUrl(bgData.url);
+      if (bgUrl) {
         background = {
-          url: bgData.url,
+          url: bgUrl,
           mode: bgData.mode === "tile" ? "tile" : "cover",
           mime: bgData.mime,
         };

@@ -15,3 +15,6 @@ dev-config/certs/
 
 # Environment overrides
 NestsUI/.env.development
+# Tool artifacts
+.opencode/
+NestsUI-v2/.vite/

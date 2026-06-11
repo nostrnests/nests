@@ -41,7 +41,7 @@ export function useEventModifier() {
 
       return signed;
     },
-    onSuccess: (signed) => {
+    onSuccess: () => {
       // Also invalidate the room list so lobby refreshes
       queryClient.invalidateQueries({ queryKey: ["nostr", "room-list"] });
     },

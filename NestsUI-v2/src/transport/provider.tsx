@@ -1,11 +1,7 @@
-import { createContext, useEffect, useRef, type PropsWithChildren } from "react";
-import type { NestTransport, TransportConfig } from "./types";
+import { useEffect, useRef, type PropsWithChildren } from "react";
+import type { TransportConfig } from "./types";
 import { MoQAudioTransport } from "./moq-transport";
-
-/**
- * React context for the transport instance.
- */
-export const NestTransportContext = createContext<NestTransport | null>(null);
+import { NestTransportContext } from "./context";
 
 interface NestTransportProviderProps {
   /** Transport configuration. When this changes, the transport reconnects. */
@@ -34,29 +30,33 @@ export function NestTransportProvider({
 
   const transport = transportRef.current;
 
+  // Track the latest config so the effect below can read fresh values
+  // (e.g. token) without reconnecting when only those values change.
+  const configRef = useRef(config);
+  configRef.current = config;
+
+  const serverUrl = config?.serverUrl;
+  const authUrl = config?.authUrl;
+  const roomNamespace = config?.roomNamespace;
+  const identity = config?.identity;
+  const canPublish = config?.canPublish;
+
   useEffect(() => {
-    if (!config || !shouldConnect) {
+    const currentConfig = configRef.current;
+    if (!currentConfig || !shouldConnect) {
       transport.disconnect();
       return;
     }
 
     // Connect with the new config
-    transport.connect(config).catch((err) => {
+    transport.connect(currentConfig).catch((err) => {
       console.error("Failed to connect transport:", err);
     });
 
     return () => {
       transport.disconnect();
     };
-  }, [
-    transport,
-    config?.serverUrl,
-    config?.authUrl,
-    config?.roomNamespace,
-    config?.identity,
-    config?.canPublish,
-    shouldConnect,
-  ]);
+  }, [transport, serverUrl, authUrl, roomNamespace, identity, canPublish, shouldConnect]);
 
   return (
     <NestTransportContext.Provider value={transport}>

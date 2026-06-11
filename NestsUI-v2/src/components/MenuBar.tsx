@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { ReactionsButton } from "./ReactionsButton";
 import { RoomOptionsMenu } from "./RoomOptionsMenu";
-import { useRoomContext } from "./RoomContextProvider";
+import { useRoomContext } from "@/contexts/RoomContext";
 import { useLocalParticipant } from "@/transport";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { cn } from "@/lib/utils";
@@ -22,8 +22,8 @@ interface MenuBarProps {
 
 export function MenuBar({ onChatToggle, chatOpen }: MenuBarProps) {
   const { user } = useCurrentUser();
-  const { event, roomATag, handRaised, setHandRaised, isSpeaker, leaveRoom } = useRoomContext();
-  const { isMicEnabled, isPublishing, setMicEnabled, unpublishMicrophone, declinedPublish } = useLocalParticipant();
+  const { event, roomATag, handRaised, setHandRaised, leaveRoom } = useRoomContext();
+  const { isMicEnabled, isPublishing, setMicEnabled, unpublishMicrophone } = useLocalParticipant();
 
   // Hand raise is always available for any logged-in user
   const showHandRaise = !!user;

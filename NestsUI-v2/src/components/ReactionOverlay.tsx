@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useRoomContext } from "./RoomContextProvider";
+import { useRoomContext } from "@/contexts/RoomContext";
 
 /**
  * Fixed overlay that shows floating emoji reactions animating upward.

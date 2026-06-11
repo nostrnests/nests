@@ -24,6 +24,7 @@ export class MoQAudioTransport implements NestTransport {
 
   // Publishing
   private microphone: Publish.Source.Microphone | null = null;
+  private micSourceDispose: (() => void) | null = null;
   private publishBroadcast: Publish.Broadcast | null = null;
 
   // Watching
@@ -189,14 +190,7 @@ export class MoQAudioTransport implements NestTransport {
 
   disconnect(): void {
     // Stop publishing without setting declinedPublish (that's only for voluntary leave-stage)
-    if (this.publishBroadcast) {
-      this.publishBroadcast.close();
-      this.publishBroadcast = null;
-    }
-    if (this.microphone) {
-      this.microphone.close();
-      this.microphone = null;
-    }
+    this.closePublishPipeline();
     this._isPublishing = false;
     this._isMicEnabled = false;
 
@@ -233,6 +227,10 @@ export class MoQAudioTransport implements NestTransport {
       throw new Error("Not connected");
     }
 
+    // Release any previous publish pipeline (e.g. when switching devices)
+    // before creating a new one, so the old mic/broadcast don't leak.
+    this.closePublishPipeline();
+
     console.log("[transport] starting microphone publish...");
 
     // Create microphone source
@@ -242,7 +240,7 @@ export class MoQAudioTransport implements NestTransport {
     });
 
     // Log when mic source becomes available
-    this.microphone.source.subscribe((track) => {
+    this.micSourceDispose = this.microphone.source.subscribe((track) => {
       if (track) {
         console.log("[transport] microphone track acquired:", track.label);
       } else {
@@ -270,21 +268,29 @@ export class MoQAudioTransport implements NestTransport {
   }
 
   unpublishMicrophone(): void {
-    if (this.publishBroadcast) {
-      console.log("[transport] stopping publish");
-      this.publishBroadcast.close();
-      this.publishBroadcast = null;
-    }
-
-    if (this.microphone) {
-      this.microphone.close();
-      this.microphone = null;
-    }
+    console.log("[transport] stopping publish");
+    this.closePublishPipeline();
 
     this._isPublishing = false;
     this._isMicEnabled = false;
     this._declinedPublish = true;
     this.notifyLocalStateChange();
+  }
+
+  /** Close the mic source subscription, broadcast, and microphone (if any). */
+  private closePublishPipeline(): void {
+    if (this.micSourceDispose) {
+      this.micSourceDispose();
+      this.micSourceDispose = null;
+    }
+    if (this.publishBroadcast) {
+      this.publishBroadcast.close();
+      this.publishBroadcast = null;
+    }
+    if (this.microphone) {
+      this.microphone.close();
+      this.microphone = null;
+    }
   }
 
   setMicEnabled(enabled: boolean): void {

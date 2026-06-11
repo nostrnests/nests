@@ -28,7 +28,6 @@ import { useUploadFile } from '@/hooks/useUploadFile';
 import { isEmoji, getEmojiMaskUrl } from '@/lib/ditto-theme';
 import { DITTO_PROFILE_THEME } from '@/lib/const';
 import type { DittoTheme } from '@/lib/ditto-theme';
-import type { DittoThemeEntry } from '@/hooks/useDittoThemes';
 
 export const EditProfileForm: React.FC = () => {
   const queryClient = useQueryClient();
@@ -43,7 +42,6 @@ export const EditProfileForm: React.FC = () => {
   // Avatar shape state
   const [shape, setShape] = useState('');
   const [profileTheme, setProfileTheme] = useState<DittoTheme | null>(null);
-  const [profileThemeEntry, setProfileThemeEntry] = useState<DittoThemeEntry | null>(null);
 
   // Parse existing shape from raw event content
   useEffect(() => {
@@ -358,9 +356,8 @@ export const EditProfileForm: React.FC = () => {
           </p>
           <ThemeChooser
             selectedTheme={profileTheme}
-            onSelectTheme={(theme, entry) => {
+            onSelectTheme={(theme) => {
               setProfileTheme(theme);
-              setProfileThemeEntry(entry ?? null);
             }}
           />
         </div>

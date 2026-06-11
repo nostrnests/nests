@@ -16,7 +16,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useEventModifier } from "@/hooks/useEventModifier";
-import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useAuthor } from "@/hooks/useAuthor";
 import { useMoqServerList } from "@/hooks/useMoqServerList";
 import { ThemeChooser } from "@/components/ThemeChooser";
@@ -103,7 +102,6 @@ export function EditRoomDialog({ open, onOpenChange, roomEvent }: EditRoomDialog
   const navigate = useNavigate();
   const { mutateAsync: modifyEvent, isPending } = useEventModifier();
   const { toast } = useToast();
-  const { user } = useCurrentUser();
   const { servers } = useMoqServerList();
 
   // Parse existing inline theme from room event
@@ -111,7 +109,7 @@ export function EditRoomDialog({ open, onOpenChange, roomEvent }: EditRoomDialog
   const [selectedTheme, setSelectedTheme] = useState<DittoTheme | null>(existingTheme);
   const [selectedThemeEntry, setSelectedThemeEntry] = useState<DittoThemeEntry | null>(null);
 
-  const { register, handleSubmit, watch, setValue, reset } = useForm<RoomFormData>({
+  const { register, handleSubmit, watch, setValue } = useForm<RoomFormData>({
     values: {
       title: getRoomTitle(roomEvent),
       summary: getRoomSummary(roomEvent),

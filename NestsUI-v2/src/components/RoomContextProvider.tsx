@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, useEffect, useRef, type PropsWithChildren } from "react";
+import { useState, useCallback, useEffect, useMemo, useRef, type PropsWithChildren } from "react";
 import type { NostrEvent } from "@nostrify/nostrify";
 import { useNavigate } from "react-router-dom";
 import { useRoomPresence } from "@/hooks/useRoomPresence";
@@ -11,63 +11,8 @@ import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useRoomTheme } from "@/hooks/useRoomTheme";
 import { getRoomATag } from "@/lib/room";
 import { useToast } from "@/hooks/useToast";
-import { themeToCSS, type DittoTheme } from "@/lib/ditto-theme";
-
-export interface RecentReaction {
-  id: string;
-  pubkey: string;
-  emoji: string;
-  /** URL for custom emoji images (NIP-30) */
-  emojiUrl?: string;
-  timestamp: number;
-}
-
-interface RoomContextType {
-  /** The room event */
-  event: NostrEvent;
-  /** Room a-tag */
-  roomATag: string;
-  /** Presence list */
-  presenceList: NostrEvent[];
-  /** Reactions list */
-  reactions: NostrEvent[];
-  /** Recent reactions (within last 5s) for overlay animations */
-  recentReactions: RecentReaction[];
-  /** Map of pubkey -> most recent reaction (emoji text + optional image URL) */
-  participantReactions: Map<string, { emoji: string; emojiUrl?: string }>;
-  /** Whether user's hand is raised */
-  handRaised: boolean;
-  setHandRaised: (v: boolean) => void;
-  /** Whether the lobby drawer is open */
-  lobbyDrawerOpen: boolean;
-  setLobbyDrawerOpen: (v: boolean) => void;
-  /** Current user's admin status */
-  isHost: boolean;
-  isAdmin: boolean;
-  isSpeaker: boolean;
-  isHostOrAdmin: boolean;
-  /** Leave the room */
-  leaveRoom: () => void;
-  /** Optimistically add a local reaction for immediate display */
-  addLocalReaction: (emoji: string, emojiUrl?: string) => void;
-  /** Room's Ditto theme (if any) */
-  roomTheme: DittoTheme | null;
-}
-
-const RoomContext = createContext<RoomContextType | null>(null);
-
-export function useRoomContext(): RoomContextType {
-  const ctx = useContext(RoomContext);
-  if (!ctx) throw new Error("useRoomContext must be used within RoomContextProvider");
-  return ctx;
-}
-
-/** Safe hook for portalled components (drawers/dialogs) that may or may not be inside room context. */
-export function useOptionalRoomThemeCSS(): Record<string, string> | undefined {
-  const ctx = useContext(RoomContext);
-  if (!ctx?.roomTheme) return undefined;
-  return themeToCSS(ctx.roomTheme);
-}
+import { type DittoTheme } from "@/lib/ditto-theme";
+import { RoomContext, type RecentReaction } from "@/contexts/RoomContext";
 
 interface RoomContextProviderProps {
   event: NostrEvent;
@@ -91,9 +36,10 @@ export function RoomContextProvider({ event, children }: PropsWithChildren<RoomC
   if (rawRoomTheme) lastThemeRef.current = rawRoomTheme;
   const roomTheme = rawRoomTheme ?? lastThemeRef.current;
 
-  // Track recent reactions for animations
+  // Track recent reactions for animations.
+  // Seen IDs are kept with the time we saw them so stale entries can be pruned.
   const [recentReactions, setRecentReactions] = useState<RecentReaction[]>([]);
-  const seenReactionIdsRef = useRef<Set<string>>(new Set());
+  const seenReactionIdsRef = useRef<Map<string, number>>(new Map());
 
   // Watch for new reactions and add them to recentReactions
   useEffect(() => {
@@ -103,7 +49,7 @@ export function RoomContextProvider({ event, children }: PropsWithChildren<RoomC
     for (const r of reactions) {
       // Accept reactions from the last 30 seconds (accounts for query polling delay)
       if (r.kind === 7 && r.content && (now - r.created_at) < 30 && !seenReactionIdsRef.current.has(r.id)) {
-        seenReactionIdsRef.current.add(r.id);
+        seenReactionIdsRef.current.set(r.id, now);
         // Check for custom emoji URL (NIP-30)
         const emojiTag = r.tags.find(([t]) => t === "emoji");
         const emojiUrl = emojiTag?.[2]; // ["emoji", "shortcode", "url"]
@@ -125,24 +71,31 @@ export function RoomContextProvider({ event, children }: PropsWithChildren<RoomC
   // Clean up old reactions (older than 5 seconds)
   useEffect(() => {
     const interval = setInterval(() => {
-      const cutoff = Math.floor(Date.now() / 1000) - 5;
-      setRecentReactions((prev) => prev.filter((r) => r.timestamp > cutoff));
+      const now = Math.floor(Date.now() / 1000);
+      const cutoff = now - 5;
+      // Keep the same array identity when nothing expired to avoid re-renders
+      setRecentReactions((prev) => {
+        const next = prev.filter((r) => r.timestamp > cutoff);
+        return next.length === prev.length ? prev : next;
+      });
+      // Prune seen IDs past the 30s dedupe window so the map doesn't grow
+      // unbounded during long sessions
+      for (const [id, seenAt] of seenReactionIdsRef.current) {
+        if (now - seenAt > 60) seenReactionIdsRef.current.delete(id);
+      }
     }, 1000);
     return () => clearInterval(interval);
   }, []);
 
-  // Build participant reactions map (most recent reaction within last 5s per pubkey)
-  const participantReactions = (() => {
+  // Build participant reactions map (most recent reaction per pubkey).
+  // recentReactions is already pruned to the last 5s by the interval above.
+  const participantReactions = useMemo(() => {
     const map = new Map<string, { emoji: string; emojiUrl?: string }>();
-    const now = Math.floor(Date.now() / 1000);
-    // recentReactions are already filtered to recent; pick last per pubkey
     for (const r of recentReactions) {
-      if (now - r.timestamp < 5) {
-        map.set(r.pubkey, { emoji: r.emoji, emojiUrl: r.emojiUrl });
-      }
+      map.set(r.pubkey, { emoji: r.emoji, emojiUrl: r.emojiUrl });
     }
     return map;
-  })();
+  }, [recentReactions]);
 
   // Local transport state
   const { isPublishing, isMicEnabled, declinedPublish } = useLocalParticipant();
@@ -166,7 +119,7 @@ export function RoomContextProvider({ event, children }: PropsWithChildren<RoomC
     if (!user) return;
     const now = Math.floor(Date.now() / 1000);
     const fakeId = `local-${now}-${Math.random().toString(36).slice(2, 8)}`;
-    seenReactionIdsRef.current.add(fakeId);
+    seenReactionIdsRef.current.set(fakeId, now);
     setRecentReactions((prev) => [
       ...prev,
       { id: fakeId, pubkey: user.pubkey, emoji, emojiUrl, timestamp: now },
@@ -182,28 +135,47 @@ export function RoomContextProvider({ event, children }: PropsWithChildren<RoomC
     },
   });
 
+  const contextValue = useMemo(
+    () => ({
+      event,
+      roomATag,
+      presenceList,
+      reactions,
+      recentReactions,
+      participantReactions,
+      handRaised,
+      setHandRaised,
+      lobbyDrawerOpen,
+      setLobbyDrawerOpen,
+      isHost,
+      isAdmin,
+      isSpeaker,
+      isHostOrAdmin,
+      leaveRoom,
+      addLocalReaction,
+      roomTheme,
+    }),
+    [
+      event,
+      roomATag,
+      presenceList,
+      reactions,
+      recentReactions,
+      participantReactions,
+      handRaised,
+      lobbyDrawerOpen,
+      isHost,
+      isAdmin,
+      isSpeaker,
+      isHostOrAdmin,
+      leaveRoom,
+      addLocalReaction,
+      roomTheme,
+    ],
+  );
+
   return (
-    <RoomContext.Provider
-      value={{
-        event,
-        roomATag,
-        presenceList,
-        reactions,
-        recentReactions,
-        participantReactions,
-        handRaised,
-        setHandRaised,
-        lobbyDrawerOpen,
-        setLobbyDrawerOpen,
-        isHost,
-        isAdmin,
-        isSpeaker,
-        isHostOrAdmin,
-        leaveRoom,
-        addLocalReaction,
-        roomTheme,
-      }}
-    >
+    <RoomContext.Provider value={contextValue}>
       {children}
     </RoomContext.Provider>
   );

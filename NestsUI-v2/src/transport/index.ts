@@ -8,7 +8,8 @@ export type {
 } from "./types";
 
 export { MoQAudioTransport } from "./moq-transport";
-export { NestTransportProvider, NestTransportContext } from "./provider";
+export { NestTransportProvider } from "./provider";
+export { NestTransportContext } from "./context";
 export { authenticateWithMoqRelay } from "./auth";
 export {
   useNestTransport,

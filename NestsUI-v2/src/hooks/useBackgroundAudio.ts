@@ -26,13 +26,17 @@ export function useBackgroundAudio(roomTitle: string, enabled: boolean) {
   }, [roomTitle, enabled]);
 }
 
+interface BackgroundAudioPlugin {
+  start(options: { roomTitle: string }): Promise<void>;
+  stop(): Promise<void>;
+}
+
 async function startService(roomTitle: string) {
   try {
-    const { Capacitor } = await import("@capacitor/core");
+    const { Capacitor, registerPlugin } = await import("@capacitor/core");
     if (Capacitor.isNativePlatform()) {
-      const { registerPlugin } = await import("@capacitor/core");
-      const BackgroundAudio = registerPlugin("BackgroundAudio");
-      await (BackgroundAudio as any).start({ roomTitle });
+      const BackgroundAudio = registerPlugin<BackgroundAudioPlugin>("BackgroundAudio");
+      await BackgroundAudio.start({ roomTitle });
       console.log("[background-audio] foreground service started");
     }
   } catch {
@@ -42,11 +46,10 @@ async function startService(roomTitle: string) {
 
 async function stopService() {
   try {
-    const { Capacitor } = await import("@capacitor/core");
+    const { Capacitor, registerPlugin } = await import("@capacitor/core");
     if (Capacitor.isNativePlatform()) {
-      const { registerPlugin } = await import("@capacitor/core");
-      const BackgroundAudio = registerPlugin("BackgroundAudio");
-      await (BackgroundAudio as any).stop();
+      const BackgroundAudio = registerPlugin<BackgroundAudioPlugin>("BackgroundAudio");
+      await BackgroundAudio.stop();
       console.log("[background-audio] foreground service stopped");
     }
   } catch {

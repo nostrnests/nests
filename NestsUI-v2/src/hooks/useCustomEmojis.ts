@@ -1,7 +1,6 @@
 import { useNostr } from "@nostrify/react";
 import { useQuery } from "@tanstack/react-query";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
-import type { NostrEvent } from "@nostrify/nostrify";
 
 export interface CustomEmoji {
   shortcode: string;

@@ -2,7 +2,7 @@ import { useNostr } from "@nostrify/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useNostrPublish } from "@/hooks/useNostrPublish";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 
 const CONTACT_LIST_KIND = 3;
 
@@ -36,7 +36,7 @@ export function useFollowing() {
     enabled: !!user,
   });
 
-  const contacts = query.data?.contacts ?? [];
+  const contacts = useMemo(() => query.data?.contacts ?? [], [query.data]);
 
   const isFollowing = useCallback(
     (pubkey: string) => contacts.includes(pubkey),

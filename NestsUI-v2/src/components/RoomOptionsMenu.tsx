@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Share2, Settings, Pencil, User, UserPen } from "lucide-react";
+import { Share2, Settings, Pencil, UserPen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -18,7 +18,6 @@ import {
 import { ShareDialog } from "./ShareDialog";
 import { EditRoomDialog } from "./EditRoomDialog";
 import { SettingsDialog } from "./SettingsDialog";
-import { ProfileCard } from "./ProfileCard";
 import { EditProfileForm } from "./EditProfileForm";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { useCurrentUser } from "@/hooks/useCurrentUser";

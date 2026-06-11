@@ -8,7 +8,8 @@ import { Users } from "lucide-react";
 import type { NostrEvent } from "@nostrify/nostrify";
 
 import { NestTransportProvider } from "@/transport";
-import { RoomContextProvider, useRoomContext } from "@/components/RoomContextProvider";
+import { RoomContextProvider } from "@/components/RoomContextProvider";
+import { useRoomContext } from "@/contexts/RoomContext";
 import { RoomRelaysProvider } from "@/components/RoomRelaysProvider";
 import { ParticipantsGrid } from "@/components/ParticipantsGrid";
 import { ChatMessages } from "@/components/ChatMessages";
@@ -32,7 +33,6 @@ import {
   getRoomTitle,
   getRoomSummary,
   getRoomColor,
-  getRoomATag,
   getRoomStreamingUrl,
   getRoomAuthUrl,
   getRoomNamespace,
@@ -40,8 +40,8 @@ import {
   getRoomImage,
   getRoomRelays,
 } from "@/lib/room";
-import { dedupeRelays } from "@/lib/relays";
-import { ROOM_KIND, DefaultMoQAuthUrl } from "@/lib/const";
+import { dedupeRelays, sanitizeUntrustedRelays } from "@/lib/relays";
+import { DefaultMoQAuthUrl } from "@/lib/const";
 import { themeToCSS } from "@/lib/ditto-theme";
 import { cn } from "@/lib/utils";
 import type { TransportConfig } from "@/transport";
@@ -287,7 +287,7 @@ function RoomWithTransport({ event }: { event: NostrEvent }) {
 
     authenticate();
     return () => { cancelled = true; };
-  }, [user, streamingUrl, authUrl, namespace, isSpeaker]);
+  }, [user, streamingUrl, authUrl, namespace, isSpeaker, certFingerprint]);
 
   return (
     <NestTransportProvider config={transportConfig} connect={!!user}>
@@ -333,12 +333,12 @@ export default function RoomPage() {
   // made on a room-tagged relay are discovered, even if the relay isn't in
   // the user's NIP-65 list or the naddr hints.
   const [eventRelays, setEventRelays] = useState<string[]>(
-    () => (stateEvent ? getRoomRelays(stateEvent) : []),
+    () => (stateEvent ? sanitizeUntrustedRelays(getRoomRelays(stateEvent)) : []),
   );
 
   // Effective fetch relays: user relays ∪ naddr hints ∪ last known event relays tag.
   const fetchRelays = useMemo(
-    () => dedupeRelays(userRelays, decoded?.relays, eventRelays),
+    () => dedupeRelays(userRelays, sanitizeUntrustedRelays(decoded?.relays), eventRelays),
     [userRelays, decoded?.relays, eventRelays],
   );
   const fetchRelaysKey = fetchRelays.join("|");
@@ -380,13 +380,17 @@ export default function RoomPage() {
   // the newly-tagged relays. Stable string compare avoids re-render loops.
   useEffect(() => {
     if (!event) return;
-    const tagged = getRoomRelays(event);
+    const tagged = sanitizeUntrustedRelays(getRoomRelays(event));
     setEventRelays((prev) => (prev.join("|") === tagged.join("|") ? prev : tagged));
   }, [event]);
 
   // Effective relay set for this room: user relays ∪ naddr hints ∪ event's `relays` tag.
   const effectiveRelays = useMemo(
-    () => dedupeRelays(userRelays, decoded?.relays, event ? getRoomRelays(event) : undefined),
+    () => dedupeRelays(
+      userRelays,
+      sanitizeUntrustedRelays(decoded?.relays),
+      event ? sanitizeUntrustedRelays(getRoomRelays(event)) : undefined,
+    ),
     [userRelays, decoded?.relays, event],
   );
 

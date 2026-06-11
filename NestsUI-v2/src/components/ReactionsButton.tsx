@@ -8,7 +8,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { useNostrPublish } from "@/hooks/useNostrPublish";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useCustomEmojis, type CustomEmoji } from "@/hooks/useCustomEmojis";
-import { useRoomContext } from "./RoomContextProvider";
+import { useRoomContext } from "@/contexts/RoomContext";
 
 const EMOJI_CATEGORIES = {
   favorites: { label: "Favorites", icon: "⭐", emojis: ["🤙", "💯", "🔥", "💜", "❤️", "👏", "🙌", "✨", "🫶", "💪", "🎉", "🚀"] },
