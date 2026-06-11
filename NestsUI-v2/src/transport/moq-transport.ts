@@ -82,7 +82,8 @@ export class MoQAudioTransport implements NestTransport {
   }
 
   get localAudioTrack(): MediaStreamTrack | undefined {
-    return this.microphone?.source.peek() ?? undefined;
+    const source = this.microphone?.source.peek();
+    return source ? Publish.Audio.normalizeSource(source).track : undefined;
   }
 
   getRemoteAudioNode(pubkey: string): AudioNode | undefined {
@@ -240,8 +241,9 @@ export class MoQAudioTransport implements NestTransport {
     });
 
     // Log when mic source becomes available
-    this.micSourceDispose = this.microphone.source.subscribe((track) => {
-      if (track) {
+    this.micSourceDispose = this.microphone.source.subscribe((source) => {
+      if (source) {
+        const track = Publish.Audio.normalizeSource(source).track;
         console.log("[transport] microphone track acquired:", track.label);
       } else {
         console.log("[transport] microphone track: none");
@@ -459,8 +461,8 @@ export class MoQAudioTransport implements NestTransport {
     });
 
     // Set up audio pipeline: source -> decoder -> emitter (speaker)
-    // Use a generous jitter buffer (150ms) to reduce audio underflow warnings
-    const sync = new Watch.Sync({ jitter: 150 as Moq.Time.Milli });
+    // Use a generous fixed jitter buffer (150ms) to reduce audio underflow warnings
+    const sync = new Watch.Sync({ latency: 150 as Moq.Time.Milli });
     const audioSource = new Watch.Audio.Source(sync, { broadcast });
     const decoder = new Watch.Audio.Decoder(audioSource, { enabled: true });
     const emitter = new Watch.Audio.Emitter(decoder, {
