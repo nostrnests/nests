@@ -64,6 +64,11 @@ services:
     environment:
       - PORT=8080
       - HOST=0.0.0.0
+      - NODE_ENV=production
+      # Comma-separated list of origins allowed to request auth tokens.
+      # Required in production: with NODE_ENV=production and no value set,
+      # moq-auth rejects all cross-origin requests.
+      - ALLOWED_ORIGINS=https://${NESTS_DOMAIN:-nests.example.com}
     healthcheck:
       test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/.well-known/jwks.json"]
       interval: 30s
